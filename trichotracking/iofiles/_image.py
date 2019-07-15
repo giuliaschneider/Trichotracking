@@ -61,15 +61,7 @@ def loadImage(file, as_gray=True, as_8bit=True):
 
 
 
-def getBackground(inputDir, bg_function):
-    """Import or calculate background image"""
-    if "background.tif" in os.listdir(inputDir):
-        background = loadImage(os.path.join(inputDir,"background.tif"))
-    else:
-        listOfFiles = find_img(inputDir)
-        background = bg_function(listOfFiles)
-        cv2.imwrite(os.path.join(inputDir, "background.tif"), background)
-    return background
+
 
 
 def getChamber(inputDir, background, chamber_function):
