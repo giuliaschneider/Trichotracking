@@ -25,7 +25,7 @@ def getBackground(inputDir, blur=True, notMoving=False):
 
     """
 
-    # Check if background is already
+    # Check if background exists already
     if "background.tif" in os.listdir(inputDir):
         background, h, w = loadImage(join(inputDir,"background.tif"))
         return background
