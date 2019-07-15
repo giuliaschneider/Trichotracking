@@ -57,18 +57,3 @@ def loadImage(file, as_gray=True, as_8bit=True):
 
 
     return img, height, width
-
-
-
-
-
-
-
-def getChamber(inputDir, background, chamber_function):
-    """Import or calculate chamber image"""
-    if "chamber.tif" in os.listdir(inputDir):
-        chamber = loadImage(os.path.join(inputDir,"chamber.tif"))
-    else:
-        chamber = chamber_function(background)
-        cv2.imwrite(os.path.join(inputDir, "chamber.tif"), chamber)
-    return chamber
