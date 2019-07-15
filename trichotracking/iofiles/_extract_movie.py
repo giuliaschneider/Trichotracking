@@ -51,6 +51,8 @@ def export_movie(dir, fps=20):
     for frame in range(0, len(listOfFiles)):
         # Write the frame into the file 'output.avi'
         img, height, width= loadImage(listOfFiles[frame])
+        if isinstance(img, int) and (img == -1):
+            continue
         time = getTime_timestamp(listOfFiles[frame])
         write_time(img, time, width, scale=6)
         if img is None:
