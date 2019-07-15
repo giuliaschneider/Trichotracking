@@ -1,8 +1,10 @@
+import os
+import os.path
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
-from iofiles import loadImage, find_im
+from iofiles import loadImage, find_img
 
 from IPython.core.debugger import set_trace
 
@@ -57,6 +59,7 @@ def calc_chamber_df_ulisetup(background):
     ret, bw = cv2.threshold(background,200,255,cv2.THRESH_BINARY)
     h, w = bw.shape[:2]
     mask = np.zeros((h+2, w+2), np.uint8)
+    set_trace()
     cv2.floodFill(bw, mask, (int(w/2),int(h/2)), 255)
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
     bw = cv2.morphologyEx(bw, cv2.MORPH_OPEN, kernel)

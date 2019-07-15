@@ -3,10 +3,10 @@ from os.path import join
 import numpy as np
 import cv2
 
-from iofiles import loadImage, find_im
+from iofiles import loadImage, find_img
 
 
-def getBackground(inputDir, blur=True, notMoving=False):
+def getBackground(inputDir, blur=True):
     """
     Import or calculate & saves median image of image sequence.
 
@@ -32,7 +32,7 @@ def getBackground(inputDir, blur=True, notMoving=False):
 
 
     images = find_img(inputDir)
-    background = calcBackground(images, blurBg, notMoving)
+    background = calcBackground(images, blur)
     cv2.imwrite(os.path.join(inputDir, "background.tif"), background)
     return background
 
