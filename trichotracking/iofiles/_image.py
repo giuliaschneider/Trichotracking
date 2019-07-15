@@ -8,7 +8,7 @@ from ._list_files import find_img
 from IPython.core.debugger import set_trace
 
 
-__all__ = ['getBackground', 'getChamber', 'loadImage']
+__all__ = ['loadImage']
 
 
 def is_corrupted(file):
@@ -44,12 +44,12 @@ def loadImage(file, as_gray=True, as_8bit=True):
         Width of image. If file is defect, returns -1
     """
 
-    if file2.lower().endswith('.jpg') and is_corrupted(file):
+    if file.lower().endswith('.jpg') and is_corrupted(file):
         return -1, -1,  -1
 
 
     img = cv2.imread(file, cv2.IMREAD_UNCHANGED)
-    if as_gray:
+    if (img.ndim > 2) and as_gray:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     if as_8bit:
         img = np.uint8(cv2.normalize(img, None, 255, 0, cv2.NORM_MINMAX))
