@@ -25,9 +25,9 @@ def write_particles(img, dfparticles, frame):
             ccx = int(ccx)
             ccy = int(ccy)   
             cv2.circle(img, (ccx, ccy), (3), (255, 255, 255))
-            font                   = cv2.FONT_HERSHEY_DUPLEX
+            font                   = cv2.FONT_HERSHEY_SCRIPT_SIMPLEX
             bottomLeftCornerOfText = (ccx+10,ccy+10)
-            fontScale              = 3
+            fontScale              = 2
             fontColor              = (255, 255, 255)
             txt = "{:.0f}".format(nr)
             cv2.putText(img, txt, bottomLeftCornerOfText,
