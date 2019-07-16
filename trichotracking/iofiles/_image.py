@@ -17,6 +17,7 @@ def is_corrupted(file):
         check_chars = f.read()[-2:]
         if check_chars != b'\xff\xd9':
             print('Not complete image')
+
             return True
         else:
             return False

@@ -5,6 +5,7 @@
 
 from ._extract_movie import *
 from ._image import *
+from ._import_df_func import *
 from ._list_files import *
 from ._metadata import *
 from ._remove_files import *
