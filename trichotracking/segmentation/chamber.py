@@ -31,7 +31,7 @@ def getChamber(inputDir, background, chamber_function):
     """
 
     if "chamber.tif" in os.listdir(inputDir):
-        chamber = loadImage(os.path.join(inputDir,"chamber.tif"))
+        chamber, h, w = loadImage(os.path.join(inputDir,"chamber.tif"))
     else:
         chamber = chamber_function(background)
         cv2.imwrite(os.path.join(inputDir, "chamber.tif"), chamber)
