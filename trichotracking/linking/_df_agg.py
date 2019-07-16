@@ -108,7 +108,7 @@ class agg_keeper:
                             3: movie finished
                             4: unknown
         """
-        cols = ['aggTrack', 't0', 't1', 'tracks0', 'tracks1', 'nfil', 'breakup']
+        #cols = ['aggTrack', 't0', 't1', 'tracks0', 'tracks1', 'nfil', 'breakup']
         #aggTracks = np.unique(df_merge.trackNr.values)
 
         endExp = np.max(df_tracks.endTime.values)
@@ -153,8 +153,8 @@ class agg_keeper:
         dfagg.loc[dfagg.breakup==0, 'breakup'] = 4
 
         # Save df to text
-        dir = os.path.basename(os.path.normpath(dataDir))
-        filename = os.path.join(resultDir, dir+"_tracks_agg.txt")
+        #dir = os.path.basename(os.path.normpath(dataDir))
+        filename = os.path.join(resultDir, "tracks_agg.txt")
         dfagg.to_csv(filename)
 
         return dfagg
