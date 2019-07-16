@@ -3,8 +3,6 @@ import cv2
 
 def cropRectangle(img, bx, by, bw, bh, mult=1):
     """ Crops the image to the given geometry. """
-    nBw = int(mult*bw)
-    nBh = int(mult*bh)
     dy = int((mult*bh-bh) / 2)
     dx = int((mult*bw-bw) / 2)
     left = max(0, int(bx-dx))
