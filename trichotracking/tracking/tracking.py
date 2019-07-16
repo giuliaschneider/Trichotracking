@@ -10,8 +10,9 @@ from iofiles import (find_img,
                      getTime,
                      loadImage)
 from linking import matcher
-from plot.plot_images import *
-from plot import TrackingAnimation
+from plot.plot_images import plotAllContoursTracking
+
+from ._seg_functions import segment_particles
 
 from IPython.core.debugger import set_trace
 
@@ -24,15 +25,14 @@ class tracker:
                  pxLength,
                  maxR,
                  findingFunction,
-                 segmentFunction,
                  background,
                  linkTime=1,
                  minLength=1,
-                 plotContours=False,
                  plotImages=False,
-                 plotAnimation=False,
-                 threshold=None,
-                 roi=None):
+                 threshold=28,
+                 roi=None,
+                 blur=True,
+                 darkField=False):
 
         """ Tracks particles in the video given in input_dir.
 
@@ -54,20 +54,17 @@ class tracker:
         self.pxLength = pxLength
         self.maxDist = 1.0*maxR/self.pxLength
         self.findingFunction = findingFunction
-        self.segmentFunction = segmentFunction
         self.background = background
-
-        self.plotContours = plotContours
         self.plotImages = plotImages
-        self.plotAnimation = plotAnimation
         self.threshold = threshold
         self.roi = roi
+        self.blur = blur
+        self.darkField = darkField
 
         self.nFiles = len(self.listOfFiles)
         self.height, self.width = self.background.shape[:2]
 
         self.track(linkTime)
-        set_trace()
         self.filterTracks(minLength)
         print("Number of tracks after filtering = {}".format(
             len(pd.unique(self.particleTracks.trackNr))))
@@ -104,22 +101,22 @@ class tracker:
         for frame, file in enumerate(self.listOfFiles):
 
             # segmentation
-            self.img, h, w = loadImage(file)
+            self.img, _, _ = loadImage(file)
             if (isinstance(self.img, int)) and (self.img == -1):
                 continue
 
-            if self.threshold is None:
-                self.img, bw = self.segmentFunction(self.img, self.background,
-                                        plotImages=self.plotImages,
-                                        chamber=self.roi)
-            else:
-                self.img, bw = self.segmentFunction(self.img, self.background,
-                    plotImages=self.plotImages, threshold=self.threshold,
-                    chamber=self.roi)
+            self.img, bw = segment_particles(self.img, 
+                                             self.background, 
+                                             chamber=self.roi,
+                                             blur=self.blur, 
+                                             darkField=self.darkField, 
+                                             plotImages=self.plotImages, 
+                                             threshold=self.threshold)
+
             self.imgTimes.append(getTime(file))
             self.particles = self.findingFunction(self.img, bw, self.roi)
 
-            if self.plotContours:
+            if self.plotImages:
                 plotAllContoursTracking(self.img, self.particles.contours,
                                 self.particles.cx, self.particles.cy)
                 plt.show()
@@ -284,20 +281,16 @@ class tracker:
 
 
     def saveTrackToText(self):
-        dir = os.path.basename(os.path.normpath(self.input_dir))
-        self.filename = os.path.join(self.output_dir, dir+"_tracks.txt")
+        #dir = os.path.basename(os.path.normpath(self.input_dir))
+        self.filename = os.path.join(self.output_dir, "tracks.txt")
         self.particleTracks.to_csv(self.filename)
 
         self.imgTimes = np.asarray(self.imgTimes)
-        filename = os.path.join(self.output_dir, dir+"_times.txt")
+        filename = os.path.join(self.output_dir, "times.txt")
         np.savetxt(filename, self.imgTimes)
 
         del self.particleList
 
-        if self.plotAnimation:
-            ani = TrackingAnimation( self.listOfFiles, self.particleTracks, self.nTracks)
-            filename = os.path.join(self.output_dir, dir+"_tracks.avi")
-            ani.save(filename)
 
     def getParticleTracks(self):
         return self.particleTracks
@@ -307,24 +300,3 @@ class tracker:
 
     def getListOfImgs(self):
         return self.listOfFiles
-
-
-
-if __name__ == '__main__':
-    filepath = sys.argv[1]
-    pxConversion = float(sys.argv[2])
-    maxDist = float(sys.argv[3])
-    linkTime = float(sys.argv[4])
-    minLength = float(sys.argv[5])
-    plotContours = sys.argv[6]
-    plotImages = sys.argv[7]
-    if plotContours.lower() in ["true"]:
-        plotContours = True
-    else:
-        plotContours = False
-    if plotImages.lower() in ["true"]:
-        plotImages = True
-    else:
-        plotImages = False
-    app = track_trichos(filepath, pxConversion, maxDist, findTrichomesTracking,
-                        linkTime, minLength, plotContours, plotImages)
