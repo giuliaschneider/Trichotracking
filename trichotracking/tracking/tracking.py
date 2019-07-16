@@ -105,7 +105,7 @@ class tracker:
 
             # segmentation
             self.img, h, w = loadImage(file)
-            if self.img == -1:
+            if (isinstance(self.img, int)) and (self.img == -1):
                 continue
 
             if self.threshold is None:
