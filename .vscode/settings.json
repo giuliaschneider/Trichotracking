@@ -1,0 +1,5 @@
+{
+    "search.showLineNumbers": true,
+    "python.pythonPath": "/usr/bin/python3",
+    "python.linting.enabled": true
+}
