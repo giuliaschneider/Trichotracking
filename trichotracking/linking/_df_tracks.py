@@ -2,7 +2,7 @@ import os.path
 import numpy as np
 import pandas as pd
 
-from iofiles import find_img
+from iofiles import find_img, export_movie
 from segmentation import segment_filaments
 from plot import TrackingAnimation
 from IPython.core.debugger import set_trace
@@ -95,11 +95,6 @@ class track_keeper:
         return self.df[ (self.df.frame == t)
                        &(self.df.trackNr.isin(tracks)) ]
 
-    def getEndTracksInInterval(self, tracks):
-        return self.df_end[self.df_end.trackNr.isin(tracks)]
-
-    def getStartTracksinInterval(self, tracks):
-        return self.df_start[self.df_start.trackNr.isin(tracks)]
 
     def updateDfTrackStart(self, trackNr, newStartTime):
         self.df_tr.loc[self.df_tr.trackNr==trackNr, 'startTime'] = \
@@ -146,7 +141,6 @@ class track_keeper:
 
 
     def filterAllTracks(self, dfagg):
-        aggTracks = dfagg.trackNr.values
         fsingleTracks, filAlignedTracks, filCrossTracks = \
                                     segment_filaments(self.df, dfagg)
         severalFilTracks = dfagg[dfagg.n>2].trackNr.values
@@ -168,16 +162,16 @@ class track_keeper:
         return self.df_tr
 
     def saveDfTracks(self, ):
-        dir = os.path.basename(os.path.normpath(self.dataDir))
+        #dir = os.path.basename(os.path.normpath(self.dataDir))
         # Save df_tr to text
-        filename = os.path.join(self.resultDir, dir+"_df_tracks.txt")
+        filename = os.path.join(self.resultDir, "df_tracks.txt")
         self.df_tr.to_csv(filename)
 
 
     def saveTrackToText(self):
         # Save df to text
-        dir = os.path.basename(os.path.normpath(self.dataDir))
-        filename = os.path.join(self.resultDir, dir+"_tracks_linked.txt")
+        #dir = os.path.basename(os.path.normpath(self.dataDir))
+        filename = os.path.join(self.resultDir, "tracks_linked.txt")
         self.df.to_csv(filename)
 
         self.saveDfTracks()
@@ -185,6 +179,5 @@ class track_keeper:
         # Save tracking animation
         self.nTracks = int(np.max(self.df.trackNr.values)) + 1
         self.listOfFiles = find_img(self.dataDir)
-        ani = TrackingAnimation( self.listOfFiles, self.df, self.nTracks)
-        filename = os.path.join(self.resultDir, dir+"_tracks_linked.avi")
-        ani.save(filename)
+        export_movie( self.dataDir, dfparticles=self.df, nTracks=self.nTracks)
+
