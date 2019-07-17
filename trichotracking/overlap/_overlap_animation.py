@@ -6,7 +6,7 @@ from matplotlib import cm
 from matplotlib.colors import ListedColormap
 
 from iofiles import loadImage
-from overlap_analysis import getDarkPhases
+from postprocess import getDarkPhases
 
 
 
@@ -78,11 +78,11 @@ class OverlapAnimation(animation.TimedAnimation):
                 transform=trans, facecolor='black', alpha=0.3)
 
 
-        img, height, width = loadImage(self.list_img[0])
+        img = loadImage(self.list_img[0])[0]
         self.img1 = ax3.imshow(img, cmap='gray', animated=True)
         ax3.set_axis_off()
 
-        bw, height, width = loadImage(self.list_bw[0])
+        bw = loadImage(self.list_bw[0])[0]
         mycmap = get_mycmap()
         self.img2 = ax3.imshow(bw, alpha=0.8, cmap=mycmap, animated=True)
         ax4.set_axis_off()
@@ -95,10 +95,10 @@ class OverlapAnimation(animation.TimedAnimation):
 
         self.ax1.set_title("Frame = {}".format(i))
 
-        img, height, width = loadImage(self.list_img[i])
+        img = loadImage(self.list_img[i])[0]
         self.img1.set_array(img)
 
-        bw, height, width = loadImage(self.list_bw[i])
+        bw = loadImage(self.list_bw[i])[0]
         self.img2.set_array(bw)
 
         self.line1.set_data(self.times[:i], self.length1[:i])
