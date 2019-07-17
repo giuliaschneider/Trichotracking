@@ -1,7 +1,6 @@
 import os.path
 import numpy as np
 import pandas as pd
-from dfmanip.mdfagg import countFrames
 
 from IPython.core.debugger import set_trace
 
@@ -32,6 +31,15 @@ def _getTracks(row, col, aggTracks, dfagg):
         tracks = _iterate_tracks(tracks0, aggTracks, dfagg)
     return tracks
 
+
+def countFrames(dfagg):
+    dfagg['n0'] = dfagg.tracks0.str.len()
+    dfagg['ns0'] = dfagg.stracks0.str.len()
+    dfagg.sort_values(by='trackNr', inplace=True)
+    dfagg['n1'] = dfagg.tracks1.str.len()
+    dfagg['ns1'] = dfagg.stracks1.str.len()
+    dfagg['n'] = dfagg[['ns0', 'ns1']].max(axis=1)
+    return dfagg
 
 class agg_keeper:
 
@@ -154,7 +162,7 @@ class agg_keeper:
 
         # Save df to text
         #dir = os.path.basename(os.path.normpath(dataDir))
-        filename = os.path.join(resultDir, "tracks_agg.txt")
+        filename = os.path.join(resultDir, "tracks_agg.csv")
         dfagg.to_csv(filename)
 
         return dfagg
