@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from dfmanip import combineNanCols, groupdf, listToColumns, filter_dfg
+from dfmanip import combineNanCols, groupdf, listToColumns
 from IPython.core.debugger import set_trace
 
 

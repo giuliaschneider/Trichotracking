@@ -5,10 +5,12 @@ from os.path import isfile, join
 import argparse
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as pltgetBackground
 
 
+from dfmanip import groupdf
 from iofiles import find_img
+from iofiles._import_dfs import import_dfagg
 from linking import linker, track_keeper
 from overlap import (calcOverlap,
                      create_dfoverlap,
@@ -17,17 +19,15 @@ from overlap import (calcOverlap,
                      getDist,
                      getIntLightBlurred,
                      getIntDark)
-from overlap_analysis import postprocessTracks, import_alldflinked
-from overlap_analysis.plot import plotTracks
+
 from plot import plot_vts
+from postprocess.trackfile import import_dflinked
 from segmentation import (calc_chamber_df_ulisetup,
                           dilate_border,
                           getBackground,
                           getChamber)
 
 from tracking import (findTrichomesArea,
-                      segementTrichosBlurred,
-                      segementTrichosDarkField,
                       tracker)
 
 sys.path.append("/home/giu/Documents/10Masterarbeit/code/Tricho/scripts")
@@ -42,9 +42,9 @@ class ProcessExperiment():
     def __init__(self, argv):
         self.parse_args(argv)
         self.getFiles()
-        df, listImgs, listTimes = self.track()
-        df, df_tracks, dfagg, listTimes, filTracks = self.link(df, listImgs, listTimes)
-        self.overlap(df, df_tracks, dfagg, listTimes, filTracks, listImgs)
+        df, df_tracks, dfagg, listTimes, filTracks = self.track_and_link()
+        self.overlap(df, df_tracks, dfagg, listTimes, filTracks)
+        self.pprocess()
 
 
 
@@ -52,9 +52,11 @@ class ProcessExperiment():
         parser = argparse.ArgumentParser()
         parser.add_argument('--src', help='source folder of images')
         parser.add_argument('--dest',  help='destination folder of images')
-        parser.add_argument('--px',  help='pixel resolution [µm/px]', type=int, default=1)
+        parser.add_argument('--px',  help='pixel resolution [µm/px]', type=float, default=1)
         parser.add_argument('--R',  help='maximal link radius between subsequent frames', type=int, default=15)
         parser.add_argument('--plot',  help='Flag indicating if picutures are plotted', type=bool, default=False)
+        parser.add_argument('--blur',  help='Flag indicating if picutures should be blurred', type=bool, default=True)
+        parser.add_argument('--dark',  help='Flag indicating if images are darkfield', type=bool, default=False)
 
         args = parser.parse_args(argv[1:])
         if args.dest is None:
@@ -67,66 +69,57 @@ class ProcessExperiment():
         self.px = args.px
         self.linkDist = args.R
         self.plot = args.plot
+        self.blur = args.blur
+        self.dark = args.dark
 
 
     def getFiles(self):
-        _, basename = os.path.split(os.path.normpath(self.srcDir))
         self.background = getBackground(self.srcDir)
         self.chamber = getChamber(self.srcDir, self.background, calc_chamber_df_ulisetup)
-        self.dchamber = dilate_border(self.chamber, ksize=200)
-        self.trackfile = join(self.srcDir, 'tracks.txt')
-        self.timesfile = join(self.srcDir, 'times.txt')
-        self.linkedfile = join(self.srcDir, 'tracks_linked.txt')
-        self.aggFile = join(self.srcDir, 'tracks_agg.txt')
-        self.dftracksfile = join(self.srcDir, 'df_tracks.txt')
-        self.dfoverlapfile = join(self.srcDir, 'df_oisfile(verlap.txt')
+        self.dchamber = dilate_border(self.chamber, ksize=20)
+        self.trackfile = join(self.srcDir, 'tracks.csv')
+        self.timesfile = join(self.srcDir, 'times.csv')
+        self.aggFile = join(self.srcDir, 'tracks_agg.csv')
+        self.dftracksfile = join(self.srcDir, 'df_tracks.csv')
+        self.dfoverlapfile = join(self.srcDir, 'df_overlap.csv')
 
 
-    def track(self):
-        if (not isfile(self.trackfile)) or (not isfile(self.timesfile)):
+    def track_and_link(self):
+        if ((not isfile(self.trackfile)) or (not isfile(self.aggFile))):
+
             track = tracker(self.srcDir,
                             self.dest,
                             self.px,
                             self.linkDist,
                             findTrichomesArea,
-                            segementTrichosDarkField,
                             background=self.background,
                             plotImages=self.plot,
-                            plotContours=self.plot,
-                            plotAnimation=False,
-                            threshold=45,
-                            roi=self.dchamber)
+                            threshold=23,
+                            roi=self.dchamber,
+                            blur=self.blur,
+                            darkField=self.dark)
             df = track.getParticleTracks()
             listTimes = track.getTimes()
-            listImgs = track.getListOfImgs()
-        else:
-            df = pd.read_csv(self.trackfile)
-            listTimes = np.loadtxt(self.timesfile)
-            listImgs = find_img(self.srcDir)
-        return df, listImgs, listTimes
 
-
-
-    def link(self, df, listImgs, listTimes):
-        if ((not isfile(self.linkedfile)) or (not isfile(self.aggFile))):
             link = linker(df,
                           listTimes,
                           self.srcDir,
-                          self.srcDir)
+                          self.dest)
             df = link.getDf()
             dfagg = link.getDfagg()
             df_tracks = link.getDfTracks()
             filTracks = link.getFilTracks()
         elif (not isfile(self.dftracksfile)):
-            df = pd.read_csv(self.linkedfile)
+            df = pd.read_csv(self.trackfile)
             keepTracks = track_keeper(df, listTimes, self.srcDir, self.srcDir)
             keepTracks.update_DfTracks(0)
             dfagg = import_dfagg(self.aggFile)
             filTracks = keepTracks.filterAllTracks(dfagg)
             keepTracks.saveDfTracks()
             df_tracks = keepTracks.getDfTracks()
+            keepTracks.saveTrackToText()
         else:
-            df = pd.read_csv(self.linkedfile)
+            df = pd.read_csv(self.trackfile)
             df_tracks = pd.read_csv(self.dftracksfile)
             dfagg = import_dfagg(self.aggFile)
             listTimes = np.loadtxt(self.timesfile)
@@ -135,14 +128,14 @@ class ProcessExperiment():
         if not 'ews' in df.keys():
             df['ews'] = df.ew2 / df.ew1
         # Groupc
-        dfg = groupdf(df)
+        self.dfg = groupdf(df)
 
         return df, df_tracks, dfagg, listTimes, filTracks
 
 
-    def overlap(self, df, df_tracks, dfagg, listTimes, filTracks, listImgs):
+    def overlap(self, df, df_tracks, dfagg, listTimes, filTracks):
         if (not isfile(self.dfoverlapfile)):
-            dfoverlap = create_dfoverlap(filTracks, dfagg, dfg, self.dfoverlapfile)
+            dfoverlap = create_dfoverlap(filTracks, dfagg, self.dfg, self.dfoverlapfile)
         else:
             dfoverlap = pd.read_csv(self.dfoverlapfile)
         # Calculalte overlap
@@ -150,6 +143,7 @@ class ProcessExperiment():
         filLengths = dfoverlap[['length1', 'length2']].values
         seg_functions = get_segFunctions(4, 3, (0.7, 3, 5), (0.85, 3, 5),
                         (0.7, 3, 0.8, 2.8, 6), (0.55, 2.6, 0.65, 2, 6))
+        listImgs = find_img(self.srcDir)
         overlap = calcOverlap(listImgs,
                               listTimes,
                               df,
@@ -162,17 +156,23 @@ class ProcessExperiment():
                               ofs=None,
                               darkphases=None,
                               plotAnimation=True,
-                              plotImages=True,
+                              plotImages=False,
                               filLengths=filLengths)
 
         notFilTracks = overlap.getUnsuccessfulTracks()
         df_tracks.loc[df_tracks.trackNr.isin(notFilTracks), 'type']=np.nan
         filTracks = df_tracks[df_tracks.type==2].trackNr.values
-        df_tracks.to_csv(dftracksfile)
+        df_tracks.to_csv(self.dftracksfile)
 
 
 
+    def pprocess(self):
+        df_tracks = pd.read_csv(self.dftracksfile)
+        single_tracks = df_tracks[df_tracks.type==1].trackNr.values
+        self.dflinked = import_dflinked(self.trackfile, self.timesfile, self.px)
 
+        
+    
 
 
 
@@ -180,4 +180,6 @@ class ProcessExperiment():
 
 if __name__ == '__main__':
     argv = sys.argv
-    ProcessExperiment(argv)
+    exp = ProcessExperiment(argv)
+
+    dflinked = exp.dflinked
