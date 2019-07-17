@@ -282,11 +282,9 @@ class tracker:
 
     def saveTrackToText(self):
         #dir = os.path.basename(os.path.normpath(self.input_dir))
-        self.filename = os.path.join(self.output_dir, "tracks.txt")
-        self.particleTracks.to_csv(self.filename)
 
         self.imgTimes = np.asarray(self.imgTimes)
-        filename = os.path.join(self.output_dir, "times.txt")
+        filename = os.path.join(self.output_dir, "times.csv")
         np.savetxt(filename, self.imgTimes)
 
         del self.particleList

@@ -164,14 +164,14 @@ class track_keeper:
     def saveDfTracks(self, ):
         #dir = os.path.basename(os.path.normpath(self.dataDir))
         # Save df_tr to text
-        filename = os.path.join(self.resultDir, "df_tracks.txt")
+        filename = os.path.join(self.resultDir, "df_tracks.csv")
         self.df_tr.to_csv(filename)
 
 
     def saveTrackToText(self):
         # Save df to text
         #dir = os.path.basename(os.path.normpath(self.dataDir))
-        filename = os.path.join(self.resultDir, "tracks_linked.txt")
+        filename = os.path.join(self.resultDir, "tracks.csv")
         self.df.to_csv(filename)
 
         self.saveDfTracks()
