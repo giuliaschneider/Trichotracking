@@ -1,10 +1,11 @@
 import numpy as np
 
-from dfmanip import calcChangeInCol, calcMovingAverages, calcPeaks
+from dfmanip import (calcChangeInTime, 
+                     calcMovingAverages, 
+                     calcPeaks,
+                     calcSingleFilamentVelocity)
 from ._filter_tracks import cleanTracks
 from ._import_all import import_all_dfoverlap
-from ._velocity import calcSingleFilamentVelocity
-from ._time_to_peak import time_to_peak
 
 def postprocessTracks(dfMeta, expLabels=None):
     """ Importes dataframes in listOfFiles and calculates some variables.
@@ -61,7 +62,7 @@ def postprocessTracks(dfMeta, expLabels=None):
     """
     # Read dataframe
     if expLabels is None:
-        expLables = dfMeta.exp.values
+        expLabels = dfMeta.exp.values
     df = import_all_dfoverlap(dfMeta, expLabels)
     #df = df[(~df.length1.isnull()) & (~df.length2.isnull())]
 
@@ -102,7 +103,7 @@ def postprocessTracks(dfMeta, expLabels=None):
     df = calcSingleFilamentVelocity(df)
     columns =      ["pos_abs_ma"]
     diff_columns = ["v_pos"]
-    df = calcChangeInCol(df, columns, diff_columns)
+    df = calcChangeInTime(df, 'time', columns, diff_columns)
     columns = ["v_pos", "v1", "v2"]
     ma_columns =  ["v_pos_ma", "v1_ma", "v2_ma"]
     df = calcMovingAverages(df, 5, columns, ma_columns)
@@ -118,13 +119,12 @@ def postprocessTracks(dfMeta, expLabels=None):
     # Calculalte acceleration
     columns =      ["v1_ma", "v2_ma"]
     diff_columns = ["a1", "a2"]
-    df = calcChangeInCol(df, columns, diff_columns)
+    df = calcChangeInTime(df, 'time', columns, diff_columns)
 
     # Calculte reversal times
     dfg = df.groupby(by=['exp', 'label', 'aggregating'])
     df['vmean'] = dfg['v_pos_abs'].transform('mean')
-    df = time_to_peak(df)
-    df['tov_peaks'] = df.lov_ma_peaks / df.vmean
+
 
     df['lol_normed1'] = df.xlov_abs_ma_abs_peaks / (df.l1_ma  + df.l2_ma - df.lov_ma)
     df['lol_normed2'] = df.xlov_abs_ma_abs_peaks / (df.l1_ma  + df.l2_ma)

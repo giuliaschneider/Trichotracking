@@ -10,8 +10,8 @@ from dfmeta import  (get_agginducer,
                      get_darkphases,
                      get_files,
                      get_px)
-from dfmanip import (calcChangeInCol,
-                     calcLongVelocity,
+from dfmanip import (calcChangeInTime,
+                     calcVelocity,
                      calcMovingAverages,
                      calcLabel,
                      calcPeaks,
@@ -85,7 +85,7 @@ def import_alldflinked(dfMeta, expLabels=None):
 
 
     # Calculate velocity
-    df = calcLongVelocity(df, 'cx_ma', 'cy_ma', 'time')
+    df = calcVelocity(df, 'cx_ma', 'cy_ma', 'time')
     df['v_abs'] = df.v.abs()
     columns = ["v"]
     ma_columns =  ["v_ma"]

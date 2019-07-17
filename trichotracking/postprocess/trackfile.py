@@ -7,7 +7,7 @@ from dfmanip import (calcMovingAverages,
                      convertPxToMeter,)
 
 
-def trackfile(trackFile, timesFile, pxConversion):
+def import_dflinked(trackFile, timesFile, pxConversion):
     """
     Imports raw track data and calculates velocity and peaks.
     
@@ -29,7 +29,7 @@ def trackfile(trackFile, timesFile, pxConversion):
     """
 
 
-    cols = ["trackNr", "length", "cx","cy"]
+    cols = ["trackNr", "frame", "length", "cx","cy"]
     df = pd.read_csv(trackFile, usecols=cols)
 
 
