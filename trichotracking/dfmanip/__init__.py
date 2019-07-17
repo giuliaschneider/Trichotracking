@@ -1,13 +1,21 @@
-from ._calc_velocity import (calcLongVelocity,
-                             calcPeaksSingle,
-                             calcTrackDistance)
-from ._calculate import (calcChangeInCol,
-                         calcMovingAverage,
-                         calcMovingAverages,
-                         calcPeaks,
-                         calcReversalPeriod,
-                         convertPxToMeter)
-from ._columns import combineNanCols, listToColumns
-from ._dfg import filter_dfg
-from ._group import groupdf, reset_col_levels
-from ._label import calcLabel
+"""Utilities to manipulate dataframes of tracking data."""
+
+
+from ._columns import *
+from ._conversion import *
+from ._group import *
+from ._label import *
+from ._ma import *
+from ._reversals import *
+from ._velocity import *
+
+
+
+__all__ = []
+__all__.extend(_columns.__all__)
+__all__.extend(_conversion.__all__)
+__all__.extend(_group.__all__)
+__all__.extend(_label.__all__)
+__all__.extend(_ma.__all__)
+__all__.extend(_reversals.__all__)
+__all__.extend(_velocity.__all__)

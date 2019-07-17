@@ -1,3 +1,7 @@
+
+
+__all__ = ['calcLabel']
+
 def calcLabel(trackNr, chamber, exp):
     labels = []
     if isinstance(trackNr, int):
