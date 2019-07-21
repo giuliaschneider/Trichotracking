@@ -120,8 +120,6 @@ class calcOverlap():
         bw = df.bw.max()
         bh = df.bh.max()
         mult = 1.75
-        cum_lengths = np.zeros(2)
-        ind = 0
         self.avg_overlap = None
         self.previous_of = self.ofs[i]
         self.previous_seg = dict({
@@ -149,7 +147,7 @@ class calcOverlap():
             self.frame = frame
 
             # Load and crop original image
-            img, height, width= loadImage(self.listOfFiles[frame])
+            img = loadImage(self.listOfFiles[frame])[0]
             crop_params = df_frame.bx, df_frame.by, bw, bh, mult
             self.cropped, nbx, nby = cropRectangleKeepSize(img, *crop_params)
             self.cropped_bg, *_ = cropRectangleKeepSize(self.background,
@@ -189,7 +187,7 @@ class calcOverlap():
 
         # Remove noise and fill contours
         bw = removeNoise(bw, 100)
-        im, c_bw, h = cv2.findContours(bw, *PARAMS_CONTOURS)
+        im, c_bw, _ = cv2.findContours(bw, *PARAMS_CONTOURS)
         bw_filled = cv2.drawContours(bw, c_bw, -1, (255), -1)
 
         segment = SegmentOverlap(
@@ -234,8 +232,8 @@ class calcOverlap():
         self.lengths_overlap.append(self.length_overlap)
 
         if self.filLengths is None:
-            cum_lengths += self.length_filaments
-            ind += 1
+            cum_lengths = self.length_filaments
+            ind = 1
             self.avg = cum_lengths/ind
         self.avg_overlap = meanOfList(self.lengths_overlap[-3:])
 
@@ -271,9 +269,9 @@ class calcOverlap():
         if self.plotAnimation:
             basename = "track_{}_frame_{:03d}_".format(track, frame)
             figname = os.path.join(self.saveDir_img, basename+"_cropped.tif")
-            ret = cv2.imwrite(figname, self.cropped)
+            _ = cv2.imwrite(figname, self.cropped)
             figname = os.path.join(self.saveDir_bw, basename + "_sep.tif")
-            ret = cv2.imwrite(figname, np.uint8(self.previous_segented*85))
+            _ = cv2.imwrite(figname, np.uint8(self.previous_segented*85))
 
     def createDataFrame(self, track):
         """ Create dataframe"""
@@ -326,7 +324,7 @@ class calcOverlap():
     def getBackground(self, background):
         """ Checks if background is not None"""
         if background is None:
-            img, height, width= loadImage(self.listOfFiles[0])
+            img = loadImage(self.listOfFiles[0])[0]
             bg = np.zeros(img.shape[:2]).astype(np.uint8)
         else:
             bg = background

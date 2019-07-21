@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from dfmeta import get_files
 from iofiles import find_img
 
 from IPython.core.debugger import set_trace
@@ -18,23 +17,6 @@ def create_dfoverlap(filTracks, dfagg, dfg, dfoverlapfile):
     return df
 
 
-def get_input_overlap(dfMeta, exp, chamber):
-    """ Get list of image, times and df files. """
-    # Import all files of experiment
-    trackFiles, aggFiles, dftrackFiles, timesFiles = get_files(dfMeta,exp)
-
-    # Get files of chamber
-    i = int(chamber) - 1
-    trackFile = trackFiles[i]
-    aggFile = aggFiles[i]
-    timesFile = timesFiles[i]
-    dataDir = dataDirs[i]
-    resultsDir = resultDirs[i]
-
-    listOfImgs = find_img(dataDir)
-    listTimes = times = np.loadtxt(timesFile)
-    return (listOfImgs, listTimes, trackFile, aggFile, timesFile, dataDir,
-            resultsDir)
 
 
 def get_filLengths(filTracks, dfagg, dfg):
