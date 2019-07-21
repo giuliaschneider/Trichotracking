@@ -3,13 +3,6 @@ import pandas as pd
 from os.path import join
 from datetime import datetime
 
-from dfmeta import  (get_agginducer,
-                     get_aggchambers,
-                     get_chambers,
-                     get_dirs,
-                     get_darkphases,
-                     get_files,
-                     get_px)
 from dfmanip import (calcChangeInTime,
                      calcVelocity,
                      calcMovingAverages,
