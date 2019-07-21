@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+
+
 def fit_log(df, xcol, ycol):
     d = df[ (~df[xcol].isnull()) & (~df[ycol].isnull()) ]
     x = d[xcol].values

@@ -12,6 +12,25 @@ from ._constants import *
 from IPython.core.debugger import set_trace
 
 
+def hist_oneQuantity(df, col, filename, xlabel, cond1=None, text=None, xscale=None, 
+                       yscale=None,
+                       xlim=None, cdf=False, kde=False, plotMean=False,
+                       bins=None, report=False, fit=False, xfitstr=None,
+                       yfitstr=None, legend_out=True, legendMean=False,
+                       legendTimescale=False, meanL=None, sigTest=False,
+                       c1=None, left=False):
+
+    if cond1 is None:
+        cond1 = (~df[col].isnull())
+
+    hist_twoQuantities(df, col, filename, xlabel, cond1, col, None, None,
+                       text=text, xscale=xscale, yscale=yscale,
+                       xlim=xlim, cdf=cdf, kde=kde, plotMean=plotMean,
+                       bins=bins, report=report, fit=fit, xfitstr=xfitstr,
+                       yfitstr=yfitstr, legend_out=legend_out, legendMean=legendMean,
+                       legendTimescale=legendTimescale, meanL=meanL, sigTest=sigTest,
+                       c1=c1, c2=None, left=left)
+
 def hist_twoQuantities(df, col, filename, xlabel, cond1, label1, cond2,
                        label2, text=None, xscale=None, yscale=None,
                        xlim=None, cdf=False, kde=False, plotMean=False,
