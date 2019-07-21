@@ -21,6 +21,7 @@ from overlap import (calcOverlap,
                      getIntDark)
 
 from plot import plot_vts
+from plot._hist import hist_oneQuantity
 from postprocess.trackfile import import_dflinked
 from segmentation import (calc_chamber_df_ulisetup,
                           dilate_border,
@@ -42,10 +43,10 @@ class ProcessExperiment():
     def __init__(self, argv):
         self.parse_args(argv)
         self.getMetaInfo()
-        #self.getFiles()
-        #df, df_tracks, dfagg, listTimes, filTracks = self.track_and_link()
+        self.getFiles()
+        df, df_tracks, dfagg, listTimes, filTracks = self.track_and_link()
         #self.overlap(df, df_tracks, dfagg, listTimes, filTracks)
-        #self.pprocess()
+        self.pprocess()
 
 
 
@@ -82,8 +83,15 @@ class ProcessExperiment():
         self.dark = d['Darkfield']
         self.plot = False
         self.blur = True
-        self.px = d['pxConversion']
-        self.linkDist = d['LinkDist']
+        self.px = float(d['pxConversion'])
+        self.linkDist = int(d['LinkDist'])
+        if 'timestamp' in d.keys():
+            self.timestamp = d['timestamp']
+            self.dt = int(d['dt'])
+        else:
+            self.timestamp = True
+
+        self.linkDist = int(d['LinkDist'])
 
 
     def getFiles(self):
@@ -114,6 +122,9 @@ class ProcessExperiment():
                             darkField=self.dark)
             df = track.getParticleTracks()
             listTimes = track.getTimes()
+
+            if not self.timestamp:
+                listTimes = [i*self.dt for i in range(0, len(listTimes))]
 
             link = linker(df,
                           listTimes,
@@ -184,6 +195,18 @@ class ProcessExperiment():
         df_tracks = pd.read_csv(self.dftracksfile)
         single_tracks = df_tracks[df_tracks.type==1].trackNr.values
         self.dflinked = import_dflinked(self.trackfile, self.timesfile, self.px)
+        df_single = self.dflinked[self.dflinked.trackNr.isin(single_tracks)]
+        cond = (~df_single.v_abs.isnull())
+        filename = join(self.srcDir, 'hist_vsingle.png')
+        hist_oneQuantity(df_single, 'v_abs', filename, '|v|', cond1=cond, plotMean=True)
+        dfg = df_single.groupby('trackNr')
+
+        vmean = dfg.mean()
+        filename = join(self.srcDir, 'hist_vsingle_grouped.png')
+        cond = (~vmean.v_abs.isnull())
+
+        hist_oneQuantity(vmean, 'v_abs', filename, '|v|', cond1=cond, plotMean=True)
+
 
         
     
