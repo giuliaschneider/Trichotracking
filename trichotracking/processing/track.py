@@ -52,11 +52,9 @@ class ProcessExperiment():
         parser = argparse.ArgumentParser()
         parser.add_argument('--src', help='source folder of images')
         parser.add_argument('--dest',  help='destination folder of images')
-        parser.add_argument('--px',  help='pixel resolution [µm/px]', type=float, default=1)
-        parser.add_argument('--R',  help='maximal link radius between subsequent frames', type=int, default=15)
         parser.add_argument('--plot',  help='Flag indicating if picutures are plotted', type=bool, default=False)
-        parser.add_argument('--blur',  help='Flag indicating if picutures should be blurred', type=bool, default=True)
-        parser.add_argument('--dark',  help='Flag indicating if images are darkfield', type=bool, default=False)
+        parser.add_argument('--meta',  help='file containing meta information')
+
 
         args = parser.parse_args(argv[1:])
         if args.dest is None:
@@ -66,14 +64,25 @@ class ProcessExperiment():
 
         self.srcDir = args.src
         self.dest = args.dest
-        self.px = args.px
-        self.linkDist = args.R
         self.plot = args.plot
-        self.blur = args.blur
-        self.dark = args.dark
+        self.meta = args.meta
+
+    
+    def getMetaInfo(self):
+        d = {}
+        with open(self.meta) as f:
+            for line in f:
+                (key, val) = (line.strip().split(': '))
+                d[(key)] = val
+        self.dark = d['Darkfield']
+        self.plot = False
+        self.blur = True
+        self.px = d['pxConversion']
+        self.linkDist = d['LinkDist']
 
 
     def getFiles(self):
+
         self.background = getBackground(self.srcDir)
         self.chamber = getChamber(self.srcDir, self.background, calc_chamber_df_ulisetup)
         self.dchamber = dilate_border(self.chamber, ksize=20)
