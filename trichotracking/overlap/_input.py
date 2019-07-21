@@ -21,8 +21,7 @@ def create_dfoverlap(filTracks, dfagg, dfg, dfoverlapfile):
 def get_input_overlap(dfMeta, exp, chamber):
     """ Get list of image, times and df files. """
     # Import all files of experiment
-    trackFiles, aggFiles, timesFiles, dataDirs, resultDirs = \
-            get_files(dfMeta,exp)
+    trackFiles, aggFiles, dftrackFiles, timesFiles = get_files(dfMeta,exp)
 
     # Get files of chamber
     i = int(chamber) - 1
