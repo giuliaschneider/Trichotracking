@@ -1,6 +1,6 @@
 import sys
 import os
-from os.path import isfile, join
+from os.path import abspath, isfile, join
 
 import argparse
 import numpy as np
@@ -41,10 +41,11 @@ class ProcessExperiment():
 
     def __init__(self, argv):
         self.parse_args(argv)
-        self.getFiles()
-        df, df_tracks, dfagg, listTimes, filTracks = self.track_and_link()
-        self.overlap(df, df_tracks, dfagg, listTimes, filTracks)
-        self.pprocess()
+        self.getMetaInfo()
+        #self.getFiles()
+        #df, df_tracks, dfagg, listTimes, filTracks = self.track_and_link()
+        #self.overlap(df, df_tracks, dfagg, listTimes, filTracks)
+        #self.pprocess()
 
 
 
@@ -65,7 +66,11 @@ class ProcessExperiment():
         self.srcDir = args.src
         self.dest = args.dest
         self.plot = args.plot
-        self.meta = args.meta
+
+        if abspath(args.meta) != args.meta:
+            self.meta = abspath(join(args.src, args.meta))
+        else:
+            self.meta = args.meta
 
     
     def getMetaInfo(self):
@@ -191,4 +196,4 @@ if __name__ == '__main__':
     argv = sys.argv
     exp = ProcessExperiment(argv)
 
-    dflinked = exp.dflinked
+    #dflinked = exp.dflinked
