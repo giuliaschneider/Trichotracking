@@ -74,23 +74,23 @@ class ProcessExperiment():
 
     
     def getMetaInfo(self):
-        d = {}
+        metad = {}
         with open(self.meta) as f:
             for line in f:
                 (key, val) = (line.strip().split(': '))
-                d[(key)] = val
-        self.dark = d['Darkfield']
+                metad[(key)] = val
+        self.dark = metad['Darkfield']
         self.plot = False
         self.blur = True
-        self.px = float(d['pxConversion'])
-        self.linkDist = int(d['LinkDist'])
-        if 'timestamp' in d.keys():
-            self.timestamp = d['timestamp']
-            self.dt = int(d['dt'])
+        self.px = float(metad['pxConversion'])
+        self.linkDist = int(metad['LinkDist'])
+        if 'timestamp' in metad.keys():
+            self.timestamp = (metad['timestamp'] == 'True')
+            self.dt = int(metad['dt'])
         else:
             self.timestamp = True
 
-        self.linkDist = int(d['LinkDist'])
+        self.linkDist = int(metad['LinkDist'])
 
 
     def getFiles(self):
@@ -120,10 +120,10 @@ class ProcessExperiment():
                             blur=self.blur,
                             darkField=self.dark)
             df = track.getParticleTracks()
-            listTimes = track.getTimes()
+            listTimes = np.array(track.getTimes())
 
             if not self.timestamp:
-                listTimes = [i*self.dt for i in range(0, len(listTimes))]
+                listTimes = self.dt * np.arange(len(listTimes))
 
             link = linker(df,
                           listTimes,
