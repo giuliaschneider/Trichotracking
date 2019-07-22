@@ -2,14 +2,25 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import seaborn as sns
-
 from scipy.stats import mannwhitneyu, ks_2samp
 
-from ._save import saveplot
-from ._fit import fit_semilog
+from dfmanip import fit_semilog
+
 from ._constants import *
+from ._mean_line import setMeanLine
+from ._save import saveplot
 
 from IPython.core.debugger import set_trace
+
+
+__all__ = ['hist_oneQuantity', 
+           'hist_twoQuantities',
+           'hist_all',
+           'hist_aggregating',
+           'hist_breakup',
+           'hist_lol',
+           'hist_peak']
+
 
 
 def hist_oneQuantity(df, col, filename, xlabel, cond1=None, text=None, xscale=None, 
@@ -30,6 +41,7 @@ def hist_oneQuantity(df, col, filename, xlabel, cond1=None, text=None, xscale=No
                        yfitstr=yfitstr, legend_out=legend_out, legendMean=legendMean,
                        legendTimescale=legendTimescale, meanL=meanL, sigTest=sigTest,
                        c1=c1, c2=None, left=left)
+
 
 def hist_twoQuantities(df, col, filename, xlabel, cond1, label1, cond2,
                        label2, text=None, xscale=None, yscale=None,
@@ -197,15 +209,6 @@ def hist_twoQuantities(df, col, filename, xlabel, cond1, label1, cond2,
     plt.close('all')
 
 
-def setMeanLine(ax, mean, color, xlim, ypos):
-    ax.axvline(mean, color=color, linestyle='dashed', linewidth=1)
-    mean_figCoords = (mean - xlim[0]) / (xlim[1] - xlim[0])
-    #set_trace()
-    """ax.text(mean_figCoords, ypos, '{:.2f}'.format(mean),
-             transform=ax.transAxes,horizontalalignment='center',
-             size='x-small')"""
-
-
 def getHistData(df, col, labels, minTh, maxTh):
     if labels is None:
         labels = np.unique(df.label.values)
@@ -219,6 +222,7 @@ def getHistData(df, col, labels, minTh, maxTh):
     if maxTh is not None:
         d = d[d[col]<maxTh]
     return d
+
 
 def getLabels(l1, l2, n1, n2):
     if((n1<1000) or (n2<1000)):
@@ -254,7 +258,6 @@ def hist_all(df, col, filename, xlabel, labels=None, minTh=None,
                            legend_out=legend_out, legendMean=legendMean,
                            legendTimescale=legendTimescale, sigTest=sigTest,
                            meanL=meanL, c1=c1, c2=c2)
-
 
 
 def hist_aggregating(df, col, filename, xlabel, labels=None, minTh=None,
@@ -325,7 +328,6 @@ def hist_breakup(df, col, filename, xlabel, labelAgg, labels=None,
                            c1=c1, c2=c2)
 
 
-
 def hist_lol(df, col, filename, xlabel, labelAgg, labels=None, minTh=None,
              maxTh=None, text=None, xscale=None, yscale=None, cdf=False,
              xlim=None, kde=False, plotMean=False, bins=None, report=False,
@@ -347,6 +349,7 @@ def hist_lol(df, col, filename, xlabel, labelAgg, labels=None, minTh=None,
                            yfitstr=yfitstr, legend_out=legend_out,
                            sigTest=sigTest, legendMean=legendMean,
                            legendTimescale=legendTimescale)
+
 
 def hist_peak(df, col, filename, xlabel, labels=None, minTh=None,
              maxTh=None, text=None, xscale=None, yscale=None, cdf=False,
