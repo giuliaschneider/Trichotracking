@@ -20,7 +20,7 @@ def calc_chamber_df_ulisetup(background):
     """ Get bw image, pixels inside set to 255, outside 0,
         adjusted for uli's setup """
     # Find well wall (high intensity circle)
-    ret, bw = cv2.threshold(background,200,255,cv2.THRESH_BINARY)
+    ret, bw = cv2.threshold(background,150,255,cv2.THRESH_BINARY)
     h, w = bw.shape[:2]
     mask = np.zeros((h+2, w+2), np.uint8)
     cv2.floodFill(bw, mask, (int(w/2),int(h/2)), 255)

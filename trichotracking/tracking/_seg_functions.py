@@ -14,8 +14,9 @@ def segment_particles(inimg, background, chamber=None, blur=True,
         img = cv2.GaussianBlur(img,(5, 5),0)
     if darkField:
         subtracted = cv2.subtract((img), (background))
-        bw = cv2.adaptiveThreshold(cv2.bitwise_not(subtracted),255, \
-              cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV,31,4)
+        #bw = cv2.adaptiveThreshold(cv2.bitwise_not(subtracted),255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV,13,6)
+        _, bw = cv2.threshold(subtracted, 29, 255, cv2.THRESH_BINARY)
+
     else:
         subtracted = cv2.subtract(cv2.bitwise_not(img),
                                   cv2.bitwise_not(background))
@@ -24,6 +25,9 @@ def segment_particles(inimg, background, chamber=None, blur=True,
     # Close gaps by morphological closing
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
     bw = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel)
+
+    if chamber is not None:
+        bw[chamber == 0] = [0]
 
     # plot images
     if plotImages:
