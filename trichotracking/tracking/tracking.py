@@ -65,10 +65,8 @@ class tracker:
         self.height, self.width = self.background.shape[:2]
 
         self.track(linkTime)
-        self.filterTracks(minLength)
-        print("Number of tracks after filtering = {}".format(
-            len(pd.unique(self.particleTracks.trackNr))))
-        self.saveTrackToText()
+
+        print("Done Tracking")
 
 
 
@@ -267,27 +265,6 @@ class tracker:
                 particleList.append(partDict)
 
         self.particleList += particleList
-
-
-
-    def filterTracks(self, minLength):
-
-        counts = self.particleTracks["trackNr"].value_counts(
-                    sort=False).to_frame()
-        counts = counts[counts.trackNr >= minLength]
-        trackIndex = counts.index.tolist()
-        self.particleTracks = \
-            self.particleTracks[self.particleTracks.trackNr.isin(trackIndex)]
-
-
-    def saveTrackToText(self):
-        #dir = os.path.basename(os.path.normpath(self.input_dir))
-
-        self.imgTimes = np.asarray(self.imgTimes)
-        filename = os.path.join(self.output_dir, "times.csv")
-        np.savetxt(filename, self.imgTimes)
-
-        del self.particleList
 
 
     def getParticleTracks(self):
