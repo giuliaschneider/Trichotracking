@@ -196,9 +196,8 @@ class linker:
         if (tracks_t0.size >= 2) and  (tracks_t1.size >= 1):
 
             dft0 = self.dfobj.getTracksAtTime(tracks_t0, t0)
-            dft1 = self.dfobj.getTracksAtTime(tracks_t1, t1)
             tracks1 = dft0.trackNr.values
-            tracks2 = dft1.trackNr.values
+            tracks2 = dft0.trackNr.values
             # Calculate the distance of bounding boxess
             bdist = self.calcDistanceBB(dft0, dft0)
             # Set entries of lower triangular matrix larger than maxDist
