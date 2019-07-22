@@ -4,7 +4,6 @@ import pandas as pd
 
 from iofiles import find_img, export_movie
 from segmentation import segment_filaments
-from plot import TrackingAnimation
 from IPython.core.debugger import set_trace
 
 
@@ -149,12 +148,15 @@ class track_keeper:
         self.df = self.df[((self.df.trackNr.isin(aggTracks))
                          |(self.df.trackNr.isin(fsingleTracks)))]"""
 
-        self.df_tr['startTime'] = self.listTimes[self.df_tr.startTime]
-        self.df_tr['endTime'] = self.listTimes[self.df_tr.endTime]
-        self.df_tr.loc[self.df_tr.trackNr.isin(fsingleTracks), 'type']=1
-        self.df_tr.loc[self.df_tr.trackNr.isin(filAlignedTracks), 'type']=2
-        self.df_tr.loc[self.df_tr.trackNr.isin(filCrossTracks), 'type']=3
-        self.df_tr.loc[self.df_tr.trackNr.isin(severalFilTracks), 'type']=4
+        try:
+            self.df_tr['startTime'] = self.listTimes[self.df_tr.startTime]
+            self.df_tr['endTime'] = self.listTimes[self.df_tr.endTime]
+            self.df_tr.loc[self.df_tr.trackNr.isin(fsingleTracks), 'type']=1
+            self.df_tr.loc[self.df_tr.trackNr.isin(filAlignedTracks), 'type']=2
+            self.df_tr.loc[self.df_tr.trackNr.isin(filCrossTracks), 'type']=3
+            self.df_tr.loc[self.df_tr.trackNr.isin(severalFilTracks), 'type']=4
+        except:
+            set_trace()
         return filAlignedTracks
 
 
@@ -173,6 +175,10 @@ class track_keeper:
         #dir = os.path.basename(os.path.normpath(self.dataDir))
         filename = os.path.join(self.resultDir, "tracks.csv")
         self.df.to_csv(filename)
+        
+        self.listTimes = np.asarray(self.listTimes)
+        filename = os.path.join(self.resultDir, "times.csv")
+        np.savetxt(filename, self.listTimes)
 
         self.saveDfTracks()
 
