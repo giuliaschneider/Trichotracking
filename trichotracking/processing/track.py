@@ -20,7 +20,6 @@ from overlap import (calcOverlap,
                      getIntLightBlurred,
                      getIntDark)
 
-from plot import plot_vts
 from plot._hist import hist_oneQuantity
 from postprocess.trackfile import import_dflinked
 from segmentation import (calc_chamber_df_ulisetup,

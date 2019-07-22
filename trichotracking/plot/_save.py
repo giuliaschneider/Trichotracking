@@ -3,21 +3,11 @@
 import os.path
 import matplotlib as mpl
 
-reportDir = "/home/giu/Documents/10Masterarbeit/report/Master-Thesis/draft/Figures"
-presentationDir = "/home/giu/Documents/10Masterarbeit/presentation/Figures"
+
+__all__ = ['saveplot']
 
 
-def updateFig(fig, font):
-    ax = fig.gca()
-    items = ([ax.title, ax.xaxis.label, ax.yaxis.label] +
-             ax.get_xticklabels() + ax.get_yticklabels() +
-             ax.legend().get_texts())
-    for item in items:
-        item.set_fontname(font)
-
-
-
-def saveplot(fig, filename):
+def saveplot(fig, filename, saveDir):
     mpl.rcParams.update({'font.size': 10})
     #"""
     mpl.use("pgf", warn=False, force=True)
@@ -50,9 +40,5 @@ def saveplot(fig, filename):
 
 
     #updateFig(fig, 'serif')
-    file_str =  os.path.join(reportDir, basename)
+    file_str =  os.path.join(saveDir, basename)
     fig.savefig(file_str + ".pdf",bbox_inches='tight', dpi=300)
-
-    #updateFig(fig, 'sans-serif')
-    #file_str =  os.path.join(presentationDir, basename)
-    #fig.savefig(file_str + ".pdf",bbox_inches='tight')
