@@ -80,7 +80,6 @@ class ProcessExperiment():
                 (key, val) = (line.strip().split(': '))
                 metad[(key)] = val
         self.dark = metad['Darkfield']
-        self.plot = False
         self.blur = True
         self.px = float(metad['pxConversion'])
         self.linkDist = int(metad['LinkDist'])
@@ -90,6 +89,16 @@ class ProcessExperiment():
         else:
             self.timestamp = True
 
+        if 'blur' in metad.keys():
+            self.blur = True
+        else:
+            self.blur = False
+
+        if 'ChamberBorder' in metad.keys():
+            self.border = int(metad['ChamberBorder'])
+        else:
+            self.border = 50
+
         self.linkDist = int(metad['LinkDist'])
 
 
@@ -97,7 +106,7 @@ class ProcessExperiment():
 
         self.background = getBackground(self.srcDir)
         self.chamber = getChamber(self.srcDir, self.background, calc_chamber_df_ulisetup)
-        self.dchamber = dilate_border(self.chamber, ksize=20)
+        self.dchamber = dilate_border(self.chamber, ksize=self.border)
         self.trackfile = join(self.srcDir, 'tracks.csv')
         self.timesfile = join(self.srcDir, 'times.csv')
         self.aggFile = join(self.srcDir, 'tracks_agg.csv')
