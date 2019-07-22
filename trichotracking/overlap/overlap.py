@@ -11,7 +11,6 @@ from iofiles import (extractPixelListFromString,
                      find_img,
                      loadImage,
                      removeFilesinDir)
-from plot.image_functions import removeNoise, moveImage
 from utility import meanOfList
 
 from ._overlap_animation import OverlapAnimation
@@ -186,7 +185,6 @@ class calcOverlap():
         print("R = {}".format(connectingR))
 
         # Remove noise and fill contours
-        bw = removeNoise(bw, 100)
         im, c_bw, _ = cv2.findContours(bw, *PARAMS_CONTOURS)
         bw_filled = cv2.drawContours(bw, c_bw, -1, (255), -1)
 
@@ -208,7 +206,6 @@ class calcOverlap():
         if self.plotImages:
             fig = plt.figure(figsize=(8,8))
             (x,y) = (600, 0)
-            moveImage(fig, x, y)
             ax1 = fig.add_subplot(221)
             ax1.imshow(img)
             ax2 = fig.add_subplot(222)

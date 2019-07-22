@@ -18,7 +18,7 @@ from geometry import (areaAboveLine,
                       getLine,
                       isBelowLine,
                       isPointBelowLine)
-from plot.image_functions import removeNoise
+from segmentation import removeNoise
 
 from ._filament import Filament
 from ._match_filaments import MatchFilamentEnds

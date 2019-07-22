@@ -1,5 +1,5 @@
 import numpy as np
-from plot.image_functions import removeNoise
+from segmentation import removeNoise
 
 
 def get_segFunctions(distTh, minArea, distIntAreaThresh1=None,

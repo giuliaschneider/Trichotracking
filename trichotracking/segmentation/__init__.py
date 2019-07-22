@@ -2,7 +2,7 @@ from .background import *
 from .chamber import *
 from .chamber_func import *
 from .filament_segmentation import *
-
+from .noise import *
 
 
 __all__ =   ['getBackground',
@@ -10,4 +10,5 @@ __all__ =   ['getBackground',
              'calc_chamber',
              'calc_chamber_df_ulisetup',
              'dilate_border',
-             'segment_filaments']
+             'segment_filaments',
+             'removeNoise']
