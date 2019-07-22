@@ -5,7 +5,4 @@ from .tracking import *
 
 __all__ = ['findTrichomesArea',
            'findTrichomesEccentricty',
-           'segementTrichosBlurred',
-           'segementTrichosLight',
-           'segementTrichosDarkField',
            'tracker']
