@@ -40,6 +40,9 @@ def getChamber(inputDir, background, chamber_function):
 
 
 def dilate_border(chamber, ksize=40):
+
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
+    chamber = cv2.morphologyEx(chamber, cv2.MORPH_CLOSE, kernel)
     chamber[:1,:] = [0]; chamber[-1:,:] = [0]
     chamber[:,:1] = [0]; chamber[:,-1:] = [0]
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (ksize, ksize))
