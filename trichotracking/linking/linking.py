@@ -43,7 +43,7 @@ class linker:
         if interrupt is not None:
             self.maxLinkDists[interrupt] = 3*maxLinkDist
             self.maxDls[interrupt] = 10*maxDl
-        self.maxMergeDistBox = 7
+        self.maxMergeDistBox = 15
 
         self.dfobj.update_DfTracks(0)
         self.link()

@@ -126,6 +126,9 @@ class tracker:
             cyCur = np.array(self.particles.cy)
 
             print("Track Frame = {}, {} Particles".format(frame, nCurrent))
+            print("Size particlelist = {}kB".format(sys.getsizeof(self.particleList)/1000))
+            print("Size particlelist = {}kB".format(sys.getsizeof(self.background)/1000))
+
 
             if frame == 0: # first image
                 # add all particles to particle list

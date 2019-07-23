@@ -44,7 +44,7 @@ class ProcessExperiment():
         self.getMetaInfo()
         self.getFiles()
         df, df_tracks, dfagg, listTimes, filTracks = self.track_and_link()
-        #self.overlap(df, df_tracks, dfagg, listTimes, filTracks)
+        self.overlap(df, df_tracks, dfagg, listTimes, filTracks)
         self.pprocess()
 
 
@@ -201,9 +201,9 @@ class ProcessExperiment():
 
     def pprocess(self):
         df_tracks = pd.read_csv(self.dftracksfile)
-        single_tracks = df_tracks[df_tracks.type==1].trackNr.values
+        self.single_tracks = df_tracks[df_tracks.type==1].trackNr.values
         self.dflinked = import_dflinked(self.trackfile, self.timesfile, self.px)
-        df_single = self.dflinked[self.dflinked.trackNr.isin(single_tracks)]
+        df_single = self.dflinked[self.dflinked.trackNr.isin(self.single_tracks)]
         cond = (~df_single.v_abs.isnull())
         filename = join(self.srcDir, 'hist_vsingle.png')
         hist_oneQuantity(df_single, 'v_abs', filename, '|v|', cond1=cond, plotMean=True)
