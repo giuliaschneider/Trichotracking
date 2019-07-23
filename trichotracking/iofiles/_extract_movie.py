@@ -2,6 +2,9 @@ import os
 import os.path
 import numpy as np
 import pandas as pd
+import multiprocessing as mp
+import subprocess
+from subprocess import DEVNULL, PIPE
 import cv2
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -10,9 +13,10 @@ from datetime import datetime
 from ._list_files import find_files, find_img
 from ._metadata import getTime_timestamp
 from ._image import loadImage
-from geometry import cropRectangleKeepSize
 
-from IPython.core.debugger import set_trace
+
+from geometry import cropRectangleKeepSize
+from utility import split_list
 
 __all__ = ['export_movie', 'export_movie_track']
 
@@ -34,8 +38,6 @@ def write_particles(img, dfparticles, frame):
                 font, fontScale, fontColor)
             
 
-
-
 def write_time(img, time, width, scale=1):
     # Write Time
     font                   = cv2.FONT_HERSHEY_DUPLEX
@@ -47,14 +49,12 @@ def write_time(img, time, width, scale=1):
         font, fontScale, fontColor)
 
 
-def export_movie(dir, fps=20, dfparticles=None, nTracks=None,
-                 filename=None):
-    """ Saves movie to parent directory of dir. """
-    # Get files, directories
-    listOfFiles = find_img(dir)
-
-    filename = os.path.join(dir,  'animation.avi')
-
+def export_movie_part(listOfFiles,
+                      filename, 
+                      fps=20, 
+                      dfparticles=None, 
+                      nTracks=None):
+    """ Helper function for export_movie. """
     # Get image size
     img = loadImage(listOfFiles[0])[0]
     size =  (img.shape[1] ,img.shape[0])
@@ -80,6 +80,43 @@ def export_movie(dir, fps=20, dfparticles=None, nTracks=None,
 
     out.release()
     cv2.destroyAllWindows()
+
+
+def export_movie(dir,
+                 filestep=1,
+                 fps=20, 
+                 dfparticles=None, 
+                 nTracks=None,
+                 filename=None):
+    """ Exports movie from images in dir, parallelized processing. """
+    images = find_img(dir)
+    if filestep > 1:
+        images = images[::filestep]
+    list_images_ = split_list(images, 4)
+
+
+    filename = os.path.join(dir,  'animation.avi')
+    list_names = [os.path.join(dir,  'animation_'+str(i)+'.avi') for i in range(4)]
+
+
+    with open(os.path.join(dir, 'input.txt'), 'w') as f:
+        for name in list_names:
+            f.write("file {}\n".format(os.path.basename(name)))
+
+
+    processes = [mp.Process(target=export_movie_part, 
+                    args=(list_images_[x], list_names[x])) for x in range(4)]
+
+    for p in processes:
+        p.start()
+    for p in processes:
+        p.join()
+
+    os.chdir(dir)
+    os.system("ffmpeg -f concat -i input.txt test.avi")
+    for name in list_names:
+        os.remove(name)
+    os.remove(os.path.join(dir, 'input.txt'))
 
 
 def export_movie_track(df, listOfFiles, listTimes, filename, fps, track,
