@@ -74,8 +74,6 @@ def export_movie_part(listOfFiles,
         write_time(img, time, width, scale=6)
         if dfparticles is not None:
             write_particles(img, dfparticles, frame)
-        if img is None:
-            set_trace()
         out.write(img)
 
     out.release()
