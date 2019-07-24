@@ -50,6 +50,7 @@ def write_time(img, time, width, scale=1):
 
 
 def export_movie_part(listOfFiles,
+                      listFrames,
                       filename, 
                       fps=20, 
                       dfparticles=None, 
@@ -65,9 +66,9 @@ def export_movie_part(listOfFiles,
 
     out = cv2.VideoWriter(filename, fourcc, fps, size, 0)
 
-    for frame in range(0, len(listOfFiles)):
+    for frame, file in zip(listFrames, listOfFiles):
         # Write the frame into the file 'output.avi'
-        img, _, width = loadImage(listOfFiles[frame])
+        img, _, width = loadImage(file)
         if isinstance(img, int) and (img == -1):
             continue
         time = getTime_timestamp(listOfFiles[frame])
@@ -88,9 +89,11 @@ def export_movie(dir,
                  filename='animation.avi'):
     """ Exports movie from images in dir, parallelized processing. """
     images = find_img(dir)
+    frames = list(range(len(images)))
     if filestep > 1:
         images = images[::filestep]
-    list_images_ = split_list(images, 4)
+    list_images = split_list(images, 4)
+    list_frames = split_list(frames, 4)
 
 
     filename = os.path.join(dir,  'animation.avi')
@@ -103,7 +106,8 @@ def export_movie(dir,
 
 
     processes = [mp.Process(target=export_movie_part, 
-                    args=(list_images_[x], 
+                    args=(list_images[x], 
+                          list_frames[x],
                           list_names[x],
                           fps,
                           dfparticles,
