@@ -19,18 +19,15 @@ from overlap import (calcOverlap,
                      getDist,
                      getIntLightBlurred,
                      getIntDark)
-
 from plot._hist import hist_oneQuantity
 from postprocess.trackfile import import_dflinked
 from segmentation import (calc_chamber_df_ulisetup,
                           dilate_border,
                           getBackground,
-                          getChamber)
+                          getChamber,
+                          filterParticlesArea,
+                          particles_sequence)
 
-from tracking import (findTrichomesArea,
-                      tracker)
-
-sys.path.append("/home/giu/Documents/10Masterarbeit/code/Tricho/scripts")
 
 from IPython.core.debugger import set_trace
 
@@ -117,19 +114,17 @@ class ProcessExperiment():
     def track_and_link(self):
         if ((not isfile(self.trackfile)) or (not isfile(self.aggFile))):
 
-            track = tracker(self.srcDir,
-                            self.dest,
-                            self.px,
-                            self.linkDist,
-                            findTrichomesArea,
-                            background=self.background,
-                            plotImages=self.plot,
-                            threshold=23,
-                            roi=self.dchamber,
-                            blur=self.blur,
-                            darkField=self.dark)
-            df = track.getParticleTracks()
-            listTimes = np.array(track.getTimes())
+            df, listTimes = particles_sequence( self.srcDir,
+                                                self.dest,
+                                                self.px,
+                                                self.linkDist,
+                                                filterParticlesArea,
+                                                background=self.background,
+                                                plotImages=self.plot,
+                                                threshold=23,
+                                                roi=self.dchamber,
+                                                blur=self.blur,
+                                                darkField=self.dark)
 
             if not self.timestamp:
                 listTimes = self.dt * np.arange(len(listTimes))
