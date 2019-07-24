@@ -11,7 +11,7 @@ __all__ =   ['getBackground',
              'calc_chamber',
              'calc_chamber_df_ulisetup',
              'dilate_border',
-             'filterParticlesArea'
+             'filterParticlesArea',
              'particles_sequence',
              'segment_filaments',
              'removeNoise']
