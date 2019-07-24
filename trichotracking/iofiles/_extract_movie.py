@@ -66,12 +66,12 @@ def export_movie_part(listOfFiles,
 
     out = cv2.VideoWriter(filename, fourcc, fps, size, 0)
 
-    for frame, file in zip(listFrames, listOfFiles):
+    for i, (frame, file) in enumerate(zip(listFrames, listOfFiles)):
         # Write the frame into the file 'output.avi'
         img, _, width = loadImage(file)
         if isinstance(img, int) and (img == -1):
             continue
-        time = getTime_timestamp(listOfFiles[frame])
+        time = getTime_timestamp(listOfFiles[i])
         write_time(img, time, width, scale=6)
         if dfparticles is not None:
             write_particles(img, dfparticles, frame)
@@ -118,6 +118,7 @@ def export_movie(dir,
     for p in processes:
         p.join()
 
+    set_trace()
     os.chdir(dir)
     os.system("ffmpeg -f concat -i input.txt {}".format(filename))
     for name in list_names:
