@@ -129,8 +129,7 @@ class ProcessExperiment():
                                                 threshold=23,
                                                 roi=self.dchamber,
                                                 blur=self.blur,
-                                                darkField=self.dark,
-                                                px=self.px)
+                                                darkField=self.dark)
 
             if not self.timestamp:
                 listTimes = self.dt * np.arange(len(listTimes))
