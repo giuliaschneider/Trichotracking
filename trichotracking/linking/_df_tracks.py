@@ -185,6 +185,6 @@ class track_keeper:
         # Save tracking animation
         self.nTracks = int(np.max(self.df.trackNr.values)) + 1
         self.listOfFiles = find_img(self.dataDir)
-        export_movie(self.dataDir, dfparticles=self.df, nTracks=self.nTracks,
-                     filename='tracked.avi')
+        export_movie(self.dataDir, dfparticles=self.df, nTracks=self.nTracks,              
+                     filename=os.path.join('results','tracked.avi'))
 
