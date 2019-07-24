@@ -82,11 +82,11 @@ def export_movie_part(listOfFiles,
 
 
 def export_movie(dir,
+                 filename='animation.avi',
                  filestep=1,
                  fps=20, 
                  dfparticles=None, 
-                 nTracks=None,
-                 filename='animation.avi'):
+                 nTracks=None):
     """ Exports movie from images in dir, parallelized processing. """
     images = find_img(dir)
     frames = list(range(len(images)))
@@ -95,15 +95,11 @@ def export_movie(dir,
     list_images = split_list(images, 4)
     list_frames = split_list(frames, 4)
 
-
-    filename = os.path.join(dir,  'animation.avi')
     list_names = [os.path.join(dir,  'animation_'+str(i)+'.avi') for i in range(4)]
-
 
     with open(os.path.join(dir, 'input.txt'), 'w') as f:
         for name in list_names:
             f.write("file {}\n".format(os.path.basename(name)))
-
 
     processes = [mp.Process(target=export_movie_part, 
                     args=(list_images[x], 
@@ -118,7 +114,6 @@ def export_movie(dir,
     for p in processes:
         p.join()
 
-    set_trace()
     os.chdir(dir)
     os.system("ffmpeg -f concat -i input.txt {}".format(filename))
     for name in list_names:
