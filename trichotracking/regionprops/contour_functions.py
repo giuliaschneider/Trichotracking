@@ -51,34 +51,6 @@ def calcConvexArea(convex_hull):
     convex_area = np.array(convex_area)
     return convex_area
 
-def calcCorners(filledImage, cornerImage, bx, by, bw, bh):
-    """ Finds the number of corners """
-    cornerList = []
-    cornerPoints = []
-    for i, c in enumerate(self.contours):
-        if len(c)<5:
-            cornerList.append(0)
-            cornerPoints.append([[0,0]])
-        else:
-            maskCorners, a,b = cropRectangle(self.cornerImage,
-                                    bx[i], by[i], bw[i], bh[i])
-            filledImage, a,b = cropRectangle(self.filledImage,
-                                    bx[i], by[i], bw[i], bh[i])
-            maskCorners[filledImage != i+1] = [0]
-            nCorners, labelledImage, stats, centroids = \
-                cv2.connectedComponentsWithStats(maskCorners,
-                                                 8, cv2.CV_32S)
-            cornerAreas = stats[:,cv2.CC_STAT_AREA]
-            maxArea = np.max(cornerAreas)
-            idx = (cornerAreas>=8) & (cornerAreas<maxArea)
-            areas = cornerAreas[idx]
-            pts = centroids[idx,:]
-            pts[:,NP_YCOORD] += by[i]
-            pts[:,NP_XCOORD] += bx[i]
-            nCorners = len(cornerAreas[cornerAreas>5])-1
-            cornerList.append(nCorners)
-            cornerPoints.append(pts)
-    return cornerList, cornerPoints
 
 def calcEigenvector(contour):
     """ Returns the object center, eigenvectors / -values in xy-coord."""
@@ -194,7 +166,7 @@ def calcSolidity(contours, area, convex_hull, convex_area):
             convex_hull = [cv2.convexHull(c) for c in contours]
         convex_area = calcConvexArea(convex_hull)
     if area is None:
-        area = calcArea(self.contours)
+        area = calcArea(contours)
     solidity = np.divide(area, convex_area,
                     out=np.zeros_like(area), where=convex_area!=0)
     return solidity, area, convex_hull, convex_area
