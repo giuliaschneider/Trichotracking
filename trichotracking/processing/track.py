@@ -56,13 +56,16 @@ class ProcessExperiment():
 
         args = parser.parse_args(argv[1:])
         if args.dest is None:
-            args.dest = args.src
+            args.dest = join(args.src, 'results')
 
         print(args)
 
         self.srcDir = args.src
         self.dest = args.dest
         self.plot = args.plot
+
+        if not os.path.isdir(self.dest):
+            os.mkdir(self.dest)
 
         if abspath(args.meta) != args.meta:
             self.meta = abspath(join(args.src, args.meta))
@@ -104,11 +107,13 @@ class ProcessExperiment():
         self.background = getBackground(self.srcDir)
         self.chamber = getChamber(self.srcDir, self.background, calc_chamber_df_ulisetup)
         self.dchamber = dilate_border(self.chamber, ksize=self.border)
-        self.trackfile = join(self.srcDir, 'tracks.csv')
-        self.timesfile = join(self.srcDir, 'times.csv')
-        self.aggFile = join(self.srcDir, 'tracks_agg.csv')
-        self.dftracksfile = join(self.srcDir, 'df_tracks.csv')
-        self.dfoverlapfile = join(self.srcDir, 'df_overlap.csv')
+
+
+        self.trackfile = join(self.dest, 'tracks.csv')
+        self.timesfile = join(self.dest, 'times.csv')
+        self.aggFile = join(self.dest, 'tracks_agg.csv')
+        self.dftracksfile = join(self.dest, 'df_tracks.csv')
+        self.dfoverlapfile = join(self.dest, 'df_overlap.csv')
 
 
     def track_and_link(self):
@@ -124,7 +129,8 @@ class ProcessExperiment():
                                                 threshold=23,
                                                 roi=self.dchamber,
                                                 blur=self.blur,
-                                                darkField=self.dark)
+                                                darkField=self.dark,
+                                                px=self.px)
 
             if not self.timestamp:
                 listTimes = self.dt * np.arange(len(listTimes))
@@ -176,7 +182,7 @@ class ProcessExperiment():
                               listTimes,
                               df,
                               filTracks,
-                              self.srcDir,
+                              self.dest,
                               self.background,
                               getDist,
                               getIntDark,
