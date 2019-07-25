@@ -1,4 +1,4 @@
-from .bboxes import minDistBondingBox, minDistBondingBoxes
+from .bboxes import minDistBoundingBoxes, minDistMinBoxes
 from .com import calcCenterOfMass
 from .crop import cropRectangle, cropRectangleKeepSize
 from .line import (getLine,
