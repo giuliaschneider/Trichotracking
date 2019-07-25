@@ -1,6 +1,0 @@
-{
-    "search.showLineNumbers": true,
-    "python.pythonPath": "/usr/bin/python3",
-    "python.linting.enabled": true
-    "editor.rulers": [80,120]
-}
