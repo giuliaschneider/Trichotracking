@@ -1,10 +1,10 @@
-iofiles package
+dfmanip package
 ===============
 
 Module contents
 ---------------
 
-.. automodule:: iofiles
+.. automodule:: dfmanip
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,10 +1,10 @@
-iofiles package
+utility package
 ===============
 
 Module contents
 ---------------
 
-.. automodule:: iofiles
+.. automodule:: utility
     :members:
     :undoc-members:
     :show-inheritance:
