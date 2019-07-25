@@ -18,8 +18,8 @@ flags  = ["area", "angle", "bounding_box", "centroid", "contours", "eccentricity
 def filterParticlesArea(img, bw, roi=None):
     allObjects = Contour(img, bw, flags=flags, cornerImage=None)
     particles = allObjects.particles
-    particles = particles[((particles.area>70)
-                          &(particles.area<50000)
+    particles = particles[((particles.area>100)
+                          &(particles.area<5000)
                           )]
     if roi is not None:
         inside = insideROI(particles.min_box.values, roi)
@@ -55,7 +55,7 @@ def particles_image(file,
         img = cv2.GaussianBlur(img,(5, 5),0)
     if darkField:
         subtracted = cv2.subtract((img), (background))
-        _, bw = cv2.threshold(subtracted, 41, 255, cv2.THRESH_BINARY)
+        _, bw = cv2.threshold(subtracted, 29, 255, cv2.THRESH_BINARY)
 
     else:
         subtracted = cv2.subtract(cv2.bitwise_not(img),
