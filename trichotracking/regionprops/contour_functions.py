@@ -66,7 +66,7 @@ def calcEigenvector(contour):
 def calcEigenvalues(contours):
     ew1, ew2 = [], []
     for c in contours:
-        mean, ev, ew = calcEigenvector(c)
+        ew = calcEigenvector(c)[2]
         if ew.size==1:
             ew1.append(ew[0][0])
             ew2.append(0)
@@ -78,7 +78,7 @@ def calcEigenvalues(contours):
 def calcEllipse(contours):
     ellipses = [cv2.fitEllipse(c) if len(c)>5 else ((0,0),(0,0),0) \
                 for c in contours]
-    center = [e[0] for e in ellipses]
+    #center = [e[0] for e in ellipses]
     axes = np.array([e[1] for e in ellipses])
     orientation = np.array([e[2] for e in ellipses])
     majoraxis_length = axes[:,1]
@@ -189,7 +189,6 @@ def connectContours(img, contours, minLength):
     """ Connects contours based on distance. """
     nContours = len(contours)
     # Assigns each contour to a cluster, save root node in id
-    ids = np.arange(nContours)
     clusters = np.arange(nContours)
 
     # Iterate through all contour-contour pairs
@@ -215,7 +214,7 @@ def connectContours(img, contours, minLength):
 def drawLine(img, vx, vy, x, y):
     """ Draws a line given by (vx, vy, x, y) into the image. """
     bw = np.zeros(img.shape[:2]).astype(np.uint8)
-    rows,cols = img.shape[:2]
+    cols = img.shape[1]
     lefty = int((-x*vy/vx) + y)
     righty = int(((cols-x)*vy/vx)+y)
     cv2.line(bw,(cols,righty),(0,lefty),(255),2)
@@ -243,7 +242,7 @@ def getAngleFromMoments(contours):
 
 def getConvexityDefects(img, bw, minLength):
     """ Returns the number of convexity defects longer than a certain length. """
-    im,c,h = cv2.findContours(bw, cv2.RETR_EXTERNAL ,cv2.CHAIN_APPROX_SIMPLE)
+    c = cv2.findContours(bw, cv2.RETR_EXTERNAL ,cv2.CHAIN_APPROX_SIMPLE)[1]
     areas = calcArea(c)
     indMaxArea = np.argmax(areas)
     contour = c[indMaxArea]
@@ -287,7 +286,7 @@ def getLength(bw, c=None):
     if c is None:
         c, bw = filterForLargestContour(bw)
         c = [c]
-    min_rect, min_box, min_rect_angle = calcMinRect(c)
+    min_rect, min_box, _ = calcMinRect(c)
     min_rect = min_rect[0]
     w = min_rect[1][0]
     h = min_rect[1][1]
@@ -295,10 +294,10 @@ def getLength(bw, c=None):
 
 def getLengths(bw, c=None):
     if c is None:
-        im,c,h = cv2.findContours(bw, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+        c = cv2.findContours(bw, cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[1]
     #length = calcPerimeter(c)/2
     if len(c)>0:
-        min_rect, min_box, min_rect_angle = calcMinRect(c)
+        min_box = calcMinRect(c)[1]
         length = calcLength(min_box)
     else:
         length = np.array([0])
@@ -308,7 +307,7 @@ def getLengths(bw, c=None):
 def filterForLargestContour(bw, c=None):
     """ Returns bw image with just the largest contour."""
     if c is None:
-        im,c,h = cv2.findContours(bw, cv2.RETR_EXTERNAL ,cv2.CHAIN_APPROX_SIMPLE)
+        c = cv2.findContours(bw, cv2.RETR_EXTERNAL ,cv2.CHAIN_APPROX_SIMPLE)[1]
     areas = calcArea(c)
     indMaxArea = np.argmax(areas)
     bwFiltered = np.zeros(bw.shape[0:2]).astype(np.uint8)
@@ -318,7 +317,7 @@ def filterForLargestContour(bw, c=None):
 def filterForNLargestContour(n, bw, c=None):
     """ Returns bw image with just the largest contour."""
     if c is None:
-        im,c,h = cv2.findContours(bw, cv2.RETR_EXTERNAL ,cv2.CHAIN_APPROX_SIMPLE)
+        c = cv2.findContours(bw, cv2.RETR_EXTERNAL ,cv2.CHAIN_APPROX_SIMPLE)[1]
     areas = calcArea(c)
     indMaxAreas = np.argsort(areas)[::1][:n]
     bwFiltered = np.zeros(bw.shape[0:2]).astype(np.uint8)
@@ -339,11 +338,6 @@ def insideROI(min_box, roi):
             inRoi.append(False)
     return np.array(inRoi).astype(np.bool)
 
-def matchSingleTrichomeParts(bw, contours):
-    nParts = len(contours)
-    moments = [cv2.moments(c) for c in contours]
-    angles = getAngleFromMoments(bw, contours)
-    cx, cy = calcCentroid(moments)
 
 def midpoint(ptA, ptB):
     mps = 0.5*(ptA+ptB)
