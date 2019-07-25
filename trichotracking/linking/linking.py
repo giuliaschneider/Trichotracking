@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from geometry import minDistBondingBoxes, calcCenterOfMass
+from geometry import minDistMinBoxes, calcCenterOfMass
 
 from ._df_agg import agg_keeper
 from ._df_tracks import track_keeper
@@ -19,8 +19,8 @@ class linker:
                  dataDir,
                  resultDir,
                  maxLinkTime=4,
-                 maxLinkDist=40,
-                 maxMergeDist=30,
+                 maxLinkDist=30,
+                 maxMergeDist=20,
                  maxDl=30,
                  interrupt=None):
 
@@ -275,11 +275,11 @@ class linker:
 
     def calcDistanceBB(self, dfP, dfC):
         """ Returns distance matrix between the bounding boxes of dfP, dfC."""
-        boxes1 = dfP[['bx', 'by', 'bw', 'bh']].values
-        boxes2 = dfC[['bx', 'by', 'bw', 'bh']].values
+        boxes1 = dfP['min_box'].values
+        boxes2 = dfC['min_box'].values
 
         # Calculate the minmal distance between bounding boxes
-        bdist = minDistBondingBoxes(boxes1, boxes2)
+        bdist = minDistMinBoxes(boxes1, boxes2)
         return bdist
 
 

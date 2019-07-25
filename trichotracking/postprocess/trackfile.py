@@ -29,7 +29,7 @@ def import_dflinked(trackFile, timesFile, pxConversion):
     """
 
 
-    cols = ["trackNr", "frame", "length", "cx","cy"]
+    cols = ["trackNr", "frame", "length", "cx","cy", 'min_box']
     df = pd.read_csv(trackFile, usecols=cols)
 
 
