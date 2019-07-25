@@ -6,7 +6,6 @@ import matplotlib as mpl
 import matplotlib.transforms as mtransforms
 from matplotlib.collections import LineCollection
 from matplotlib import cm
-from overlap.analysis_overlap import *
 
 
 def plotTracksLOLAll(df, dfMeta, saveDir):

@@ -4,9 +4,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import seaborn as sns
-from ._save import saveplot
-from ._fit import fit_log
-from ._constants import *
+
+from dfmanip import fit_log
+from plot import saveplot
+from plot._constants import *
+
 
 from IPython.core.debugger import set_trace
 

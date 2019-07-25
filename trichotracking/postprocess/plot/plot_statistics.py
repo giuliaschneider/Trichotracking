@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from overlap_analysis import average_df
+from postprocess import average_df
 
 mpl.rcParams.update({'font.size': 12})
 
