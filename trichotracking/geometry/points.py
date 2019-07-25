@@ -140,7 +140,7 @@ def orderCornersRotatedRectangle(pts):
     return np.array([tl, tr, br, bl])
 
 def orderAllPointsRotatedRectangle(allPts):
-    ordered = np.zeros((len(pts), 4))
+    ordered = np.zeros((len(allPts), 4))
     for i, pts in enumerate(allPts):
         ordered[i,:] = orderCornersRotatedRectangle(pts)
     return ordered[:,0], ordered[:,1], ordered[:,2], ordered[:,3]
@@ -215,7 +215,6 @@ def getPairedIndex(pts, pts_overlap=None):
         angles = np.zeros(3)
         for i, pair in enumerate(pairs):
             angles[i] = getAngle(pts_overlap, pair[0], pair[1])
-        ind = np.argmin(angles)
         i_pair = np.array(i_pairs[i])
         i_furthest = np.array(i_furthests[i])
 
