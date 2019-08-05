@@ -14,7 +14,7 @@ class track_keeper:
         self.listTimes = listTimes
         self.dataDir = dataDir
         self.resultDir = resultDir
-        #self.df.sort_values(by=['trackNr', 'frame'], inplace=True)
+        self.df.sort_values(by=['frame'], inplace=True)
         self.startExp = 0
         self.endExp = np.max(self.df.frame.values)
 
