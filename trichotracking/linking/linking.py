@@ -19,8 +19,8 @@ class linker:
                  dataDir,
                  resultDir,
                  maxLinkTime=3,
-                 maxLinkDist=15,
-                 maxMergeDist=20,
+                 maxLinkDist=10,
+                 maxMergeDist=15,
                  maxDl=15,
                  interrupt=None):
 
@@ -45,11 +45,11 @@ class linker:
             self.maxDls[interrupt] = 10*maxDl
         self.maxMergeDistBox = 15
 
-        self.dfobj.update_DfTracks(0)
+        self.dfobj.create_DfTracks()
         self.link()
 
         self.dfobj.filter_intermittentTracks()
-        self.dfobj.update_DfTracks(3)
+        self.dfobj.update_DfTracks(0)
         self.iterate_times()
         self.dfobj.update_DfTracks(0)
 
@@ -103,7 +103,7 @@ class linker:
                                            maxdLength=self.maxDl,
                                            areaPrevious=aPrev, 
                                            areaCurrent=aCurr, 
-                                           maxdArea=30)
+                                           maxdArea=20)
                     if len(indMP) > 0:
                         trackNrP = trackNrPrev[indMP]
                         trackNrC = trackNrCurr[indMC]
