@@ -33,6 +33,7 @@ def getParticleList(particles, vCurrentIndex, frame, vTrackNr):
     for index, trackNr in zip(vCurrentIndex, vTrackNr):
         partDict = particles.iloc[index].to_dict()
         partDict["frame"] = frame
+        partDict["index"] = trackNr
         partDict["trackNr"] = trackNr
         particleList.append(partDict)
     return particleList
