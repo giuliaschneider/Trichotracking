@@ -14,9 +14,16 @@ class track_keeper:
         self.listTimes = listTimes
         self.dataDir = dataDir
         self.resultDir = resultDir
-        self.df.sort_values(by=['trackNr', 'frame'], inplace=True)
+        #self.df.sort_values(by=['trackNr', 'frame'], inplace=True)
         self.startExp = 0
         self.endExp = np.max(self.df.frame.values)
+
+    def create_DfTracks(self):
+        self.df_tr = pd.DataFrame({'trackNr': self.df.trackNr})
+        self.df_tr['startTime'] = self.df.frame
+        self.df_tr['endTime'] = self.df.frame
+        self.df_tr['nFrames'] = 1
+        self.df_tr.set_index('trackNr')
 
     def update_DfTracks(self, minFrames):
         # Create meta dataframe
