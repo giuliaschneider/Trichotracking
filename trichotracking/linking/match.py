@@ -12,7 +12,8 @@ def getDistMatrix(cxPrevious, cyPrevious, cxCurrent, cyCurrent):
 
 def matcher(cxPrevious, cyPrevious, cxCurrent, cyCurrent, maxDist,
           lengthPrevious=None, lengthCurrent=None, maxdLength=None,
-          indP1=None, indP2=None, indC=None):
+          indP1=None, indP2=None, indC=None,
+          areaPrevious=None, areaCurrent=None, maxdArea=None):
     """ Matches based on nearest distance, returns indexes of match.
 
     Positional arguments:
@@ -26,6 +27,10 @@ def matcher(cxPrevious, cyPrevious, cxCurrent, cyCurrent, maxDist,
     lengthPrevious--Length of particles of previous time, np.array
     lengthCurrent --Length of particles of current time, np.array
     maxdLength --   Maximal length difference
+
+    areaPrevious -- Area of particles of previous time, np.array
+    areaCurrent -- Area of particles of current time, np.array
+    maxdArea --   Maximal area difference
 
     indP1  --       TrackNrs previous 1
     indP2 --        trackNrs previous 2
@@ -41,11 +46,17 @@ def matcher(cxPrevious, cyPrevious, cxCurrent, cyCurrent, maxDist,
     # from previous and current time step
     dist = getDistMatrix(cxPrevious, cyPrevious, cxCurrent, cyCurrent)
 
-    # Additional length condition
+    # Additional length conditionmatcher
     if lengthPrevious is not None:
         lPrev, lCurr = np.meshgrid(lengthPrevious, lengthCurrent)
         dl = np.abs(lCurr -  lPrev)
         dist[dl > maxdLength] = dist.max()
+
+    # Additional area conditon
+    if areaPrevious is not None:
+        aPrev, aCurr = np.meshgrid(lengthPrevious, lengthCurrent)
+        da = np.abs(aCurr -  aPrev)
+        dist[da > maxdArea] = dist.max()
 
     # Get index of previous and current particle
     # which are closer than maxDist

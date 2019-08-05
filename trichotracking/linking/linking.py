@@ -18,10 +18,10 @@ class linker:
                  listTimes,
                  dataDir,
                  resultDir,
-                 maxLinkTime=4,
-                 maxLinkDist=30,
+                 maxLinkTime=3,
+                 maxLinkDist=15,
                  maxMergeDist=20,
-                 maxDl=30,
+                 maxDl=15,
                  interrupt=None):
 
         """ Links, merges or splits tracks."""
@@ -83,6 +83,7 @@ class linker:
                     cxPrev = dfP.cx.values
                     cyPrev = dfP.cy.values
                     lPrev = dfP.length.values
+                    aPrev = dfP.area.values
 
                     dfC = self.dfobj.getTracksAtTime(self.startTracks,
                                                      self.startTime)
@@ -90,9 +91,19 @@ class linker:
                     cxCurr = dfC.cx.values
                     cyCurr = dfC.cy.values
                     lCurr = dfC.length.values
+                    aCurr = dfC.area.values
 
-                    indMP, indMC = matcher(cxPrev, cyPrev, cxCurr, cyCurr,
-                            self.maxLinkDist, lPrev, lCurr, self.maxDl)
+                    indMP, indMC = matcher(cxPrev, 
+                                           cyPrev,
+                                           cxCurr, 
+                                           cyCurr,
+                                           self.maxLinkDist, 
+                                           lengthPrevious=lPrev, 
+                                           lengthCurrent=lCurr, 
+                                           maxdLength=self.maxDl,
+                                           areaPrevious=aPrev, 
+                                           areaCurrent=aCurr, 
+                                           maxdArea=30)
                     if len(indMP) > 0:
                         trackNrP = trackNrPrev[indMP]
                         trackNrC = trackNrCurr[indMC]
