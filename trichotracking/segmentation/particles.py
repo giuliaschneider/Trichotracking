@@ -49,13 +49,13 @@ def particles_image(file,
                     threshold=28):
     """ Segments image and returns property list of found particles. """
 
-    # Segment image
+    # Segment image(file)
     img = loadImage(file)[0]
     if blur:
         img = cv2.GaussianBlur(img,(5, 5),0)
     if darkField:
         subtracted = cv2.subtract((img), (background))
-        _, bw = cv2.threshold(subtracted, 29, 255, cv2.THRESH_BINARY)
+        _, bw = cv2.threshold(subtracted, 28, 255, cv2.THRESH_BINARY)
 
     else:
         subtracted = cv2.subtract(cv2.bitwise_not(img),
@@ -79,9 +79,9 @@ def particles_image(file,
     particles = findingFunction(img, bw, chamber)
     nCurrent = particles.shape[0]
     print("Track Frame = {}, {} Particles".format(frame, nCurrent))
-    trackNrs = np.arange(0, nCurrent) + frame * 1000
+    particleNr = np.arange(0, nCurrent) + frame * 1000
     indexes = np.arange(0, nCurrent)
-    particleList = getParticleList(particles, indexes, frame, trackNrs)
+    particleList = getParticleList(particles, indexes, frame, particleNr)
 
     time = getTime(file)
 
@@ -126,5 +126,5 @@ def particles_sequence( input_dir,
     for result in results: 
         particleList += result.get()[0]
     imgTimes = [result.get()[1] for result in results] 
-    particleTracks = pd.DataFrame(particleList)
-    return particleTracks, np.array(imgTimes)
+
+    return pd.DataFrame(particleList), np.array(imgTimes)
