@@ -134,6 +134,10 @@ class ProcessExperiment():
             if not self.timestamp:
                 listTimes = self.dt * np.arange(len(listTimes))
 
+                
+            if os.path.isfile(self.timesfile):
+                listTimes = np.loadtxt(self.timesfile)
+
             link = linker(df,
                           listTimes,
                           self.srcDir,
