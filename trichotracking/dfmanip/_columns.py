@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-__all__ = ['combineNanCols', 'listToColumns']
+__all__ = ['columnsToListColumns','combineNanCols', 'listToColumns']
 
 
 
@@ -28,3 +28,10 @@ def listToColumns(df, col, new_cols):
     df[new_cols] = dftemp2
     return df
 
+
+def columnsToListColumns(df, listCol, cols):
+    df[listCol]=df[cols].values.tolist()
+    df.drop(columns=cols, inplace=True)
+    return df
+
+        
