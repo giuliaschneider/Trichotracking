@@ -3,12 +3,9 @@ import numpy as np
 import pandas as pd
 import multiprocessing as mp
 
-from geometry import minDistMinBoxes, calcCenterOfMass
 from trackkeeper import Trackkeeper
 from utility import split_list
 
-
-from ._df_agg import agg_keeper
 from .match import matcher
 
 from IPython.core.debugger import set_trace
@@ -31,7 +28,7 @@ def link(dfTracks):
 
     dfs = [result.get() for result in results]
     dfTracks = pd.concat(dfs, ignore_index=True)
-    dfTracks = link_part(ndfTracks)
+    dfTracks = link_part(dfTracks)
     return dfTracks
 
 
@@ -39,11 +36,11 @@ def link_part(dfTracks,
               maxLinkTime=3,
               maxLinkDist=10,
               maxdLength=15,
-              maxdArea=20):
+              maxdArea=30):
     """ Links track segments by connecting ends to starts. """
 
 
-    keeper = Trackkeeper(dfTracks)
+    keeper = Trackkeeper(dfTracks, 'a')
 
 
     # Iterate through linking time steps
@@ -52,7 +49,6 @@ def link_part(dfTracks,
 
     # Iterate through unique endtimes
         for endTime in endTimes:
-            print("Linking time " + str(endTime))
             startTime = endTime + i
             startTracks = keeper.getStartTracks(startTime)
             endTracks = keeper.getEndTracks(endTime)
@@ -89,6 +85,8 @@ def link_part(dfTracks,
                     trackNrC = trackNrCurr[indMC]
                     for tNP, tNC in zip(trackNrP, trackNrC):
                         keeper.linkTracks(tNP, tNC)
+            
+            print("t: {} - {}, linked {} particles".format(endTime, startTime, len(indMP)))
 
     return dfTracks
 
