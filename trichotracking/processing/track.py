@@ -1,17 +1,18 @@
 import sys
 import os
 from os.path import abspath, isfile, join
+import time
+
 
 import argparse
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as pltgetBackground
+import matplotlib.pyplot as plt
 
 
 from dfmanip import groupdf
 from iofiles import find_img
-from iofiles._import_dfs import import_dfagg
-from linking import linker, track_keeper
+from linking import link, link_part, merge
 from overlap import (calcOverlap,
                      create_dfoverlap,
                      get_filLengths,
@@ -28,6 +29,8 @@ from segmentation import (calc_chamber_df_ulisetup,
                           filterParticlesArea,
                           particles_sequence)
 
+from trackkeeper import Aggkeeper, Trackkeeper
+
 
 from IPython.core.debugger import set_trace
 
@@ -40,8 +43,13 @@ class ProcessExperiment():
         self.parse_args(argv)
         self.getMetaInfo()
         self.getFiles()
+        t0 = time.time()
+        self.process()
         self.overlap()
+        t1 = time.time()
+        print("Used time = {} s".format(t1-t0))
         self.pprocess()
+
 
     def parse_args(self, argv):
         parser = argparse.ArgumentParser()
@@ -52,13 +60,14 @@ class ProcessExperiment():
         args = parser.parse_args(argv[1:])
         
         self.srcDir  = args.src
+        
         if args.dest is None:
             args.dest = join(args.src, 'results')
         self.dest = args.dest
-        self.plot = args.plot
-
         if not os.path.isdir(self.dest):
             os.mkdir(self.dest)
+
+        self.plot = args.plot
 
         if abspath(args.meta) != args.meta:
             self.meta = abspath(join(args.src, args.meta))
@@ -107,34 +116,44 @@ class ProcessExperiment():
         self.aggregatesMetaFile = join(self.dest, 'aggregates_meta.csv')
         self.pairsMetaFile = join(self.dest, 'pairs_meta.csv')
 
+    
+
+    def process(self):
         if not isfile(self.trackFile):
             df, listTimes, dfPixellist = self.segment()
             listTimes = self.get_times(listTimes)
-            dfTracks, dfTracksMeta, dfAggMeta = self.link(df, listTimes)
-        else:
-            dfTracks = pd.read_csv(self.trackFile)
-            dfPixellist = pd.read_pickle(self.pixelFile)
-            listTimes = np.loadtxt(self.timesFile)
-            dfTracksMeta = pd.read_csv(self.tracksMetaFile)
-            dfAggMeta = import_dfagg(self.aggregatesMetaFile)
+            dfTracks = link(df)
+            keeper = Trackkeeper(dfTracks, dfPixellist)
+            df_merge, df_split = merge(keeper)
+            aggkeeper = Aggkeeper.fromScratch(df_merge, df_split, keeper)
+            keeper.addMetaTrackType(aggkeeper.df)
 
-        pairTrackNrs = dfTracksMeta[dfTracksMeta.type==2].trackNr.values
+        else:
+            keeper = Trackkeeper.fromFiles(self.trackFile, self.pixelFile)
+            listTimes = np.loadtxt(self.timesFile)
+            aggkeeper = Aggkeeper.fromFile(self.aggregatesMetaFile)
+
+        pairTrackNrs = keeper.getTrackNrPairs()
 
         if (not isfile(self.pairsMetaFile)):
             dfPairMeta = create_dfoverlap(pairTrackNrs, 
-                                           dfAggMeta, 
-                                           groupdf(dfTracks), 
+                                           aggkeeper.df, 
+                                           groupdf(keeper.df), 
                                            self.pairsMetaFile)
         else:
             dfPairMeta = pd.read_csv(self.pairsMetaFile)
 
-        self.dfTracks = dfTracks
-        self.dfPixellist = dfPixellist
+        self.keeper = keeper
+        self.aggkeeper = aggkeeper
         self.listTimes = listTimes
-        self.dfTracksMeta = dfTracksMeta
-        self.dfAggMeta = dfAggMeta
         self.dfPairMeta = dfPairMeta
         self.pairTrackNrs = pairTrackNrs
+
+        keeper.save(self.trackFile, self.pixelFile, self.tracksMetaFile)
+        keeper.saveAnimation(self.srcDir, self.dest)
+        aggkeeper.save(self.aggregatesMetaFile)
+
+        self.dfPairMeta.to_csv()
 
     def segment(self):
         df, listTimes = particles_sequence( self.srcDir,
@@ -151,7 +170,6 @@ class ProcessExperiment():
 
         cols = ['pixellist_xcoord', 'pixellist_ycoord', 'contours']
         dfPixellist = df[['index'] + cols]
-        dfPixellist.to_pickle(self.pixelFile)
         df.drop(columns=cols, inplace=True)
         return df, listTimes, dfPixellist
 
@@ -162,15 +180,6 @@ class ProcessExperiment():
             listTimes = np.loadtxt(self.timesFile)
         return listTimes
 
-    def link(self, df, listTimes):
-        link = linker(df,
-                      listTimes,
-                      self.srcDir,
-                      self.dest)
-        dfTracks = link.getDf()
-        dfTracksMeta = link.getDfTracks()
-        dfAggMeta = link.getDfagg()
-        return dfTracks, dfTracksMeta, dfAggMeta
 
     def overlap(self):
         filLengths = self.dfPairMeta[['length1', 'length2']].values
@@ -180,7 +189,7 @@ class ProcessExperiment():
         set_trace()
         overlap = calcOverlap(listImgs,
                               self.listTimes,
-                              self.dfTracks.merge(self.dfPixellist, left_on='index', right_on='index'),
+                              self.keeper.getDfTracksComplete(),
                               self.pairTrackNrs,
                               self.dest,
                               self.background,
@@ -194,9 +203,9 @@ class ProcessExperiment():
                               filLengths=filLengths)
 
         notFilTracks = overlap.getUnsuccessfulTracks()
-        self.dfTracksMeta.loc[self.dfTracksMeta.trackNr.isin(notFilTracks), 'type']=np.nan
-        self.dfPairMeta = self.dfTracksMeta[self.dfTracksMeta.type==2].trackNr.values
-        self.dfTracksMeta.to_csv(self.tracksMetaFile)
+       # self.dfTracksMeta.loc[self.dfTracksMeta.trackNr.isin(notFilTracks), 'type']=np.nan
+       # self.dfPairMeta = self.dfTracksMeta[self.dfTracksMeta.type==2].trackNr.values
+       # self.dfTracksMeta.to_csv(self.tracksMetaFile)
 
 
 
@@ -206,12 +215,12 @@ class ProcessExperiment():
         self.dflinked = import_dflinked(self.trackFile, self.timesFile, self.px)
         df_single = self.dflinked[self.dflinked.trackNr.isin(self.single_tracks)]
         cond = (~df_single.v_abs.isnull())
-        filename = join(self.srcDir, 'hist_vsingle.png')
+        filename = join(self.dest, 'hist_vsingle.png')
         hist_oneQuantity(df_single, 'v_abs', filename, '|v|', cond1=cond, plotMean=True)
         dfg = df_single.groupby('trackNr')
 
         vmean = dfg.mean()
-        filename = join(self.srcDir, 'hist_vsingle_grouped.png')
+        filename = join(self.dest, 'hist_vsingle_grouped.png')
         cond = (~vmean.v_abs.isnull())
 
         hist_oneQuantity(vmean, 'v_abs', filename, '|v|', cond1=cond, plotMean=True)

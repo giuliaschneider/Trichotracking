@@ -3,10 +3,11 @@ import numpy as np
 import pandas as pd
 
 from iofiles import find_img, export_movie
-from segmentation import segment_filaments
-from IPython.core.debugger import set_trace
 
 from .trackmeta import Trackmeta
+
+from IPython.core.debugger import set_trace
+
 
 class Trackkeeper:
     """
@@ -16,22 +17,27 @@ class Trackkeeper:
 
     """
 
-    def __init__(self, df):
+    def __init__(self, df, dfPixellist):
         self.df = df
+        self.dfPixellist = dfPixellist
         self.meta = Trackmeta(df)
         self.startExp = 0
         self.endExp = np.max(self.df.frame.values)
+        self.maxFrame = self.endExp
+        self.maxTrack = self.df.trackNr.max()
 
     @classmethod
-    def fromDf(cls, df):
-        return cls(df)
+    def fromDf(cls, df, dfPixellist):
+        return cls(df, dfPixellist)
 
     @classmethod
     def fromFiles(cls, tracksFile, pixelFile):
         dfTracks = pd.read_csv(tracksFile)
         dfPixellist = pd.read_pickle(pixelFile)
-        dfTracks.merge(dfPixellist, left_on='index', right_on='index')
-        return cls(dfTracks)
+        return cls(dfTracks, dfPixellist)
+
+    def getDfTracksMeta(self):
+        return self.meta.df_tr
 
     def getStartTimes(self):
         return self.meta.getStartTimes()
@@ -44,6 +50,15 @@ class Trackkeeper:
 
     def getEndTracks(self, t):
         return self.meta.getEndTracks(t)
+
+    def getMidTracks(self, *t):
+        return self.meta.getMidTracks(t)
+    
+    def setTrackStart(self, trackNr, newStartT):
+        self.meta.setTrackStart(trackNr, newStartT)
+
+    def setTrackEnd(self, trackNr, newEndT):
+        self.meta.setTrackEnd(trackNr, newEndT)
 
     def getTracksAtTime(self, t, trackNrs=None):
         if trackNrs is not None:
@@ -70,88 +85,30 @@ class Trackkeeper:
                 self.meta.getNFrames(trackNr1) + self.meta.getNFrames(trackNr2))
         self.meta.dropTrack(trackNr2)
 
+    def splitTrack(self, trackNr, newTrackNr, t):
+        """Renames track2 to newTrack from time t, updates df and df_tracks."""
+        self.updateTrackNr(trackNr, newTrackNr, t)
+        self.meta.addTrack(newTrackNr, t, self.meta.getTrackEnd(trackNr))
+        self.meta.setTrackEnd(trackNr, self.meta.getTrackEnd(t-1))
+
+    def addMetaTrackType(self, dfAggMeta):
+        self.meta.addTrackType(dfAggMeta)
+
+    def getTrackNrPairs(self):
+        return self.meta.getTrackNrPairs()
+
+    def getDfTracksComplete(self):
+        return self.df.merge(self.dfPixellist, left_on='index', right_on='index')
 
 
-    """
-    def filter_intermittentTracks(self):
-        tracks = np.unique(self.df.trackNr)
-        self.df['frame_diff'] = np.nan
-        for t in tracks:
-            self.df.loc[self.df.trackNr==t, 'frame_diff'] \
-                = self.df[self.df.trackNr==t].frame.diff()
-        dfg_frame = self.df.groupby('trackNr').mean().frame_diff
-        tracks = dfg_frame[dfg_frame < 1.3].index.values
-        #tracks = dfg_frame[dfg_frame == 1].index.values
-        self.df = self.df[self.df.trackNr.isin(tracks)].copy()
+    def save(self, trackFile, pixelFile, trackMetaFile):
+        self.df.to_csv(trackFile)
+        self.dfPixellist.to_pickle(pixelFile)
+        self.meta.save(trackMetaFile)
 
-
-
-
-
-    def addTrack(self, track2, newTrack, t):
-        # Renames track2 to newTrack from time t, updates df and df_tracks.
-        # Update df
-        self.updateTrackNr(track2, newTrack, t)
-
-        #  Adds new track to df_tracks
-        endTime = self.df_tr.loc[self.df_tr.trackNr == track2,
-                                'endTime'].values[0]
-        nFrames = endTime-t
-        self.df_tr.loc[newTrack] = [newTrack,t,endTime,nFrames]
-
-        # Updates mid track in df_tracks
-        self.df_tr.loc[self.df_tr.trackNr==track2, 'endTime'] = t-1
-
-    
-    def filterAllTracks(self, dfagg):
-        fsingleTracks, filAlignedTracks, filCrossTracks = \
-                                    segment_filaments(self.df, dfagg)
-        severalFilTracks = dfagg[dfagg.n>2].trackNr.values
-        """
-    """ self.df_tr = self.df_tr[((self.df_tr.trackNr.isin(aggTracks))
-                      |(self.df_tr.trackNr.isin(fsingleTracks)))]
-        self.df = self.df[((self.df.trackNr.isin(aggTracks))
-                         |(self.df.trackNr.isin(fsingleTracks)))]"""
-    """
-        try:
-            self.df_tr['startTime'] = self.listTimes[self.df_tr.startTime]
-            self.df_tr['endTime'] = self.listTimes[self.df_tr.endTime]
-            self.df_tr.loc[self.df_tr.trackNr.isin(fsingleTracks), 'type']=1
-            self.df_tr.loc[self.df_tr.trackNr.isin(filAlignedTracks), 'type']=2
-            self.df_tr.loc[self.df_tr.trackNr.isin(filCrossTracks), 'type']=3
-            self.df_tr.loc[self.df_tr.trackNr.isin(severalFilTracks), 'type']=4
-        except:
-            set_trace()
-        return filAlignedTracks
-    """
-
-    """
-        def getDfTracks(self):
-        return self.df_tr
-
-    def saveDfTracks(self, ):
-        #dir = os.path.basename(os.path.normpath(self.dataDir))
-        # Save df_tr to text
-        filename = os.path.join(self.resultDir, "df_tracks.csv")
-        self.df_tr.to_csv(filename)
-
-
-    def saveTrackToText(self):
-        # Save df to text
-        #dir = os.path.basename(os.path.normpath(self.dataDir))
-        filename = os.path.join(self.resultDir, "tracks.csv")
-        self.df.to_csv(filename)
-        
-        self.listTimes = np.asarray(self.listTimes)
-        filename = os.path.join(self.resultDir, "times.csv")
-        np.savetxt(filename, self.listTimes)
-
-        self.saveDfTracks()
-
-        # Save tracking animation
-        self.nTracks = int(np.max(self.df.trackNr.values)) + 1
-        self.listOfFiles = find_img(self.dataDir)
-        export_movie(self.dataDir, dfparticles=self.df, nTracks=self.nTracks,              
-                     filename=os.path.join('results','tracked.avi'))
-
-    """
+    def saveAnimation(self, dataDir, destDir):
+        nTracks = int(np.max(self.df.trackNr.values)) + 1
+        export_movie(dataDir, 
+                     dfparticles=self.df, 
+                     nTracks=nTracks,              
+                     filename=os.path.join(destDir,'animation.avi'))
