@@ -28,20 +28,18 @@ def import_dflinked(trackFile, timesFile, pxConversion):
         Contains tracking data with 'v' row
     """
 
-
-    cols = ["trackNr", "frame", "length", "cx","cy", 'min_box']
+    cols = ["trackNr", "frame", "length", "cx", "cy", 'min_box']
     df = pd.read_csv(trackFile, usecols=cols)
 
-
-    columns = ["length", "cx","cy"]
+    columns = ["length", "cx", "cy"]
     df = convertPxToMeter(df, columns, pxConversion)
     df['label'] = df.trackNr.astype('int')
     columns = ["cx", "cy"]
-    ma_columns =  ["cx_ma","cy_ma"]
+    ma_columns = ["cx_ma", "cy_ma"]
     df = calcMovingAverages(df, 13, columns, ma_columns)
     times = np.loadtxt(timesFile)
     df['time'] = times[df.frame]
-    #df.time = pd.to_datetime(df.time, format='%Y-%m-%d %H:%M:%S.%f')
+    # df.time = pd.to_datetime(df.time, format='%Y-%m-%d %H:%M:%S.%f')
 
     df = calcVelocity(df, 'cx_ma', 'cy_ma', 'time')
     df['v_abs'] = df.v.abs()
