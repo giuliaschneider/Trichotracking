@@ -54,7 +54,7 @@ def matcher(cxPrevious, cyPrevious, cxCurrent, cyCurrent, maxDist,
 
     # Additional area conditon
     if areaPrevious is not None:
-        aPrev, aCurr = np.meshgrid(lengthPrevious, lengthCurrent)
+        aPrev, aCurr = np.meshgrid(areaPrevious, areaCurrent)
         da = np.abs(aCurr -  aPrev)
         dist[da > maxdArea] = dist.max()
 
