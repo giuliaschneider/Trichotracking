@@ -46,7 +46,7 @@ class Merger:
     def __init__(self, 
                  keeper,
                  maxLinkTime=3,
-                 maxMergeDistBox=7,
+                 maxMergeDistBox=15,
                  maxMergeDist=15):
         self.keeper = keeper
         self.mergekeeper = dfMerge()
