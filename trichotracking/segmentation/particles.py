@@ -1,6 +1,7 @@
 import numpy as np
 import multiprocessing as mp
 import pandas as pd
+import matplotlib.pyplot as plt
 import cv2
 
 from iofiles import (find_img,
@@ -53,11 +54,11 @@ def particles_image(file,
     # Segment image(file)
     img = loadImage(file)[0]
     if blur:
-        img = cv2.GaussianBlur(img,(5, 5),0)
+        img = cv2.GaussianBlur(img,(3, 3),0)
+
     if darkField:
         subtracted = cv2.subtract((img), (background))
-        _, bw = cv2.threshold(subtracted, 28, 255, cv2.THRESH_BINARY)
-
+        _, bw = cv2.threshold(subtracted, threshold, 255, cv2.THRESH_BINARY)
     else:
         subtracted = cv2.subtract(cv2.bitwise_not(img),
                                   cv2.bitwise_not(background))
@@ -75,6 +76,7 @@ def particles_image(file,
         imgs = [img, bw, subtracted]
         labels = ["Original", "Threshold", "Sub"]
         plotAllImages(imgs, labels)
+        plt.show()
 
     # Get particles
     particles = findingFunction(img, bw, chamber)
