@@ -36,11 +36,11 @@ def link_part(dfTracks,
               maxLinkTime=3,
               maxLinkDist=10,
               maxdLength=15,
-              maxdArea=30):
+              maxdArea=80):
     """ Links track segments by connecting ends to starts. """
 
 
-    keeper = Trackkeeper(dfTracks, 'a')
+    keeper = Trackkeeper.fromDf(dfTracks, 'a')
 
 
     # Iterate through linking time steps
@@ -74,12 +74,13 @@ def link_part(dfTracks,
                                         cxCurr, 
                                         cyCurr,
                                         maxLinkDist, 
-                                        lengthPrevious=lPrev, 
-                                        lengthCurrent=lCurr, 
-                                        maxdLength=maxdLength,
-                                        areaPrevious=aPrev, 
-                                        areaCurrent=aCurr, 
-                                        maxdArea=maxdArea)
+                                        #lengthPrevious=lPrev, 
+                                        #lengthCurrent=lCurr, 
+                                        #maxdLength=maxdLength,
+                                        #areaPrevious=aPrev, 
+                                        #areaCurrent=aCurr, 
+                                        #maxdArea=maxdArea
+                                        )
                 if len(indMP) > 0:
                     trackNrP = trackNrPrev[indMP]
                     trackNrC = trackNrCurr[indMC]

@@ -17,10 +17,10 @@ class Trackkeeper:
 
     """
 
-    def __init__(self, df, dfPixellist):
+    def __init__(self, df, dfPixellist, meta):
         self.df = df
         self.dfPixellist = dfPixellist
-        self.meta = Trackmeta(df)
+        self.meta = meta
         self.startExp = 0
         self.endExp = np.max(self.df.frame.values)
         self.maxFrame = self.endExp
@@ -28,13 +28,15 @@ class Trackkeeper:
 
     @classmethod
     def fromDf(cls, df, dfPixellist):
-        return cls(df, dfPixellist)
+        meta = Trackmeta.fromScratch(df)
+        return cls(df, dfPixellist, meta)
 
     @classmethod
-    def fromFiles(cls, tracksFile, pixelFile):
+    def fromFiles(cls, tracksFile, pixelFile, trackMetaFile):
         dfTracks = pd.read_csv(tracksFile)
         dfPixellist = pd.read_pickle(pixelFile)
-        return cls(dfTracks, dfPixellist)
+        meta = Trackmeta.fromFiles(dfTracks, trackMetaFile)
+        return cls(dfTracks, dfPixellist, meta)
 
     def getDfTracksMeta(self):
         return self.meta.df_tr

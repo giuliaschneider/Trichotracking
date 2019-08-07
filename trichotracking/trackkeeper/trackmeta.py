@@ -16,31 +16,22 @@ class Trackmeta:
     """
 
 
-    def __init__(self, df):
+    def __init__(self, df, dfTracksMeta):
         self.df = df
+        self.df_tr = dfTracksMeta
         self.startExp = 0
         self.endExp = self.df.frame.max()
 
-        self.df_tr = self.createDfTracksMeta()
+    @classmethod
+    def fromScratch(cls, df):
+        df_tr = createDfTracksMeta(df)
+        return cls(df, df_tr)
 
+    @classmethod
+    def fromFiles(cls, df, tracksMetaFile):
+        df_tr = pd.read_csv(tracksMetaFile)
+        return cls(df, df_tr)
 
-    def createDfTracksMeta(self):
-        nTracks = self.df.trackNr.nunique()
-
-        if nTracks == self.df.trackNr.size:
-            self.df_tr = pd.DataFrame({'trackNr': self.df.trackNr})
-            self.df_tr['startTime'] = self.df.frame
-            self.df_tr['endTime'] = self.df.frame
-            self.df_tr['nFrames'] = 1
-            self.df_tr.set_index('trackNr')
-        else:
-            dfg = self.df.groupby('trackNr', as_index=False)
-            self.df_tr = pd.DataFrame({'trackNr': dfg.first().trackNr})
-            self.df_tr['startTime'] = dfg.first().frame
-            self.df_tr['endTime'] = dfg.last().frame
-            self.df_tr['nFrames'] = dfg.count().area
-            self.df_tr.set_index('trackNr')
-        return self.df_tr
 
     def getStartTimes(self):
         """ Returns all frames in which at least one track is starting. """
@@ -114,3 +105,22 @@ class Trackmeta:
 
     def save(self, file):
         self.df_tr.to_csv(file)
+
+
+def createDfTracksMeta(df):
+        nTracks = df.trackNr.nunique()
+
+        if nTracks == df.trackNr.size:
+            df_tr = pd.DataFrame({'trackNr': df.trackNr})
+            df_tr['startTime'] = df.frame
+            df_tr['endTime'] = df.frame
+            df_tr['nFrames'] = 1
+            df_tr.set_index('trackNr')
+        else:
+            dfg = df.groupby('trackNr', as_index=False)
+            df_tr = pd.DataFrame({'trackNr': dfg.first().trackNr})
+            df_tr['startTime'] = dfg.first().frame
+            df_tr['endTime'] = dfg.last().frame
+            df_tr['nFrames'] = dfg.count().area
+            df_tr.set_index('trackNr')
+        return df_tr

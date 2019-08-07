@@ -123,13 +123,15 @@ class ProcessExperiment():
             df, listTimes, dfPixellist = self.segment()
             listTimes = self.get_times(listTimes)
             dfTracks = link(df)
-            keeper = Trackkeeper(dfTracks, dfPixellist)
+            keeper = Trackkeeper.fromDf(dfTracks, dfPixellist)
             df_merge, df_split = merge(keeper)
             aggkeeper = Aggkeeper.fromScratch(df_merge, df_split, keeper)
             keeper.addMetaTrackType(aggkeeper.df)
 
         else:
-            keeper = Trackkeeper.fromFiles(self.trackFile, self.pixelFile)
+            keeper = Trackkeeper.fromFiles(self.trackFile,  
+                                           self.pixelFile,
+                                           self.tracksMetaFile)
             listTimes = np.loadtxt(self.timesFile)
             aggkeeper = Aggkeeper.fromFile(self.aggregatesMetaFile)
 
@@ -186,7 +188,6 @@ class ProcessExperiment():
         seg_functions = get_segFunctions(4, 3, (0.7, 3, 5), (0.85, 3, 5),
                         (0.7, 3, 0.8, 2.8, 6), (0.55, 2.6, 0.65, 2, 6))
         listImgs = find_img(self.srcDir)
-        set_trace()
         overlap = calcOverlap(listImgs,
                               self.listTimes,
                               self.keeper.getDfTracksComplete(),
