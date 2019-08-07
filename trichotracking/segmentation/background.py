@@ -66,7 +66,7 @@ def calcBackground(images, blur=True):
         filepath = images[index]
         img, height, width = loadImage(filepath)
         if blur:
-            img = cv2.GaussianBlur(img,(5, 5),0)
+            img = cv2.GaussianBlur(img,(3, 3),0)
         imgs[:,:,i] = img
     bg = np.uint8(np.median(imgs, axis=2))
     return bg
