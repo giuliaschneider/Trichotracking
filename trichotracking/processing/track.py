@@ -165,7 +165,7 @@ class ProcessExperiment():
                                                 filterParticlesArea,
                                                 background=self.background,
                                                 plotImages=self.plot,
-                                                threshold=23,
+                                                threshold=30,
                                                 roi=self.dchamber,
                                                 blur=self.blur,
                                                 darkField=self.dark)
