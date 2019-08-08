@@ -2,11 +2,8 @@ import os.path
 import numpy as np
 import pandas as pd
 
-from iofiles import find_img, export_movie
-
+from iofiles import export_movie
 from .trackmeta import Trackmeta
-
-from IPython.core.debugger import set_trace
 
 
 class Trackkeeper:
@@ -55,7 +52,7 @@ class Trackkeeper:
 
     def getMidTracks(self, *t):
         return self.meta.getMidTracks(t)
-    
+
     def setTrackStart(self, trackNr, newStartT):
         self.meta.setTrackStart(trackNr, newStartT)
 
@@ -64,8 +61,8 @@ class Trackkeeper:
 
     def getTracksAtTime(self, t, trackNrs=None):
         if trackNrs is not None:
-            condition = ((self.df.frame == t)
-                        &(self.df.trackNr.isin(trackNrs)))
+            condition = ( (self.df.frame == t)
+                        & (self.df.trackNr.isin(trackNrs)))
         else:
             condition = (self.df.frame == t)
         return self.df[condition]
@@ -73,18 +70,18 @@ class Trackkeeper:
     def updateTrackNr(self, oldNr, newNr, t=None):
         """ Sets the oldNr to newNr, beginning from t. """
         if t is None:
-            self.df.loc[(self.df.trackNr==oldNr), 'trackNr'] = newNr
+            self.df.loc[(self.df.trackNr == oldNr), 'trackNr'] = newNr
         else:
-            self.df.loc[((self.df.trackNr==oldNr)
-                       &(self.df.frame>=t)), 'trackNr'] = newNr
+            self.df.loc[((self.df.trackNr == oldNr)
+                       & (self.df.frame >= t)), 'trackNr'] = newNr
 
     def linkTracks(self, trackNr1, trackNr2):
         """ Links track2 to track2, updates df and df_tracks."""
         # Set trackNr2 to 1
         self.updateTrackNr(trackNr2, trackNr1)
         self.meta.setTrackEnd(trackNr1, self.meta.getTrackEnd(trackNr2))
-        self.meta.setNFrames(trackNr1, 
-                self.meta.getNFrames(trackNr1) + self.meta.getNFrames(trackNr2))
+        self.meta.setNFrames(trackNr1,
+            self.meta.getNFrames(trackNr1) + self.meta.getNFrames(trackNr2))
         self.meta.dropTrack(trackNr2)
 
     def splitTrack(self, trackNr, newTrackNr, t):
@@ -100,8 +97,8 @@ class Trackkeeper:
         return self.meta.getTrackNrPairs()
 
     def getDfTracksComplete(self):
-        return self.df.merge(self.dfPixellist, left_on='index', right_on='index')
-
+        df = self.df.merge(self.dfPixellist, left_on='index', right_on='index')
+        return df
 
     def save(self, trackFile, pixelFile, trackMetaFile):
         self.df.to_csv(trackFile)
@@ -110,7 +107,7 @@ class Trackkeeper:
 
     def saveAnimation(self, dataDir, destDir):
         nTracks = int(np.max(self.df.trackNr.values)) + 1
-        export_movie(dataDir, 
-                     dfparticles=self.df, 
-                     nTracks=nTracks,              
-                     filename=os.path.join(destDir,'animation.avi'))
+        export_movie(dataDir,
+                     dfparticles=self.df,
+                     nTracks=nTracks,
+                     filename=os.path.join(destDir, 'animation.avi'))
