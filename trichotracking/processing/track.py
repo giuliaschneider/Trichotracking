@@ -12,7 +12,7 @@ from overlap import (calcOverlap,
                      get_segFunctions,
                      getDist,
                      getIntDark)
-from plot._hist import hist_oneQuantity
+from postprocessing import Postprocesser
 from segmentation import (calc_chamber_df_ulisetup,
                           dilate_border,
                           getBackground,
@@ -20,8 +20,6 @@ from segmentation import (calc_chamber_df_ulisetup,
                           filterParticlesArea,
                           particles_sequence)
 from trackkeeper import Aggkeeper, Pairkeeper, Trackkeeper
-
-from IPython.core.debugger import set_trace
 
 
 class ProcessExperiment():
@@ -35,7 +33,8 @@ class ProcessExperiment():
         self.overlap()
         t1 = time.time()
         print("Used time = {} s".format(t1 - t0))
-        self.pprocess()
+
+        postprocessor = Postprocesser(self.keeper, self.aggkeeper, self.pairkeeper, self.dest)
 
     def parse_args(self, argv):
         parser = argparse.ArgumentParser()
@@ -117,6 +116,8 @@ class ProcessExperiment():
             keeper.setTime(listTimes)
             keeper.setLabel()
             keeper.calcLengthVelocity(self.pxConversion)
+            keeper.saveAnimation(self.srcDir, self.dest)
+
 
             pairkeeper = Pairkeeper.fromScratch(aggkeeper.getDf(),
                                                 keeper.getDfTracksMeta(),
@@ -136,7 +137,6 @@ class ProcessExperiment():
         self.listTimes = listTimes
 
         keeper.save(self.trackFile, self.pixelFile, self.tracksMetaFile)
-        keeper.saveAnimation(self.srcDir, self.dest)
         aggkeeper.save(self.aggregatesMetaFile)
         pairkeeper.save(self.pairsMetaFile)
         np.savetxt(self.timesFile, listTimes)
@@ -190,19 +190,6 @@ class ProcessExperiment():
     # self.dfTracksMeta.loc[self.dfTracksMeta.trackNr.isin(notFilTracks), 'type']=np.nan
     # self.dfPairMeta = self.dfTracksMeta[self.dfTracksMeta.type==2].trackNr.values
     # self.dfTracksMeta.to_csv(self.tracksMetaFile)
-
-    def pprocess(self):
-        single_tracks = self.keeper.getTrackNrSingles()
-        df = self.keeper.df
-        df_single = df[df.trackNr.isin(single_tracks)]
-        cond = (~df_single.v_abs.isnull())
-        filename = join(self.dest, 'hist_vsingle.png')
-        hist_oneQuantity(df_single, 'v_abs', filename, '|v|', cond1=cond, plotMean=True)
-        dfg = df_single.groupby('trackNr')
-        vmean = dfg.mean()
-        filename = join(self.dest, 'hist_vsingle_grouped.png')
-        cond = (~vmean.v_abs.isnull())
-        hist_oneQuantity(vmean, 'v_abs', filename, '|v|', cond1=cond, plotMean=True)
 
 
 if __name__ == '__main__':
