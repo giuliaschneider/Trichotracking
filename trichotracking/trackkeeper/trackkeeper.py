@@ -109,6 +109,9 @@ class Trackkeeper:
         df = self.df.merge(self.dfPixellist, left_on='index', right_on='index')
         return df
 
+    def getDf(self):
+        return self.df
+
     def setTime(self, times):
         self.df['time'] = times[self.df.frame]
 
@@ -126,6 +129,7 @@ class Trackkeeper:
         self.df = convertPxToMeter(self.df, pxCols, umCols, pxConversion)
         self.smoothCentroidPosition()
         self.df = calcVelocity(self.df, 'cx_ma', 'cy_ma', 'time')
+        set_trace()
         self.df['v_abs'] = self.df.v.abs()
 
     def save(self, trackFile, pixelFile, trackMetaFile):
