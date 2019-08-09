@@ -1,10 +1,11 @@
-import numpy as np
-import pandas as pd
-import cv2
 import os
 import os.path
 from datetime import datetime
+
+import cv2
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 from geometry import cropRectangleKeepSize
 from iofiles import (extractPixelListFromString,
@@ -12,12 +13,8 @@ from iofiles import (extractPixelListFromString,
                      loadImage,
                      removeFilesinDir)
 from utility import meanOfList
-
 from ._overlap_animation import OverlapAnimation
 from ._segment_overlap import SegmentOverlap
-
-from IPython.core.debugger import set_trace
-
 
 PARAMS_CONTOURS = (cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -50,6 +47,8 @@ class calcOverlap():
         self.nTracks = len(tracks)
         self.tracks = tracks
         self.saveDir = saveDir
+        if not os.path.isdir(self.saveDir):
+            os.mkdir(self.saveDir)
         self.background = self.getBackground(background)
         self.getDistFunc = getDistFunc
         self.getIntFunc = getIntFunc
@@ -63,7 +62,6 @@ class calcOverlap():
         self.success = []
         self.iterate_tracks()
 
-
     def iterate_tracks(self):
         """ Calculates the overlap of each track and save results to txt."""
 
@@ -71,13 +69,13 @@ class calcOverlap():
         for i, track in enumerate(self.tracks[:]):
             self.getBasename(track)
 
-            if not os.path.isfile(self.basename+'.txt'):
-                print('-'*20)
-                print('-'*20)
+            if not os.path.isfile(self.basename + '.txt'):
+                print('-' * 20)
+                print('-' * 20)
                 print("Track Nr = {}".format(track))
 
                 # Filter dataframe for current track
-                df = self.df_tracks[self.df_tracks.trackNr==track]
+                df = self.df_tracks[self.df_tracks.trackNr == track]
                 df = df.sort_values(by=['frame'])
 
                 if self.plotAnimation:
@@ -104,14 +102,13 @@ class calcOverlap():
             else:
                 self.success.append(True)
 
-
     def iterate_frames(self, i, df, track):
         """ Iterates through frames in single track and calculates overlap."""
         # Initiazlize lists
-        self.lengths_filament1, self.lengths_filament2  = [], []
+        self.lengths_filament1, self.lengths_filament2 = [], []
         self.cx1, self.cy1, self.cx2, self.cy2 = [], [], [], []
         self.lengths_overlap, self.xlovs, self.ylovs = [], [], []
-        self.dirx1, self.diry1 = [],[]
+        self.dirx1, self.diry1 = [], []
         self.short_fil_pos = []
         self.track_times = []
 
@@ -127,11 +124,11 @@ class calcOverlap():
             "cxcy": None,
             "labels": None,
             "long_fil": None,
-            "short_fil": None })
+            "short_fil": None})
         if self.filLengths is None:
             self.avg = None
         else:
-            avg = self.filLengths[i,:]
+            avg = self.filLengths[i, :]
             self.avg = avg[np.argsort(avg)[::-1]]
 
         if self.plotAnimation:
@@ -140,7 +137,7 @@ class calcOverlap():
 
         # Iterate through all track frames
         for frame in df.frame:
-            df_frame = df[df.frame==frame]
+            df_frame = df[df.frame == frame]
             time = self.list_times[frame]
             self.track_times.append(datetime.fromtimestamp(time))
             self.frame = frame
@@ -160,15 +157,14 @@ class calcOverlap():
             pX_cropped = extractPixelListFromString(pX) - nbx - 1
             pY_cropped = extractPixelListFromString(pY) - nby - 1
             # Create bw image
-            self.cropped_bw = np.zeros(self.cropped.shape[0:2],np.uint8)
+            self.cropped_bw = np.zeros(self.cropped.shape[0:2], np.uint8)
             self.cropped_bw[pY_cropped, pX_cropped] = [255]
             kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
             self.cropped_bw = cv2.morphologyEx(self.cropped_bw, cv2.MORPH_CLOSE, kernel)
 
             # Calculate overlap
-            print('-'*12, ' Frame {}'.format(frame), '-'*12)
+            print('-' * 12, ' Frame {}'.format(frame), '-' * 12)
             self.calcOverlapFromShapeIntensity(track, frame)
-
 
     def calcOverlapFromShapeIntensity(self, track, frame):
         """ Calculates overlap for a single frame. """
@@ -178,9 +174,9 @@ class calcOverlap():
         bg = self.cropped_bg
         R = max(img.shape)
         if (self.avg_overlap is None) or np.isnan(self.avg_overlap):
-            connectingR = R/1.5
+            connectingR = R / 1.5
         else:
-            connectingR= self.avg_overlap*2.5
+            connectingR = self.avg_overlap * 2.5
 
         print("R = {}".format(connectingR))
 
@@ -200,12 +196,12 @@ class calcOverlap():
         print("Filament length= {}".format(self.length_filaments))
         print("Overlap length= {}".format(self.length_overlap))
 
-        #if not self.previous_segented.any():
+        # if not self.previous_segented.any():
         #    self.plotImages = True
 
         if self.plotImages:
-            fig = plt.figure(figsize=(8,8))
-            (x,y) = (600, 0)
+            fig = plt.figure(figsize=(8, 8))
+            (x, y) = (600, 0)
             ax1 = fig.add_subplot(221)
             ax1.imshow(img)
             ax2 = fig.add_subplot(222)
@@ -217,7 +213,6 @@ class calcOverlap():
             plt.colorbar(im)
             plt.show()
         plt.close('all')
-
 
     def update(self, track, frame, segment):
         """ Adds results to result lists, updates input variables. """
@@ -231,7 +226,7 @@ class calcOverlap():
         if self.filLengths is None:
             cum_lengths = self.length_filaments
             ind = 1
-            self.avg = cum_lengths/ind
+            self.avg = cum_lengths / ind
         self.avg_overlap = meanOfList(self.lengths_overlap[-3:])
 
         # Get lack of overlap
@@ -265,38 +260,38 @@ class calcOverlap():
 
         if self.plotAnimation:
             basename = "track_{}_frame_{:03d}_".format(track, frame)
-            figname = os.path.join(self.saveDir_img, basename+"_cropped.tif")
+            figname = os.path.join(self.saveDir_img, basename + "_cropped.tif")
             _ = cv2.imwrite(figname, self.cropped)
             figname = os.path.join(self.saveDir_bw, basename + "_sep.tif")
-            _ = cv2.imwrite(figname, np.uint8(self.previous_segented*85))
+            _ = cv2.imwrite(figname, np.uint8(self.previous_segented * 85))
 
     def createDataFrame(self, track):
         """ Create dataframe"""
 
         self.df_track = pd.DataFrame({
-                    "length1": self.lengths_filament1,
-                    "length2": self.lengths_filament2,
-                    "cx1": self.cx1,
-                    "cy1": self.cy1,
-                    "cx2": self.cx2,
-                    "cy2": self.cy2,
-                    "dirx1": self.dirx1,
-                    "diry1": self.diry1,
-                    "length_overlap": self.lengths_overlap,
-                    "xlov": self.xlovs,
-                    "ylov": self.ylovs,
-                    "pos_short": self.short_fil_pos,
-                    "time": self.track_times,
-                    "track": track})
+            "length1": self.lengths_filament1,
+            "length2": self.lengths_filament2,
+            "cx1": self.cx1,
+            "cy1": self.cy1,
+            "cx2": self.cx2,
+            "cy2": self.cy2,
+            "dirx1": self.dirx1,
+            "diry1": self.diry1,
+            "length_overlap": self.lengths_overlap,
+            "xlov": self.xlovs,
+            "ylov": self.ylovs,
+            "pos_short": self.short_fil_pos,
+            "time": self.track_times,
+            "track": track})
 
     def checkTrackSuccess(self):
         nanValues = ((self.df_track.length1.isnull())
-                    |(self.df_track.length2 == 0))
+                     | (self.df_track.length2 == 0))
         nNan = nanValues[nanValues].size
         nAll = nanValues.size
         self.df_track['block'] = (nanValues != nanValues.shift()).cumsum()
         nNotNan = self.df_track.groupby(by='block').length1.count().max()
-        success = (nNan/nAll < 0.5) & ((nNotNan)>5)
+        success = (nNan / nAll < 0.5) & ((nNotNan) > 5)
         return success
 
     def getBasename(self, track):
@@ -314,7 +309,7 @@ class calcOverlap():
         list_img = find_img(self.saveDir_img)
         list_bw = find_img(self.saveDir_bw)
         ani = OverlapAnimation(list_img, list_bw, self.df_track,
-                    self.darkphases)
+                               self.darkphases)
         ani.save(self.basename + '.avi')
         plt.close('all')
 
@@ -336,9 +331,9 @@ class calcOverlap():
     def getSaveDirectories(self, track):
         """ Creates directories to save bw/segmented images. """
         self.saveDir_img = os.path.join(self.saveDir,
-                                "cropped_track_{}".format(track))
-        self.saveDir_bw =  os.path.join(self.saveDir,
-                                "separated_track_{}".format(track))
+                                        "cropped_track_{}".format(track))
+        self.saveDir_bw = os.path.join(self.saveDir,
+                                       "separated_track_{}".format(track))
         if os.path.isdir(self.saveDir_img):
             removeFilesinDir(self.saveDir_img)
         else:
@@ -348,10 +343,9 @@ class calcOverlap():
         else:
             os.mkdir(self.saveDir_bw)
 
-
     def getUnsuccessfulTracks(self):
         success = np.array(self.success)
-        if self.nTracks>0:
+        if self.nTracks > 0:
             tracks = np.array(self.tracks)
             unsuccssful = tracks[~success]
         else:

@@ -1,13 +1,15 @@
 import os.path
+
 import numpy as np
 import pandas as pd
 
 from dfmanip import (calcMovingAverages,
-                     calcPeaksSingle,
                      calcVelocity,
                      convertPxToMeter)
 from iofiles import export_movie
 from .trackmeta import Trackmeta
+
+from IPython.core.debugger import set_trace
 
 
 class Trackkeeper:
@@ -65,8 +67,8 @@ class Trackkeeper:
 
     def getTracksAtTime(self, t, trackNrs=None):
         if trackNrs is not None:
-            condition = ( (self.df.frame == t)
-                        & (self.df.trackNr.isin(trackNrs)))
+            condition = ((self.df.frame == t)
+                         & (self.df.trackNr.isin(trackNrs)))
         else:
             condition = (self.df.frame == t)
         return self.df[condition]
@@ -77,7 +79,7 @@ class Trackkeeper:
             self.df.loc[(self.df.trackNr == oldNr), 'trackNr'] = newNr
         else:
             self.df.loc[((self.df.trackNr == oldNr)
-                       & (self.df.frame >= t)), 'trackNr'] = newNr
+                         & (self.df.frame >= t)), 'trackNr'] = newNr
 
     def linkTracks(self, trackNr1, trackNr2):
         """ Links track2 to track2, updates df and df_tracks."""
@@ -85,14 +87,14 @@ class Trackkeeper:
         self.updateTrackNr(trackNr2, trackNr1)
         self.meta.setTrackEnd(trackNr1, self.meta.getTrackEnd(trackNr2))
         self.meta.setNFrames(trackNr1,
-            self.meta.getNFrames(trackNr1) + self.meta.getNFrames(trackNr2))
+                             self.meta.getNFrames(trackNr1) + self.meta.getNFrames(trackNr2))
         self.meta.dropTrack(trackNr2)
 
     def splitTrack(self, trackNr, newTrackNr, t):
         """Renames track2 to newTrack from time t, updates df and df_tracks."""
         self.updateTrackNr(trackNr, newTrackNr, t)
         self.meta.addTrack(newTrackNr, t, self.meta.getTrackEnd(trackNr))
-        self.meta.setTrackEnd(trackNr, self.meta.getTrackEnd(t-1))
+        self.meta.setTrackEnd(trackNr, self.meta.getTrackEnd(t - 1))
 
     def addMetaTrackType(self, dfAggMeta):
         self.meta.addTrackType(dfAggMeta)
@@ -110,8 +112,11 @@ class Trackkeeper:
     def setTime(self, times):
         self.df['time'] = times[self.df.frame]
 
+    def setLabel(self):
+        self.df['label'] = self.df.trackNr
+
     def smoothCentroidPosition(self, wsize=11):
-        columns = ["cx_um", "_ums"]
+        columns = ["cx_um", "cy_um"]
         ma_columns = ["cx_ma", "cy_ma"]
         self.df = calcMovingAverages(self.df, wsize, columns, ma_columns)
 
