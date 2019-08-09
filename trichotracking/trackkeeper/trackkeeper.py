@@ -2,6 +2,10 @@ import os.path
 import numpy as np
 import pandas as pd
 
+from dfmanip import (calcMovingAverages,
+                     calcPeaksSingle,
+                     calcVelocity,
+                     convertPxToMeter)
 from iofiles import export_movie
 from .trackmeta import Trackmeta
 
@@ -96,9 +100,28 @@ class Trackkeeper:
     def getTrackNrPairs(self):
         return self.meta.getTrackNrPairs()
 
+    def getTrackNrSingles(self):
+        return self.meta.getTrackNrSingles()
+
     def getDfTracksComplete(self):
         df = self.df.merge(self.dfPixellist, left_on='index', right_on='index')
         return df
+
+    def setTime(self, times):
+        self.df['time'] = times[self.df.frame]
+
+    def smoothCentroidPosition(self, wsize=11):
+        columns = ["cx_um", "_ums"]
+        ma_columns = ["cx_ma", "cy_ma"]
+        self.df = calcMovingAverages(self.df, wsize, columns, ma_columns)
+
+    def calcLengthVelocity(self, pxConversion):
+        pxCols = ["length", "cx", "cy"]
+        umCols = ["length_um", "cx_um", "cy_um"]
+        self.df = convertPxToMeter(self.df, pxCols, umCols, pxConversion)
+        self.smoothCentroidPosition()
+        self.df = calcVelocity(self.df, 'cx_ma', 'cy_ma', 'time')
+        self.df['v_abs'] = self.df.v.abs()
 
     def save(self, trackFile, pixelFile, trackMetaFile):
         self.df.to_csv(trackFile)
