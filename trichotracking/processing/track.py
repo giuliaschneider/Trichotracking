@@ -21,7 +21,6 @@ from overlap import (calcOverlap,
                      getIntLightBlurred,
                      getIntDark)
 from plot._hist import hist_oneQuantity
-from postprocess.trackfile import import_dflinked
 from segmentation import (calc_chamber_df_ulisetup,
                           dilate_border,
                           getBackground,
@@ -42,7 +41,7 @@ class ProcessExperiment():
     def __init__(self, argv):
         self.parse_args(argv)
         self.getMetaInfo()
-        self.getFiles()
+        self.defineFiles()
         t0 = time.time()
         self.process()
         self.overlap()
@@ -83,7 +82,7 @@ class ProcessExperiment():
                 metad[(key)] = val
         self.dark = metad['Darkfield']
         self.blur = True
-        self.px = float(metad['pxConversion'])
+        self.pxConversion = float(metad['pxConversion'])
         self.linkDist = int(metad['LinkDist'])
         if 'timestamp' in metad.keys():
             self.timestamp = (metad['timestamp'] == 'True')
@@ -104,7 +103,7 @@ class ProcessExperiment():
         self.linkDist = int(metad['LinkDist'])
 
 
-    def getFiles(self):
+    def defineFiles(self):
         self.background = getBackground(self.srcDir)
         self.chamber = getChamber(self.srcDir, self.background, calc_chamber_df_ulisetup)
         self.dchamber = dilate_border(self.chamber, ksize=self.border)
@@ -127,6 +126,7 @@ class ProcessExperiment():
             df_merge, df_split = merge(keeper)
             aggkeeper = Aggkeeper.fromScratch(df_merge, df_split, keeper)
             keeper.addMetaTrackType(aggkeeper.df)
+            keeper.calcLengthVelocity(self.pxConversion)
 
         else:
             keeper = Trackkeeper.fromFiles(self.trackFile,  
@@ -154,13 +154,14 @@ class ProcessExperiment():
         keeper.save(self.trackFile, self.pixelFile, self.tracksMetaFile)
         keeper.saveAnimation(self.srcDir, self.dest)
         aggkeeper.save(self.aggregatesMetaFile)
+        np.savetxt(self.timesFile, listTimes)
 
         self.dfPairMeta.to_csv()
 
     def segment(self):
         df, listTimes = particles_sequence( self.srcDir,
                                                 self.dest,
-                                                self.px,
+                                                self.pxConversion,
                                                 self.linkDist,
                                                 filterParticlesArea,
                                                 background=self.background,
@@ -211,19 +212,16 @@ class ProcessExperiment():
 
 
     def pprocess(self):
-        df_tracks = pd.read_csv(self.tracksMetaFile)
-        self.single_tracks = df_tracks[df_tracks.type==1].trackNr.values
-        self.dflinked = import_dflinked(self.trackFile, self.timesFile, self.px)
-        df_single = self.dflinked[self.dflinked.trackNr.isin(self.single_tracks)]
+        single_tracks = self.keeper.getTrackNrSingles()
+        df = self.keeper.df
+        df_single = df[df.trackNr.isin(single_tracks)]
         cond = (~df_single.v_abs.isnull())
         filename = join(self.dest, 'hist_vsingle.png')
         hist_oneQuantity(df_single, 'v_abs', filename, '|v|', cond1=cond, plotMean=True)
         dfg = df_single.groupby('trackNr')
-
         vmean = dfg.mean()
         filename = join(self.dest, 'hist_vsingle_grouped.png')
         cond = (~vmean.v_abs.isnull())
-
         hist_oneQuantity(vmean, 'v_abs', filename, '|v|', cond1=cond, plotMean=True)
 
 
@@ -234,4 +232,3 @@ if __name__ == '__main__':
     argv = sys.argv
     exp = ProcessExperiment(argv)
 
-    dflinked = exp.dflinked
