@@ -1,19 +1,12 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 import seaborn as sns
-from scipy.stats import mannwhitneyu, ks_2samp
-
-from dfmanip import fit_semilog
+from IPython.core.debugger import set_trace
+from scipy.stats import mannwhitneyu
 
 from ._constants import *
 from ._mean_line import setMeanLine
 from ._save import saveplot
 
-from IPython.core.debugger import set_trace
-
-
-__all__ = ['hist_oneQuantity', 
+__all__ = ['hist_oneQuantity',
            'hist_twoQuantities',
            'hist_all',
            'hist_aggregating',
@@ -22,15 +15,13 @@ __all__ = ['hist_oneQuantity',
            'hist_peak']
 
 
-
-def hist_oneQuantity(df, col, filename, xlabel, cond1=None, text=None, xscale=None, 
-                       yscale=None,
-                       xlim=None, cdf=False, kde=False, plotMean=False,
-                       bins=None, report=False, fit=False, xfitstr=None,
-                       yfitstr=None, legend_out=True, legendMean=False,
-                       legendTimescale=False, meanL=None, sigTest=False,
-                       c1=None, left=False):
-
+def hist_oneQuantity(df, col, filename, xlabel, cond1=None, text=None, xscale=None,
+                     yscale=None,
+                     xlim=None, cdf=False, kde=False, plotMean=False,
+                     bins=None, report=False, fit=False, xfitstr=None,
+                     yfitstr=None, legend_out=True, legendMean=False,
+                     legendTimescale=False, meanL=None, sigTest=False,
+                     c1=None, left=False):
     if cond1 is None:
         cond1 = (~df[col].isnull())
 
@@ -50,25 +41,24 @@ def hist_twoQuantities(df, col, filename, xlabel, cond1, label1, cond2,
                        yfitstr=None, legend_out=True, legendMean=False,
                        legendTimescale=False, meanL=None, sigTest=False,
                        c1=None, c2=None, left=False):
-
     fig, ax = plt.subplots(figsize=FIGSIZE)
-    props = {'ax':ax, 'kde':kde, 'norm_hist':True, 'bins':bins}
+    props = {'ax': ax, 'kde': kde, 'norm_hist': True, 'bins': bins}
 
     if xlim is None:
-        xlim = (0.9*df[col].min(), 1.1*df[col].max())
+        xlim = (0.9 * df[col].min(), 1.1 * df[col].max())
     try:
         ax.set_xlim(xlim)
     except:
         set_trace()
 
     if cdf:
-        props['hist_kws']=dict(cumulative=True)
-        props['kde_kws']=dict(cumulative=True)
+        props['hist_kws'] = dict(cumulative=True)
+        props['kde_kws'] = dict(cumulative=True)
         props['kde'] = True
         props['hist'] = False
         ylabel = 'CDF'
         if xlim is not None:
-            props['kde_kws']['clip']  = xlim
+            props['kde_kws']['clip'] = xlim
     else:
         ylabel = 'PDF'
 
@@ -81,8 +71,6 @@ def hist_twoQuantities(df, col, filename, xlabel, cond1, label1, cond2,
         posy = 0.25
         ha = 'right'
 
-
-
     if legendTimescale:
         if meanL is None:
             if 'length' in df:
@@ -90,8 +78,8 @@ def hist_twoQuantities(df, col, filename, xlabel, cond1, label1, cond2,
                 meanL = dfg.length.mean().mean()
             else:
                 meanL = 500
-        label1 += r", $\tau = %.2f\,s$" %(meanL/df[cond1][col].mean())
-        label2 += r", $\tau = %.2f\,s$" %(meanL/df[cond2][col].mean())
+        label1 += r", $\tau = %.2f\,s$" % (meanL / df[cond1][col].mean())
+        label2 += r", $\tau = %.2f\,s$" % (meanL / df[cond2][col].mean())
 
     if (c1 is None) or (c2 is None):
         c1 = cm.tab10(0)
@@ -111,7 +99,6 @@ def hist_twoQuantities(df, col, filename, xlabel, cond1, label1, cond2,
         ax.set_xscale(xscale)
     if yscale is not None:
         ax.set_yscale(yscale)
-
 
     ylim = ax.get_ylim()
     ax.set_ylim(ylim)
@@ -145,44 +132,43 @@ def hist_twoQuantities(df, col, filename, xlabel, cond1, label1, cond2,
                 e = -int(np.log10(np.abs(expMean)))
                 textstr = '' if yfitstr is None else yfitstr
                 if e < 0:
-                    textstr += r" $\propto e^{-\frac{1}{%.0f} %s }$" %(expMean, xfitstr)
+                    textstr += r" $\propto e^{-\frac{1}{%.0f} %s }$" % (expMean, xfitstr)
                 elif np.abs(e) < 2:
-                    textstr += r" $\propto e^{-\frac{1}{%.2f} %s }$" %(expMean, xfitstr)
-                elif np.abs(e) <3:
-                    textstr += r" $\propto e^{-\frac{1}{%.3f} %s }$" %(expMean, xfitstr)
+                    textstr += r" $\propto e^{-\frac{1}{%.2f} %s }$" % (expMean, xfitstr)
+                elif np.abs(e) < 3:
+                    textstr += r" $\propto e^{-\frac{1}{%.3f} %s }$" % (expMean, xfitstr)
                 else:
-                    textstr += r" $\propto e^{-\frac{1}{%.4f} %s }$" %(expMean, xfitstr)
+                    textstr += r" $\propto e^{-\frac{1}{%.4f} %s }$" % (expMean, xfitstr)
 
-                pos = (posx, 0.6-i/15)
+                pos = (posx, 0.6 - i / 15)
                 ax.annotate(textstr, xy=pos, xytext=pos, xycoords='figure fraction',
                             color=c, ha=ha)
 
     elif legendMean:
         for i, (cond, c) in enumerate(zip([cond1, cond2], [c1, c2])):
             if cond is not None:
-                textstr = r"$\overline{%s} = %.2f$" %(xfitstr, df[cond][col].mean())
-                pos = (posx, 0.6-i/15)
+                textstr = r"$\overline{%s} = %.2f$" % (xfitstr, df[cond][col].mean())
+                pos = (posx, 0.6 - i / 15)
                 ax.annotate(textstr, xy=pos, xytext=pos, xycoords='figure fraction',
                             color=c, ha=ha)
 
     if (cond2 is not None) and (sigTest):
         pos = (posx, posy)
-        if df[cond1][col].mean()>df[cond2][col].mean():
-            alt='greater'
+        if df[cond1][col].mean() > df[cond2][col].mean():
+            alt = 'greater'
         else:
-            alt='less'
+            alt = 'less'
         uvalue, pvalue = mannwhitneyu(df[cond1][col], df[cond2][col], alternative=alt)
-        #uvalue, pvalue = ks_2samp(df[cond1][col], df[cond2][col])
+        # uvalue, pvalue = ks_2samp(df[cond1][col], df[cond2][col])
 
         if pvalue < 0.01:
             textstr = r'MWU: $p$-value $<$ 0.01'
         elif pvalue > 0.05:
             textstr = r'MWU: $p$-value $>$ 0.05'
         else:
-            textstr = r'MWU: $p$-value = %.2g' %(pvalue)
+            textstr = r'MWU: $p$-value = %.2g' % (pvalue)
         ax.annotate(textstr, xy=pos, xytext=pos, xycoords='figure fraction',
                     ha=ha)
-
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -215,17 +201,17 @@ def getHistData(df, col, labels, minTh, maxTh):
 
     # Get data points in labels and not nan
     d = df[(df.label.isin(labels))
-          &(~df[col].isin([np.inf, -np.inf, np.nan]))]
+           & (~df[col].isin([np.inf, -np.inf, np.nan]))]
 
     if minTh is not None:
-        d = d[d[col]>minTh]
+        d = d[d[col] > minTh]
     if maxTh is not None:
-        d = d[d[col]<maxTh]
+        d = d[d[col] < maxTh]
     return d
 
 
 def getLabels(l1, l2, n1, n2):
-    if((n1<1000) or (n2<1000)):
+    if ((n1 < 1000) or (n2 < 1000)):
         label1 = l1 + r', $n$ = {}'.format(n1)
         label2 = l2 + r', $n$ = {}'.format(n2)
     else:
@@ -245,19 +231,19 @@ def hist_all(df, col, filename, xlabel, labels=None, minTh=None,
 
     d = getHistData(df, col, labels, minTh, maxTh)
 
-    cond1 = (d.aggregating==1)
+    cond1 = (d.aggregating == 1)
 
     c1 = AGG_COLOR
     c2 = NAGG_COLOR
 
     hist_twoQuantities(d, col, filename, xlabel, cond1, '', None,
-                           None, text=text, xscale=xscale, yscale=yscale,
-                           cdf=cdf, xlim=xlim, kde=kde, plotMean=plotMean,
-                           bins=bins, report=report, fit=fit,
-                           xfitstr=xfitstr, yfitstr=yfitstr,
-                           legend_out=legend_out, legendMean=legendMean,
-                           legendTimescale=legendTimescale, sigTest=sigTest,
-                           meanL=meanL, c1=c1, c2=c2)
+                       None, text=text, xscale=xscale, yscale=yscale,
+                       cdf=cdf, xlim=xlim, kde=kde, plotMean=plotMean,
+                       bins=bins, report=report, fit=fit,
+                       xfitstr=xfitstr, yfitstr=yfitstr,
+                       legend_out=legend_out, legendMean=legendMean,
+                       legendTimescale=legendTimescale, sigTest=sigTest,
+                       meanL=meanL, c1=c1, c2=c2)
 
 
 def hist_aggregating(df, col, filename, xlabel, labels=None, minTh=None,
@@ -271,11 +257,11 @@ def hist_aggregating(df, col, filename, xlabel, labels=None, minTh=None,
 
     d = getHistData(df, col, labels, minTh, maxTh)
 
-    cond1 = (d.aggregating==1)
-    cond2 = (d.aggregating==0)
+    cond1 = (d.aggregating == 1)
+    cond2 = (d.aggregating == 0)
 
     label1, label2 = getLabels('Aggregating', 'Non-aggregating',
-                                d[cond1][col].size, d[cond2][col].size)
+                               d[cond1][col].size, d[cond2][col].size)
 
     label1 += appAgglabel
     label2 += appNaggLabel
@@ -284,27 +270,26 @@ def hist_aggregating(df, col, filename, xlabel, labels=None, minTh=None,
     c2 = NAGG_COLOR
 
     hist_twoQuantities(d, col, filename, xlabel, cond1, label1, cond2,
-                           label2, text=text, xscale=xscale, yscale=yscale,
-                           cdf=cdf, xlim=xlim, kde=kde, plotMean=plotMean,
-                           bins=bins, report=report, fit=fit,
-                           xfitstr=xfitstr, yfitstr=yfitstr,
-                           legend_out=legend_out, legendMean=legendMean,
-                           legendTimescale=legendTimescale, sigTest=sigTest,
-                           meanL=meanL, c1=c1, c2=c2, left=left)
+                       label2, text=text, xscale=xscale, yscale=yscale,
+                       cdf=cdf, xlim=xlim, kde=kde, plotMean=plotMean,
+                       bins=bins, report=report, fit=fit,
+                       xfitstr=xfitstr, yfitstr=yfitstr,
+                       legend_out=legend_out, legendMean=legendMean,
+                       legendTimescale=legendTimescale, sigTest=sigTest,
+                       meanL=meanL, c1=c1, c2=c2, left=left)
 
 
 def hist_breakup(df, col, filename, xlabel, labelAgg, labels=None,
-                     minTh=None, maxTh=None, text=None, xscale=None,
-                     yscale=None, cdf=False, xlim=None, kde=False,
-                     plotMean=False, bins=None, report=False,fit=False,
-                     xfitstr=None, yfitstr=None, legend_out=True,
-                     sigTest=False, legendTimescale=False, meanL=None,
-                     legendMean=False):
-
+                 minTh=None, maxTh=None, text=None, xscale=None,
+                 yscale=None, cdf=False, xlim=None, kde=False,
+                 plotMean=False, bins=None, report=False, fit=False,
+                 xfitstr=None, yfitstr=None, legend_out=True,
+                 sigTest=False, legendTimescale=False, meanL=None,
+                 legendMean=False):
     d = getHistData(df, col, labels, minTh, maxTh)
 
-    cond1 = (d.breakup!=2)
-    cond2 = (d.breakup==2)
+    cond1 = (d.breakup != 2)
+    cond2 = (d.breakup == 2)
 
     if labelAgg != '':
         l1 = labelAgg + ', No separation'
@@ -316,16 +301,16 @@ def hist_breakup(df, col, filename, xlabel, labelAgg, labels=None,
     c1 = NSPLIT_COLOR
     c2 = SPLIT_COLOR
 
-    label1, label2 = getLabels(l1,l2, d[cond1][col].size, d[cond2][col].size)
+    label1, label2 = getLabels(l1, l2, d[cond1][col].size, d[cond2][col].size)
 
     hist_twoQuantities(d, col, filename, xlabel, cond1, label1, cond2,
-                           label2, text=text, xscale=xscale, yscale=yscale,
-                           cdf=cdf, xlim=xlim, kde=kde, plotMean=plotMean,
-                           bins=bins, report=report, fit=fit, xfitstr=xfitstr,
-                           yfitstr=yfitstr, legend_out=legend_out,
-                           sigTest=sigTest, legendMean=legendMean,
-                           legendTimescale=legendTimescale, meanL=meanL,
-                           c1=c1, c2=c2)
+                       label2, text=text, xscale=xscale, yscale=yscale,
+                       cdf=cdf, xlim=xlim, kde=kde, plotMean=plotMean,
+                       bins=bins, report=report, fit=fit, xfitstr=xfitstr,
+                       yfitstr=yfitstr, legend_out=legend_out,
+                       sigTest=sigTest, legendMean=legendMean,
+                       legendTimescale=legendTimescale, meanL=meanL,
+                       c1=c1, c2=c2)
 
 
 def hist_lol(df, col, filename, xlabel, labelAgg, labels=None, minTh=None,
@@ -334,30 +319,28 @@ def hist_lol(df, col, filename, xlabel, labelAgg, labels=None, minTh=None,
              fit=False, xfitstr=None, yfitstr=None, legend_out=True,
              sigTest=False, legendTimescale=False, meanL=None,
              legendMean=False):
-
     d = getHistData(df, col, labels, minTh, maxTh)
 
-    cond1 = ((d.xlov_ma_abs<0.01) & (d.ylov.abs()<0.01))
-    cond2 = ((d.xlov_ma_abs>0.01) | (d.ylov.abs()>0.01))
+    cond1 = ((d.xlov_ma_abs < 0.01) & (d.ylov.abs() < 0.01))
+    cond2 = ((d.xlov_ma_abs > 0.01) | (d.ylov.abs() > 0.01))
 
-    label1 = labelAgg+ r', LOL = 0, $n$ = {}'.format(d[cond1][col].size)
+    label1 = labelAgg + r', LOL = 0, $n$ = {}'.format(d[cond1][col].size)
     label2 = labelAgg + r', LOL > 0 $n$ = {}'.format(d[cond2][col].size)
     hist_twoQuantities(d, col, filename, xlabel, cond1, label1, cond2,
-                           label2, text=text, xscale=xscale, yscale=yscale,
-                           cdf=cdf, xlim=xlim, kde=kde, plotMean=plotMean,
-                           bins=bins, report=report, fit=fit, xfitstr=xfitstr,
-                           yfitstr=yfitstr, legend_out=legend_out,
-                           sigTest=sigTest, legendMean=legendMean,
-                           legendTimescale=legendTimescale)
+                       label2, text=text, xscale=xscale, yscale=yscale,
+                       cdf=cdf, xlim=xlim, kde=kde, plotMean=plotMean,
+                       bins=bins, report=report, fit=fit, xfitstr=xfitstr,
+                       yfitstr=yfitstr, legend_out=legend_out,
+                       sigTest=sigTest, legendMean=legendMean,
+                       legendTimescale=legendTimescale)
 
 
 def hist_peak(df, col, filename, xlabel, labels=None, minTh=None,
-             maxTh=None, text=None, xscale=None, yscale=None, cdf=False,
-             xlim=None, kde=False, plotMean=False, bins=None, report=False,
-             fit=False, xfitstr=None, yfitstr=None, legend_out=True,
-             sigTest=False, legendTimescale=False, meanL=None,
-             legendMean=False):
-
+              maxTh=None, text=None, xscale=None, yscale=None, cdf=False,
+              xlim=None, kde=False, plotMean=False, bins=None, report=False,
+              fit=False, xfitstr=None, yfitstr=None, legend_out=True,
+              sigTest=False, legendTimescale=False, meanL=None,
+              legendMean=False):
     d = getHistData(df, col, labels, minTh, maxTh)
 
     cond1 = (d.hasPeaks)
@@ -367,12 +350,12 @@ def hist_peak(df, col, filename, xlabel, labels=None, minTh=None,
     c2 = NREV_COLOR
 
     label1, label2 = getLabels('Reversing', 'Non-reversing',
-                                d[cond1][col].size, d[cond2][col].size)
+                               d[cond1][col].size, d[cond2][col].size)
     hist_twoQuantities(d, col, filename, xlabel, cond1, label1, cond2,
-                           label2, text=text, xscale=xscale, yscale=yscale,
-                           cdf=cdf, xlim=xlim, kde=kde, plotMean=plotMean,
-                           bins=bins, report=report, fit=fit, xfitstr=xfitstr,
-                           yfitstr=yfitstr, legend_out=legend_out,
-                           sigTest=sigTest, legendMean=legendMean,
-                           legendTimescale=legendTimescale, c1=c1,
-                           c2=c2)
+                       label2, text=text, xscale=xscale, yscale=yscale,
+                       cdf=cdf, xlim=xlim, kde=kde, plotMean=plotMean,
+                       bins=bins, report=report, fit=fit, xfitstr=xfitstr,
+                       yfitstr=yfitstr, legend_out=legend_out,
+                       sigTest=sigTest, legendMean=legendMean,
+                       legendTimescale=legendTimescale, c1=c1,
+                       c2=c2)
