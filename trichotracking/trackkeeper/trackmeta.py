@@ -102,6 +102,9 @@ class Trackmeta:
 
     def getTrackNrPairs(self):
         return self.df_tr[self.df_tr.type==2].trackNr.values
+    
+    def getTrackNrSingles(self):
+        return self.df_tr[self.df_tr.type==1].trackNr.values
 
     def save(self, file):
         self.df_tr.to_csv(file)
