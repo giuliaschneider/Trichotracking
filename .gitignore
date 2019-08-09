@@ -43,6 +43,7 @@ Thumbs.db
 */__pycache__/
 */_build/
 *.vscode/
+*.idea/
 
 # Results #
 ###############
