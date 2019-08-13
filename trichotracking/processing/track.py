@@ -3,8 +3,8 @@ import os
 import sys
 import time
 from os.path import abspath, isfile, join
-import numpy as np
 
+import numpy as np
 from iofiles import find_img
 from linking import link, merge
 from overlap import (calcOverlap,
@@ -13,11 +13,10 @@ from overlap import (calcOverlap,
                      getIntDark)
 from postprocessing import Postprocesser
 from segmentation import (calc_chamber_df_ulisetup,
-                          dilate_border,
                           getBackground,
                           getChamber,
                           filterParticlesArea,
-                          particles_sequence)
+                          particles_sequence, dilate_border)
 from trackkeeper import Aggkeeper, Pairkeeper, Trackkeeper
 
 
@@ -66,7 +65,7 @@ class ProcessExperiment():
         with open(self.meta) as f:
             for line in f:
                 (key, val) = (line.strip().split(': '))
-                metad[(key)] = val
+                metad[key] = val
         self.dark = metad['Darkfield']
         self.blur = True
         self.pxConversion = float(metad['pxConversion'])
@@ -119,7 +118,6 @@ class ProcessExperiment():
             keeper.saveAnimation(self.srcDir, self.dest)
 
             self.keeper = keeper
-
 
             pairkeeper = Pairkeeper.fromScratch(aggkeeper.getDf(),
                                                 keeper.getDfTracksMeta(),
@@ -189,9 +187,6 @@ class ProcessExperiment():
                               plotImages=False)
 
         self.pairkeeper.save(self.pairsMetaFile)
-
-
-
 
 
 if __name__ == '__main__':
