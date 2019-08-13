@@ -1,32 +1,25 @@
+import cv2
 import numpy as np
 import numpy.linalg
-import matplotlib.pyplot as plt
-import cv2
-
-from regionprops import (calcCentroidMatrix,
-                         calcCentroidGlobal,
-                         calcMinRect,
-                         connectContours,
-                         getAngleFromMoments,
-                         getLengths,
-                         filterForLargestContour,
-                         filterForNLargestContour)
 from geometry import (areaAboveLine,
                       areaBelowLine,
                       areaRightOfLine,
                       areaLeftOfLine,
                       getLine,
-                      isBelowLine,
                       isPointBelowLine)
+from regionprops import (calcCentroidMatrix,
+                         calcCentroidGlobal,
+                         connectContours,
+                         getLengths,
+                         filterForLargestContour,
+                         filterForNLargestContour)
 from segmentation import removeNoise
 
 from ._filament import Filament
 from ._match_filaments import MatchFilamentEnds
 
-from IPython.core.debugger import set_trace
-
-
 PARAMS_CONTOURS = (cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
 
 class SegmentOverlap():
     """ Segments overlap region and calculates filaments, overlap lengths.
@@ -54,8 +47,8 @@ class SegmentOverlap():
     """
 
     def __init__(self, img, bw, bw_filled, background, previous,
-                       frame, length, connectingLength, nBx, nBy, getDist,
-                       getInt, seg_functions):
+                 frame, length, connectingLength, nBx, nBy, getDist,
+                 getInt, seg_functions):
         # Initialize variables
         self.img = img
         self.img_shape = img.shape[:2]
@@ -90,7 +83,6 @@ class SegmentOverlap():
         self.getLongShortFilaments()
         self.createSegmenedImage()
 
-
     def segment(self):
         """ Segments image into regions: background, overlap, fil1, fil2."""
         # More than one region -> # Several filaments, overlap = 0
@@ -98,7 +90,6 @@ class SegmentOverlap():
             self.segmentSeveralContours()
         else:
             self.chooseSegmentation()
-
 
     def segmentSeveralContours(self):
         """ Segmentation if there are several filaments."""
@@ -115,7 +106,6 @@ class SegmentOverlap():
         self.labels = np.array([0, 1])
         self.cxcy = calcCentroidGlobal(c_fil, self.nBx, self.nBy)
 
-
     def chooseSegmentation(self):
         """ Choses best segmentation. """
         if self.length is None:
@@ -130,7 +120,6 @@ class SegmentOverlap():
             indBest = np.argmin(np.array(costs))
             res = results[indBest]
             names = [i.__name__ for i in self.seg_functions]
-            print("Best = {}, Cost = {}".format(names[indBest], costs[indBest]))
 
         if costs[indBest] > 40:
             self.segmentNoOverlap(res)
@@ -150,10 +139,9 @@ class SegmentOverlap():
         if not (np.array(self.labels) == 0).any():
             self.labels[:] = [0]
 
-
     def segmentOneContour(self, segmentation_function):
         """ Segments the input image in overlap and filament regions. """
-        bw_overlap = segmentation_function(self.img_shape,self.dist,self.int)
+        bw_overlap = segmentation_function(self.img_shape, self.dist, self.int)
 
         # Filters overlap region
         bw_overlap, c_overlap = self.refineOverlap(bw_overlap)
@@ -161,38 +149,36 @@ class SegmentOverlap():
         # Find Filament Endss
         bw_filaments = cv2.subtract(self.bw, bw_overlap)
         bw_filaments = removeNoise(bw_filaments, 15)
-        im,c_filaments,h = cv2.findContours(bw_filaments, *PARAMS_CONTOURS)
+        im, c_filaments, h = cv2.findContours(bw_filaments, *PARAMS_CONTOURS)
 
         # Calculate the total length and centroids of filaments
         self.matching = MatchFilamentEnds(bw_filaments, c_filaments, bw_overlap,
-            c_overlap, self.previous_cxcy, self.previous_labels,
-            self.previous_of, self.length, 5, self.nBx, self.nBy)
+                                          c_overlap, self.previous_cxcy, self.previous_labels,
+                                          self.previous_of, self.length, 5, self.nBx, self.nBy)
         length_filaments, length_overlap = self.matching.getLengths()
         labels = self.matching.getLabels()
         cxcy = self.matching.getCentroids()
 
-        return length_filaments, length_overlap, bw_filaments, bw_overlap,\
+        return length_filaments, length_overlap, bw_filaments, bw_overlap, \
                c_filaments, labels, cxcy
-
 
     def refineOverlap(self, bw_overlap):
         """ Dilates and connects overlap contours."""
         if bw_overlap.any():
             # Dilate
-            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (11,11))
+            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (11, 11))
             bw_overlap = cv2.dilate(bw_overlap, kernel)
             # Connect separated regions inside connectingLength
-            im,c_overlap, h = cv2.findContours(bw_overlap, *PARAMS_CONTOURS)
+            im, c_overlap, h = cv2.findContours(bw_overlap, *PARAMS_CONTOURS)
             c_overlap, bw_overlap = connectContours(bw_overlap, c_overlap,
                                                     self.connectingLength)
-            bw_overlap, c_overlap =filterForLargestContour(bw_overlap,
-                                                           c_overlap)
-            bw_overlap[self.bw==0] = [0]
-            bw_overlap, c_overlap =filterForLargestContour(bw_overlap)
+            bw_overlap, c_overlap = filterForLargestContour(bw_overlap,
+                                                            c_overlap)
+            bw_overlap[self.bw == 0] = [0]
+            bw_overlap, c_overlap = filterForLargestContour(bw_overlap)
         else:
             c_overlap = []
         return bw_overlap, c_overlap
-
 
     def segmentNoOverlap(self, res):
         """ Set variables if overlap can't be determined. """
@@ -205,23 +191,20 @@ class SegmentOverlap():
         self.labels = np.array([])
         self.cxcy = None
 
-
     def getLongShortFilaments(self):
         """ Returns images with the long and short filament. """
         bw_long_fil = self.bw_overlap.copy()
         bw_short_fil = self.bw_overlap.copy()
         for i, c in zip(self.labels, self.c_filaments):
             if i == 0:
-                bw_long_fil = cv2.drawContours(bw_long_fil,[c],-1,( 255),-1)
+                bw_long_fil = cv2.drawContours(bw_long_fil, [c], -1, (255), -1)
             else:
-                bw_short_fil = cv2.drawContours(bw_short_fil,[c],-1,( 255),-1)
-        print(self.labels)
+                bw_short_fil = cv2.drawContours(bw_short_fil, [c], -1, (255), -1)
         self.long_fil = Filament(bw_long_fil, self.bw_overlap,
-                            self.previous_long_fil, self.nBx, self.nBy)
+                                 self.previous_long_fil, self.nBx, self.nBy)
         self.short_fil = Filament(bw_short_fil, self.bw_overlap,
-                            self.previous_short_fil, self.nBx, self.nBy)
+                                  self.previous_short_fil, self.nBx, self.nBy)
         self.bw_short_single = self.short_fil.bw_single
-
 
     def calcLackOfOverlap(self):
         """ Calculates lack of overlap. """
@@ -233,9 +216,7 @@ class SegmentOverlap():
             # Get images of single filaments
             xlov, bw_xlov, A, B, C, D = self.calcXLov()
             ylov, bw_ylov = self.calcYLov(bw_xlov, A, B, C, D)
-        print("xlov = {}, ylov = {}".format(xlov, ylov))
         return xlov, ylov
-
 
     def calcXLov(self):
         """ Calculates the lack of overlap in longitudial direction. """
@@ -243,7 +224,7 @@ class SegmentOverlap():
         tl, tr = self.long_fil.tl, self.long_fil.tr
         bl, br = self.long_fil.bl, self.long_fil.br
 
-        if tl[0]-tr[0] == 0:
+        if tl[0] - tr[0] == 0:
             if tl[0] > bl[0]:
                 upper = areaRightOfLine(self.bw.shape[:2], tl, tr, self.bw_short_single)
                 lower = areaLeftOfLine(self.bw.shape[:2], bl, br, self.bw_short_single)
@@ -259,12 +240,11 @@ class SegmentOverlap():
             length, c_xlov = getLengths(bw_xlov)
             cxcy_lov = calcCentroidMatrix(c_xlov)
             sign = self.long_fil.getDirection(cxcy_lov)
-            xlov = sign*length[0]
+            xlov = sign * length[0]
         else:
             xlov = 0
             bw_xlov = np.zeros((self.img.shape[:2])).astype(np.uint8)
         return xlov, bw_xlov, tl, tr, bl, br
-
 
     def calcYLov(self, bw_xlov, A, B, C, D):
         """ Calculates the lack of overlap in lateral direction. """
@@ -273,7 +253,7 @@ class SegmentOverlap():
         bw_ylov = removeNoise(bw_ylov, 15)
 
         # Midline of min area rect of longer filament
-        midLine = getLine(0.5*(A+B), 0.5*(C+D))
+        midLine = getLine(0.5 * (A + B), 0.5 * (C + D))
 
         # Calc lateral lack of overlap
         ylov = 0
@@ -285,20 +265,18 @@ class SegmentOverlap():
 
             # Iterate trhoug
             for i, c in enumerate(c_ylov):
-                isBelow = isPointBelowLine(cxcy_ylov[i,:], *midLine)
+                isBelow = isPointBelowLine(cxcy_ylov[i, :], *midLine)
                 sign = -1 if isBelow else 1
-                ylov += sign*lengths[i]
+                ylov += sign * lengths[i]
         return ylov, bw_ylov
-
 
     def createSegmenedImage(self):
         segmented = np.zeros(self.bw_overlap.shape[:2]).astype(np.uint8)
         segmented[self.bw_overlap == 255] = [1]
         for i, c in zip(self.labels, self.c_filaments):
-            col = int((i+2))
-            segmented = cv2.drawContours(segmented, [c] ,-1, (col), -1)
+            col = int((i + 2))
+            segmented = cv2.drawContours(segmented, [c], -1, (col), -1)
         self.segmented = segmented
-
 
     def calcShortFilPosition(self):
         # Fix !!!!! Make nicer ! #####################################################
@@ -310,51 +288,46 @@ class SegmentOverlap():
             self.short_fil_pos = None
         return self.short_fil_pos
 
-
     def getPreviousSegmentedOverlap(self):
         """ Returns image of previous overlap or None."""
-        if((self.previous_segmented is not None) and
-           (self.previous_segmented==1).any()):
+        if ((self.previous_segmented is not None) and
+                (self.previous_segmented == 1).any()):
             previous_overlap = np.zeros(self.img.shape[:2]).astype(np.uint8)
-            previous_overlap[self.previous_segmented==1] = [255]
+            previous_overlap[self.previous_segmented == 1] = [255]
         else:
             previous_overlap = None
         return previous_overlap
-
 
     def getPreviousDist(self):
         """ Returns the distance from outide to the previous overlap."""
         if self.previous_overlap is not None:
             d_prev = cv2.distanceTransform(cv2.bitwise_not(
-                        self.previous_overlap), cv2.DIST_L2, 3)
+                self.previous_overlap), cv2.DIST_L2, 3)
         else:
             d_prev = np.ones(self.img.shape[:2]).astype(np.uint8)
         return d_prev
-
 
     def getWeightsDensity(self):
         """ Returns the weight matrix for distance thresholding."""
         if self.previous_overlap is not None:
             w_dist = self.previous_dist.copy()
-            w_dist[w_dist>40] = self.max_previous_dist
+            w_dist[w_dist > 40] = self.max_previous_dist
             w_dist = ((self.max_previous_dist - w_dist) /
                       (self.max_previous_dist - self.min_previous_dist))
         else:
             w_dist = self.previous_dist
         return w_dist
 
-
     def getWeightsIntensity(self):
         """ Returns the weight matrix for distance thresholding."""
         if self.previous_overlap is not None:
             w_int = self.previous_dist.copy()
-            w_int[w_int>15] = self.max_previous_dist
+            w_int[w_int > 15] = self.max_previous_dist
             w_int = ((self.max_previous_dist - w_int) /
-                     (self.max_previous_dist - self.min_previous_dist))**2
+                     (self.max_previous_dist - self.min_previous_dist)) ** 2
         else:
             w_int = self.previous_dist
         return w_int
-
 
     def guessOf(self):
         """ Guess overlapfraction based on dist segmentation. """
@@ -364,9 +337,9 @@ class SegmentOverlap():
                 res0 = self.segmentOneContour(self.seg_functions[0])
                 self.previous_of = 1
                 res1 = self.segmentOneContour(self.seg_functions[0])
-                if((numpy.linalg.norm(res0[0] - self.length)) <
-                   (numpy.linalg.norm(res1[0] - self.length))):
-                   self.previous_of = 0
+                if ((numpy.linalg.norm(res0[0] - self.length)) <
+                        (numpy.linalg.norm(res1[0] - self.length))):
+                    self.previous_of = 0
             else:
                 self.previous_of = 0
                 res = self.segmentOneContour(self.seg_functions[0])
@@ -391,7 +364,6 @@ class SegmentOverlap():
 
     def getAllLengths(self):
         return self.length_filaments, self.length_overlap
-
 
     def getSegmentationProps(self):
         seg = dict({"segmented": self.segmented,
