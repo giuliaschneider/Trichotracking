@@ -28,6 +28,10 @@ class Trackmeta:
         df_tr = pd.read_csv(tracksMetaFile)
         return cls(df, df_tr)
 
+    def addColumn(self, df_new):
+        self.df_tr = self.df_tr.merge(df_new, left_on='trackNr', right_on='trackNr')
+
+
     def getStartTimes(self):
         """ Returns all frames in which at least one track is starting. """
         sTimes = self.df_tr[self.df_tr != self.startExp].startTime
