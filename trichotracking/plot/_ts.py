@@ -14,7 +14,7 @@ xlabel = ['Time [hh:mm]']
 __all__ = ['ts', 'ts_oneQuantity']
 
 def ts_oneQuantity(df, col, ylabel, filename):
-    ts(df, [(col,)], [ylabel], [(cm.tab10(0),)], [(props_line,)], [(ylabel,)], filename)
+    ts(df, [(col,)], [(ylabel,)], [(cm.tab10(0),)], [(props_line,)], [ylabel], filename)
 
 
 def ts(df, cols, labels, colors, props, ylabels, filename,
