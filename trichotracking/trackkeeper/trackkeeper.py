@@ -129,7 +129,6 @@ class Trackkeeper:
         self.df = convertPxToMeter(self.df, pxCols, umCols, pxConversion)
         self.smoothCentroidPosition()
         self.df = calcVelocity(self.df, 'cx_ma', 'cy_ma', 'time')
-        set_trace()
         self.df['v_abs'] = self.df.v.abs()
 
     def save(self, trackFile, pixelFile, trackMetaFile):
