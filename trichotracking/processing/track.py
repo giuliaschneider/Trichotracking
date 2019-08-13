@@ -3,7 +3,6 @@ import os
 import sys
 import time
 from os.path import abspath, isfile, join
-
 import numpy as np
 
 from iofiles import find_img
@@ -30,7 +29,7 @@ class ProcessExperiment():
         self.defineFiles()
         t0 = time.time()
         self.process()
-        self.overlap()
+
         t1 = time.time()
         print("Used time = {} s".format(t1 - t0))
 
@@ -116,12 +115,18 @@ class ProcessExperiment():
             keeper.setTime(listTimes)
             keeper.setLabel()
             keeper.calcLengthVelocity(self.pxConversion)
+            keeper.calcReversals()
             keeper.saveAnimation(self.srcDir, self.dest)
+
+            self.keeper = keeper
 
 
             pairkeeper = Pairkeeper.fromScratch(aggkeeper.getDf(),
                                                 keeper.getDfTracksMeta(),
                                                 pairTrackNrs)
+            self.pairkeeper = pairkeeper
+            self.listTimes = listTimes
+            self.overlap()
 
         else:
             keeper = Trackkeeper.fromFiles(self.trackFile,
@@ -138,7 +143,6 @@ class ProcessExperiment():
 
         keeper.save(self.trackFile, self.pixelFile, self.tracksMetaFile)
         aggkeeper.save(self.aggregatesMetaFile)
-        pairkeeper.save(self.pairsMetaFile)
         np.savetxt(self.timesFile, listTimes)
 
     def segment(self):
@@ -172,8 +176,8 @@ class ProcessExperiment():
         listImgs = find_img(self.srcDir)
         overlap = calcOverlap(listImgs,
                               self.listTimes,
+                              self.pairkeeper,
                               self.keeper.getDfTracksComplete(),
-                              self.pairkeeper.getTrackNr(),
                               os.path.join(self.dest, 'overlap'),
                               self.background,
                               getDist,
@@ -182,14 +186,12 @@ class ProcessExperiment():
                               ofs=None,
                               darkphases=None,
                               plotAnimation=True,
-                              plotImages=False,
-                              filLengths=self.pairkeeper.getLengths())
+                              plotImages=False)
 
-        notFilTracks = overlap.getUnsuccessfulTracks()
+        self.pairkeeper.save(self.pairsMetaFile)
 
-    # self.dfTracksMeta.loc[self.dfTracksMeta.trackNr.isin(notFilTracks), 'type']=np.nan
-    # self.dfPairMeta = self.dfTracksMeta[self.dfTracksMeta.type==2].trackNr.values
-    # self.dfTracksMeta.to_csv(self.tracksMetaFile)
+
+
 
 
 if __name__ == '__main__':

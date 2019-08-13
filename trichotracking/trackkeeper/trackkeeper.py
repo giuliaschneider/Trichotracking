@@ -1,15 +1,13 @@
 import os.path
-
 import numpy as np
 import pandas as pd
 
 from dfmanip import (calcMovingAverages,
                      calcVelocity,
-                     convertPxToMeter)
+                     convertPxToMeter, calcPeaksSingle)
 from iofiles import export_movie
-from .trackmeta import Trackmeta
 
-from IPython.core.debugger import set_trace
+from .trackmeta import Trackmeta
 
 
 class Trackkeeper:
@@ -40,6 +38,9 @@ class Trackkeeper:
         dfPixellist = pd.read_pickle(pixelFile)
         meta = Trackmeta.fromFiles(dfTracks, trackMetaFile)
         return cls(dfTracks, dfPixellist, meta)
+
+    def addColumnMeta(self, df_new):
+        self.meta.addColumn(df_new)
 
     def getDfTracksMeta(self):
         return self.meta.df_tr
@@ -130,6 +131,9 @@ class Trackkeeper:
         self.smoothCentroidPosition()
         self.df = calcVelocity(self.df, 'cx_ma', 'cy_ma', 'time')
         self.df['v_abs'] = self.df.v.abs()
+
+    def calcReversals(self):
+        self.df = calcPeaksSingle(self.df, 'v')
 
     def save(self, trackFile, pixelFile, trackMetaFile):
         self.df.to_csv(trackFile)

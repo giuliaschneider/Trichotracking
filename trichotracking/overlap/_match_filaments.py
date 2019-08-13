@@ -1,17 +1,12 @@
 import numpy as np
 import numpy.linalg
-
+from geometry import (getPairedIndex,
+                      orderCornersRectangle)
+from linking import matcher
 from regionprops import (calcCentroidGlobal,
                          filterForNLargestContour,
                          getAngleFromMoments,
                          getLengths)
-from geometry import (isBetween,
-                      getPairedIndex,
-                      orderCornersRectangle)
-from linking import matcher
-
-
-from IPython.core.debugger import set_trace
 
 
 class MatchFilamentEnds():
@@ -46,14 +41,13 @@ class MatchFilamentEnds():
 
         self.cxcy_current = calcCentroidGlobal(self.c_singles, nBx, nBy)
         self.cxcy_overlap = calcCentroidGlobal(self.c_overlap, nBx, nBy)
-        if self.cxcy_overlap.shape[0] >= 1 :
+        if self.cxcy_overlap.shape[0] >= 1:
             self.cxcy_overlap = self.cxcy_overlap[0]
 
         self.length_singles, self.length_ov = self.calcLengths()
         self.nSingles = len(self.length_singles)
 
         self.matchAll()
-
 
     def matchAll(self):
         if len(self.cxcy_overlap) < 1:
@@ -62,65 +56,54 @@ class MatchFilamentEnds():
             self.matchFirstFrame()
         else:
             self.labels_curr = np.zeros((self.nSingles)) - 1
-            indMP, indMC = matcher(self.cxcy_previous[:,0],
-                                 self.cxcy_previous[:,1],
-                                 self.cxcy_current[:,0],
-                                 self.cxcy_current[:,1], self.maxDist)
+            indMP, indMC = matcher(self.cxcy_previous[:, 0],
+                                   self.cxcy_previous[:, 1],
+                                   self.cxcy_current[:, 0],
+                                   self.cxcy_current[:, 1], self.maxDist)
             self.labels_curr[indMC] = self.labels_prev[indMP]
             indNMC = np.where(self.labels_curr < 0)[0]
             if indNMC.size > 0:
-                print("Nr not matched = {}".format(indNMC.size))
                 self.matchNotMatched(indMC, indNMC)
-
-
-
-
 
     def matchNoOverlap(self):
         self.labels_curr = np.zeros(1)
 
-
     def matchFirstFrame(self):
         """ Matches filaments ends based on geometric relations."""
-        if(self.nSingles == 1):
+        if (self.nSingles == 1):
             self.matchOneFilamentEnd()
-        elif(self.nSingles == 2):
+        elif (self.nSingles == 2):
             self.matchTwoFilamentEnds()
-        elif(self.nSingles == 3):
+        elif (self.nSingles == 3):
             self.matchThreeFilamentEnds()
-        elif(self.nSingles == 4):
+        elif (self.nSingles == 4):
             self.matchFourFilamentEnds()
-
-
 
     def matchNotMatched(self, indMC, indNMC):
         if indNMC.size == 1:
-            if(self.nSingles == 1):
+            if (self.nSingles == 1):
                 self.matchOneFilamentEnd()
-            elif(self.nSingles == 3):
+            elif (self.nSingles == 3):
                 self.matchOneThreeFilamentEnds(indMC, indNMC)
             else:
                 self.matchOneManyFilamentEnds(indMC, indNMC)
         elif indNMC.size == 2:
-            if(self.nSingles == 2):
+            if (self.nSingles == 2):
                 self.matchTwoTwoFilamentEnds(indMC, indNMC)
-            elif(self.nSingles == 3):
+            elif (self.nSingles == 3):
                 self.matchTwoThreeFilamentEnds(indMC, indNMC)
             else:
                 self.matchTwoFourFilamentEnds(indMC, indNMC)
         elif indNMC.size == 3:
-            if(self.nSingles == 3):
+            if (self.nSingles == 3):
                 self.matchThreeThreeFilamentEnds()
             else:
                 self.matchThreeFourFilamentEnds(indMC, indNMC)
         else:
             self.matchFourFilamentEnds()
 
-
-
     def matchOneFilamentEnd(self):
         self.labels_curr = np.array([0])
-
 
     def matchOneManyFilamentEnds(self, indMC, indNMC):
         lengths = self.getMatchedLengths(indMC, indNMC)
@@ -133,7 +116,6 @@ class MatchFilamentEnds():
         else:
             self.labels_curr[indNMC] = 1
 
-
     def matchOneThreeFilamentEnds(self, indMC, indNMC):
         i_pair, i_furthest = getPairedIndex(self.cxcy_current,
                                             self.cxcy_overlap)
@@ -145,8 +127,7 @@ class MatchFilamentEnds():
             indNM = int(np.where(i_pair != matched_pair)[0])
             not_matched = i_pair[indNM]
             self.labels_curr[not_matched] = \
-                    int(not self.labels_curr[matched_pair])
-
+                int(not self.labels_curr[matched_pair])
 
     def matchTwoFilamentEnds(self):
         self.labels_curr = np.array([0, 0])
@@ -160,26 +141,22 @@ class MatchFilamentEnds():
                 self.length_ov + l_singles[1]])
             I = np.argsort(lengths2)[::-1]
             lengths2 = lengths2[I]
-            ind2 = np.array([0,1])[I]
+            ind2 = np.array([0, 1])[I]
             comb = self.matchBetweenTwoLength(self.avg, lengths, lengths2)
             if comb == 1:
                 self.labels_curr[ind2] = np.array([0, 1])
-            print(self.labels_curr)
-            print(lengths)
-            print(lengths2)
 
 
         elif self.of_previous < 0.8:
             index_fil = np.argsort(self.length_singles)[::-1]
             self.labels_curr[index_fil[1]] = 1
 
-
     def matchTwoTwoFilamentEnds(self, indMC, indNMC):
-        indMP, indMC = matcher(self.cxcy_previous[:,0],
-                                 self.cxcy_previous[:,1],
-                                 self.cxcy_current[:,0],
-                                 self.cxcy_current[:,1], self.maxDist*25)
-        if len(indMP)>0:
+        indMP, indMC = matcher(self.cxcy_previous[:, 0],
+                               self.cxcy_previous[:, 1],
+                               self.cxcy_current[:, 0],
+                               self.cxcy_current[:, 1], self.maxDist * 25)
+        if len(indMP) > 0:
             indMP = np.array([indMP[0]])
             indMC = np.array([indMC[0]])
             self.labels_curr[indMC] = self.labels_prev[indMP]
@@ -188,22 +165,20 @@ class MatchFilamentEnds():
         else:
             self.matchTwoFilamentEnds()
 
-
-
     def matchTwoThreeFilamentEnds(self, indMC, indNMC):
         lengths = self.getMatchedLengths(indMC, indNMC)
         i_pair, i_furthest = getPairedIndex(self.cxcy_current,
                                             self.cxcy_overlap)
         lengthsNM = np.array([self.length_singles[indNMC[0]],
                               self.length_singles[indNMC[1]]])
-        comb1 = lengths +lengthsNM
+        comb1 = lengths + lengthsNM
         comb2 = lengths + lengthsNM[::-1]
         comb3 = lengths
         comb3[int(not self.labels_curr[indMC])] += np.sum(lengthsNM)
 
         if i_furthest in indNMC:
             indM = indNMC[np.where(indNMC != i_furthest)[0]]
-            self.labels_curr[indM] = int( not(self.labels_curr[indMC]))
+            self.labels_curr[indM] = int(not (self.labels_curr[indMC]))
             indMC = np.append(indMC, indM)
             self.matchOneThreeFilamentEnds(indMC, np.array([i_furthest]))
         else:
@@ -216,17 +191,16 @@ class MatchFilamentEnds():
                 label = int(not self.labels_curr[indMC])
                 self.labels_curr[indNMC] = [label, label]
 
-
     def matchTwoFourFilamentEnds(self, indMC, indNMC):
         pts, ind = orderCornersRectangle(self.cxcy_current)
         lengths = self.getMatchedLengths(indMC, indNMC)
-        if(lengths == self.length_ov).any():
+        if (lengths == self.length_ov).any():
             ind = np.where(lengths == self.length_ov)[0]
             self.labels_curr[indNMC] = int(not self.labels_curr[indMC[0]])
         else:
             lengthsNM = np.array([self.length_singles[indNMC[0]],
                                   self.length_singles[indNMC[1]]])
-            comb1 = lengths +lengthsNM
+            comb1 = lengths + lengthsNM
             comb2 = lengths + lengthsNM[::-1]
             comb = self.matchBetweenTwoLength(self.avg, comb1, comb2)
             if comb == 0:
@@ -234,13 +208,12 @@ class MatchFilamentEnds():
             else:
                 self.labels_curr[indNMC] = [1, 0]
 
-
     def matchThreeFilamentEnds(self):
         i_pair, i_furthest = getPairedIndex(self.cxcy_current, self.cxcy_overlap)
         self.labels_curr = np.array([0, 0, 0])
 
         if self.avg is not None:
-            #set_trace()
+            # set_trace()
             l_singles = self.length_singles
             lengths = np.array([
                 l_singles[i_furthest] + self.length_ov + l_singles[i_pair[0]],
@@ -281,14 +254,12 @@ class MatchFilamentEnds():
             if lengths[0] < lengths[1]:
                 self.switchLabels()
 
-
-
     def matchThreeThreeFilamentEnds(self):
-        indMP, indMC = matcher(self.cxcy_previous[:,0],
-                                 self.cxcy_previous[:,1],
-                                 self.cxcy_current[:,0],
-                                 self.cxcy_current[:,1], self.maxDist*25)
-        if len(indMP)>0:
+        indMP, indMC = matcher(self.cxcy_previous[:, 0],
+                               self.cxcy_previous[:, 1],
+                               self.cxcy_current[:, 0],
+                               self.cxcy_current[:, 1], self.maxDist * 25)
+        if len(indMP) > 0:
             indMP = np.array([indMP[0]])
             indMC = np.array([indMC[0]])
             self.labels_curr[indMC] = self.labels_prev[indMP]
@@ -296,7 +267,6 @@ class MatchFilamentEnds():
             self.matchTwoThreeFilamentEnds(indMC, indNMC)
         else:
             self.matchThreeFilamentEnds()
-
 
     def matchThreeFourFilamentEnds(self, indMC, indNMC):
 
@@ -310,17 +280,14 @@ class MatchFilamentEnds():
             ind = i_pair1[np.where(i_pair1 != indMC)]
         else:
             ind = i_pair2[np.where(i_pair2 != indMC)]
-        print(indMC)
         self.labels_curr[ind] = int(not self.labels_curr[indMC])
         indMC = np.append(indMC, ind)
         indNMC = indNMC[indNMC != ind]
         self.matchTwoFourFilamentEnds(indMC, indNMC)
 
-
-
     def matchFourFilamentEnds(self):
         pts, ind = orderCornersRectangle(self.cxcy_current)
-        l_singles =self.length_singles
+        l_singles = self.length_singles
         self.labels_curr = np.zeros((4))
         lengths = np.array(
             [l_singles[ind[0]] + l_singles[ind[1]] + self.length_ov,
@@ -330,7 +297,7 @@ class MatchFilamentEnds():
             lengths2 = np.array(
                 [l_singles[ind[0]] + l_singles[ind[2]] + self.length_ov,
                  l_singles[ind[1]] + l_singles[ind[3]] + self.length_ov])
-            indl2 = np.array([0,2,1,3])
+            indl2 = np.array([0, 2, 1, 3])
             comb = self.matchBetweenTwoLength(self.avg, lengths, lengths2)
             if comb == 1:
                 lengths = lengths2
@@ -340,10 +307,9 @@ class MatchFilamentEnds():
         else:
             self.labels_curr[np.r_[ind[indl[0]], ind[indl[1]]]] = 1
 
-
     def matchBetweenTwoLength(self, avg, comb1, comb2):
-        diff1 = numpy.linalg.norm(comb1-avg)
-        diff2 = numpy.linalg.norm(comb2-avg)
+        diff1 = numpy.linalg.norm(comb1 - avg)
+        diff2 = numpy.linalg.norm(comb2 - avg)
         if diff1 < diff2:
             comb = 0
         else:
@@ -351,15 +317,15 @@ class MatchFilamentEnds():
         return comb
 
     def matchBetweenThreeLength(self, avg, comb1, comb2, comb3):
-        diff1 = np.sum(np.abs(comb1-avg))
-        diff2 = np.sum(np.abs(comb2-avg))
-        diff3 = np.sum(np.abs(comb3-avg))
+        diff1 = np.sum(np.abs(comb1 - avg))
+        diff2 = np.sum(np.abs(comb2 - avg))
+        diff3 = np.sum(np.abs(comb3 - avg))
         return np.argmin(np.array([diff1, diff2, diff3]))
 
     def calcLengths(self):
-        length_singles,_ = getLengths(self.bw_singles,self.c_singles)
+        length_singles, _ = getLengths(self.bw_singles, self.c_singles)
         length_singles = np.array(length_singles)
-        length_ov,_ = getLengths(self.bw_overlap,self.c_overlap)
+        length_ov, _ = getLengths(self.bw_overlap, self.c_overlap)
         length_ov = length_ov[0]
         return length_singles, length_ov
 
@@ -367,7 +333,7 @@ class MatchFilamentEnds():
         """ Checks if there are more than 4 fil ends. """
         if len(c_singles) > 4:
             bw_singles, c_singles = filterForNLargestContour(
-                    4, self.bw_singles, c_singles)
+                4, self.bw_singles, c_singles)
         else:
             bw_singles = self.bw_singles
         return bw_singles, c_singles
@@ -392,7 +358,6 @@ class MatchFilamentEnds():
 
     def getLabels(self):
         return self.labels_curr
-
 
     def getCentroids(self):
         return self.cxcy_current
