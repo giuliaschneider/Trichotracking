@@ -6,14 +6,13 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
 from geometry import cropRectangleKeepSize
 from iofiles import (extractPixelListFromString,
                      find_img,
                      loadImage,
                      removeFilesinDir)
 from utility import meanOfList
-from ._overlap_animation import OverlapAnimation
+
 from ._segment_overlap import SegmentOverlap
 
 PARAMS_CONTOURS = (cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -35,17 +34,32 @@ class calcOverlap():
     filLengths --   numpy array of single filament lengths
     """
 
-    def __init__(self, listOfFiles, list_times, df_tracks, tracks,
-                 saveDir, background, getDistFunc, getIntFunc,
-                 seg_functions, ofs=None, darkphases=None,
-                 plotAnimation=False, plotImages=False, filLengths=None):
+    def __init__(self,
+                 listOfFiles,
+                 list_times,
+                 pairkeeper,
+                 df_tracks,
+                 saveDir,
+                 background,
+                 getDistFunc,
+                 getIntFunc,
+                 seg_functions,
+                 ofs=None,
+                 darkphases=None,
+                 plotAnimation=False,
+                 plotImages=False):
 
         # Initalize variables
         self.listOfFiles = listOfFiles
         self.list_times = list_times
+        self.pairkeeper = pairkeeper
         self.df_tracks = df_tracks
-        self.nTracks = len(tracks)
-        self.tracks = tracks
+        self.df_tracks = df_tracks
+
+        self.tracks = self.pairkeeper.getTrackNr()
+        self.nTracks = len(self.tracks)
+        self.filLengths = self.pairkeeper.getLengths()
+
         self.saveDir = saveDir
         if not os.path.isdir(self.saveDir):
             os.mkdir(self.saveDir)
@@ -57,10 +71,20 @@ class calcOverlap():
         self.darkphases = darkphases
         self.plotAnimation = plotAnimation
         self.plotImages = plotImages
-        self.filLengths = filLengths
+
+
 
         self.success = []
+        self.failFraction = []
+
+        self.df_list = []
         self.iterate_tracks()
+
+        self.df = pd.concat(self.df_list)
+        self.df.to_csv(os.path.join(self.saveDir, 'tracks_pair.csv'))
+        self.pairkeeper.df['couldSegment'] = self.success
+        self.pairkeeper.df['failFraction'] = self.failFraction
+
 
     def iterate_tracks(self):
         """ Calculates the overlap of each track and save results to txt."""
@@ -70,10 +94,6 @@ class calcOverlap():
             self.getBasename(track)
 
             if not os.path.isfile(self.basename + '.txt'):
-                print('-' * 20)
-                print('-' * 20)
-                print("Track Nr = {}".format(track))
-
                 # Filter dataframe for current track
                 df = self.df_tracks[self.df_tracks.trackNr == track]
                 df = df.sort_values(by=['frame'])
@@ -85,12 +105,12 @@ class calcOverlap():
                 self.iterate_frames(i, df, track)
 
                 self.createDataFrame(track)
-                success = self.checkTrackSuccess()
+                success, nNan, nFrames = self.checkTrackSuccess()
                 self.success.append(success)
+                self.failFraction.append(nNan / nFrames)
+                print("Track Nr {} segmented, {} Nan values of total {} frames, ".format(track, nNan, nFrames))
                 if success:
-                    # Save results
                     self.saveDataFrame(track)
-                    # Save animation
                     if self.plotAnimation:
                         self.saveAnimation(track)
                 else:
@@ -163,7 +183,6 @@ class calcOverlap():
             self.cropped_bw = cv2.morphologyEx(self.cropped_bw, cv2.MORPH_CLOSE, kernel)
 
             # Calculate overlap
-            print('-' * 12, ' Frame {}'.format(frame), '-' * 12)
             self.calcOverlapFromShapeIntensity(track, frame)
 
     def calcOverlapFromShapeIntensity(self, track, frame):
@@ -178,8 +197,6 @@ class calcOverlap():
         else:
             connectingR = self.avg_overlap * 2.5
 
-        print("R = {}".format(connectingR))
-
         # Remove noise and fill contours
         im, c_bw, _ = cv2.findContours(bw, *PARAMS_CONTOURS)
         bw_filled = cv2.drawContours(bw, c_bw, -1, (255), -1)
@@ -191,13 +208,6 @@ class calcOverlap():
 
         # Save results to list
         self.update(track, frame, segment)
-
-        # Calculate length and overlap
-        print("Filament length= {}".format(self.length_filaments))
-        print("Overlap length= {}".format(self.length_overlap))
-
-        # if not self.previous_segented.any():
-        #    self.plotImages = True
 
         if self.plotImages:
             fig = plt.figure(figsize=(8, 8))
@@ -292,7 +302,7 @@ class calcOverlap():
         self.df_track['block'] = (nanValues != nanValues.shift()).cumsum()
         nNotNan = self.df_track.groupby(by='block').length1.count().max()
         success = (nNan / nAll < 0.5) & ((nNotNan) > 5)
-        return success
+        return success, nNan, nAll
 
     def getBasename(self, track):
         name = "overlap_track_{}".format(track)
@@ -300,17 +310,14 @@ class calcOverlap():
 
     def saveDataFrame(self, track):
         """ Save results to text file"""
-        name = "overlap_track_{}.txt".format(track)
-        filename = os.path.join(self.saveDir, name)
-        self.df_track.to_csv(self.basename + '.txt')
+        self.df_list.append(self.df_track)
 
     def saveAnimation(self, track):
         """Create animation and save as avi. """
         list_img = find_img(self.saveDir_img)
         list_bw = find_img(self.saveDir_bw)
-        ani = OverlapAnimation(list_img, list_bw, self.df_track,
-                               self.darkphases)
-        ani.save(self.basename + '.avi')
+        # ani = OverlapAnimation(list_img, list_bw, self.df_track, self.darkphases)
+        # ani.save(self.basename + '.avi')
         plt.close('all')
 
     def getBackground(self, background):
