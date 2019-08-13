@@ -14,7 +14,7 @@ xlabel = ['Time [hh:mm]']
 __all__ = ['ts', 'ts_oneQuantity']
 
 def ts_oneQuantity(df, col, ylabel, filename):
-    ts(df, [(col,)], [(ylabel,)], [(cm.tab10(0),)], [(props_line,)], [(ylabel,)], filename)
+    ts(df, [(col,)], [ylabel], [(cm.tab10(0),)], [(props_line,)], [(ylabel,)], filename)
 
 
 def ts(df, cols, labels, colors, props, ylabels, filename,
@@ -64,7 +64,6 @@ def ts(df, cols, labels, colors, props, ylabels, filename,
 
         # Plot data
         for co, pr, la, cco in zip(col, prop, label, color):
-            set_trace()
             ax.plot_date(dates, df[co], label=la, **pr, color=cco)
 
         # Plot peak lines
