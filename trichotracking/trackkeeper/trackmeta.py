@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
 
-from ._classifier import segment_filaments
+from .metakeeper import Metakeeper
 
 
-class Trackmeta:
+class Trackmeta(Metakeeper):
     """
     Class storing the track meta info and providing meta data.
 
@@ -12,99 +12,83 @@ class Trackmeta:
 
     """
 
-    def __init__(self, df, dfTracksMeta):
-        self.df = df
-        self.df_tr = dfTracksMeta
+    def __init__(self, df):
+        super().__init__(df)
         self.startExp = 0
-        self.endExp = self.df.frame.max()
+        self.endExp = self.df.endTime.max()
 
     @classmethod
     def fromScratch(cls, df):
         df_tr = createDfTracksMeta(df)
-        return cls(df, df_tr)
-
-    @classmethod
-    def fromFiles(cls, df, tracksMetaFile):
-        df_tr = pd.read_csv(tracksMetaFile)
-        return cls(df, df_tr)
-
-    def addColumn(self, df_new):
-        self.df_tr = self.df_tr.merge(df_new, left_on='trackNr', right_on='trackNr')
+        return cls(df_tr)
 
 
     def getStartTimes(self):
         """ Returns all frames in which at least one track is starting. """
-        sTimes = self.df_tr[self.df_tr != self.startExp].startTime
+        sTimes = self.df[self.df != self.startExp].startTime
         sTimes = np.unique(sTimes[~np.isnan(sTimes)])
         sTimes = np.sort(sTimes)
         return sTimes
 
     def getEndTimes(self):
         """ Returns all frames in which at least one track is ending. """
-        endTimes = self.df_tr[self.df_tr != self.endExp].endTime
+        endTimes = self.df[self.df != self.endExp].endTime
         endTimes = np.unique(endTimes[~np.isnan(endTimes)])
         endTimes = np.sort(endTimes)
         return endTimes
 
     def getStartTracks(self, t):
         """ Returns trackNrs starting at time t. """
-        return self.df_tr[self.df_tr.startTime == t].trackNr.values
+        return self.df[self.df.startTime == t].trackNr.values
 
     def getEndTracks(self, t):
         """ Returns trackNrs ending at time t. """
-        return self.df_tr[self.df_tr.endTime == t].trackNr.values
+        return self.df[self.df.endTime == t].trackNr.values
 
     def getMidTracks(self, *t):
         """ Returns trackNrs neither starting nor ending at times *t. """
-        condition = ((self.df_tr.startTime.isin(t))
-                     & (self.df_tr.endTime.isin(t)))
-        return self.df_tr[condition].trackNr.values
+        condition = ((self.df.startTime.isin(t))
+                     & (self.df.endTime.isin(t)))
+        return self.df[condition].trackNr.values
 
     def getTrackStart(self, trackNr):
-        return self.df_tr[self.df_tr.trackNr == trackNr].startTime.values[0]
+        return self.df[self.df.trackNr == trackNr].startTime.values[0]
 
     def getTrackEnd(self, trackNr):
-        return self.df_tr[self.df_tr.trackNr == trackNr].endTime.values[0]
+        return self.df[self.df.trackNr == trackNr].endTime.values[0]
 
     def getNFrames(self, trackNr):
-        return self.df_tr[self.df_tr.trackNr == trackNr].nFrames.values[0]
+        return self.df[self.df.trackNr == trackNr].nFrames.values[0]
 
     def setTrackStart(self, trackNr, newStartT):
-        self.df_tr.loc[self.df_tr.trackNr == trackNr, 'startTime'] = newStartT
+        self.df.loc[self.df.trackNr == trackNr, 'startTime'] = newStartT
 
     def setTrackEnd(self, trackNr, newEndT):
-        self.df_tr.loc[self.df_tr.trackNr == trackNr, 'endTime'] = newEndT
+        self.df.loc[self.df.trackNr == trackNr, 'endTime'] = newEndT
 
     def setNFrames(self, trackNr, nFrames):
-        self.df_tr.loc[self.df_tr.trackNr == trackNr, 'nFrames'] = nFrames
+        self.df.loc[self.df.trackNr == trackNr, 'nFrames'] = nFrames
 
     def addTrack(self, trackNr, startTime, endTime):
         nFrames = endTime - startTime
-        self.df_tr.loc[trackNr] = [trackNr, startTime, endTime, nFrames]
+        self.df.loc[trackNr] = [trackNr, startTime, endTime, nFrames]
 
     def dropTrack(self, trackNr):
         """ Drops tracks trackNr from meta dataframe. """
-        ind = self.df_tr[self.df_tr.trackNr == trackNr].index[0]
-        self.df_tr.drop(ind, inplace=True)
+        ind = self.df[self.df.trackNr == trackNr].index[0]
+        self.df.drop(ind, inplace=True)
 
-    def addTrackType(self, dfAggMeta):
-        fsingleTracks, filAlignedTracks, filCrossTracks = \
-            segment_filaments(self.df, dfAggMeta)
-        severalFilTracks = dfAggMeta[dfAggMeta.n > 2].trackNr.values
-
-        self.df_tr.loc[self.df_tr.trackNr.isin(fsingleTracks), 'type'] = 1
-        self.df_tr.loc[self.df_tr.trackNr.isin(filAlignedTracks), 'type'] = 2
-        self.df_tr.loc[self.df_tr.trackNr.isin(filCrossTracks), 'type'] = 3
-        self.df_tr.loc[self.df_tr.trackNr.isin(severalFilTracks), 'type'] = 4
+    def addTrackType(self, single, aligned, cross, aggregate):
+        self.df.loc[self.df.trackNr.isin(single), 'type'] = 1
+        self.df.loc[self.df.trackNr.isin(aligned), 'type'] = 2
+        self.df.loc[self.df.trackNr.isin(cross), 'type'] = 3
+        self.df.loc[self.df.trackNr.isin(aggregate), 'type'] = 4
 
     def getTrackNrPairs(self):
-        return self.df_tr[self.df_tr.type == 2].trackNr.values
+        return self.df[self.df.type == 2].trackNr.values
 
     def getTrackNrSingles(self):
-        return self.df_tr[self.df_tr.type == 1].trackNr.values
-
-    def save(self, file):
-        self.df_tr.to_csv(file)
+        return self.df[self.df.type == 1].trackNr.values
 
 
 def createDfTracksMeta(df):
