@@ -158,8 +158,7 @@ class calcOverlap():
         # Iterate through all track frames
         for frame in df.frame:
             df_frame = df[df.frame == frame]
-            time = self.list_times[frame]
-            self.track_times.append(datetime.fromtimestamp(time))
+            self.track_times.append(frame)
             self.frame = frame
 
             # Load and crop original image
@@ -291,8 +290,8 @@ class calcOverlap():
             "xlov": self.xlovs,
             "ylov": self.ylovs,
             "pos_short": self.short_fil_pos,
-            "time": self.track_times,
-            "track": track})
+            "frame": self.track_times,
+            "trackNr": track})
 
     def checkTrackSuccess(self):
         nanValues = ((self.df_track.length1.isnull())
@@ -358,3 +357,6 @@ class calcOverlap():
         else:
             unsuccssful = []
         return unsuccssful
+
+    def getDf(self):
+        return self.df
