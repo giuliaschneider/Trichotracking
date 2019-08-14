@@ -1,12 +1,13 @@
 import os.path
+
 import numpy as np
 import pandas as pd
-
 from dfmanip import (calcMovingAverages,
                      calcVelocity,
                      convertPxToMeter, calcPeaksSingle)
 from iofiles import export_movie
 
+from ._classifier import segment_filaments
 from .trackmeta import Trackmeta
 
 
@@ -36,14 +37,14 @@ class Trackkeeper:
     def fromFiles(cls, tracksFile, pixelFile, trackMetaFile):
         dfTracks = pd.read_csv(tracksFile)
         dfPixellist = pd.read_pickle(pixelFile)
-        meta = Trackmeta.fromFiles(dfTracks, trackMetaFile)
+        meta = Trackmeta.fromFile(trackMetaFile)
         return cls(dfTracks, dfPixellist, meta)
 
     def addColumnMeta(self, df_new):
         self.meta.addColumn(df_new)
 
     def getDfTracksMeta(self):
-        return self.meta.df_tr
+        return self.meta.getDf()
 
     def getStartTimes(self):
         return self.meta.getStartTimes()
@@ -98,7 +99,9 @@ class Trackkeeper:
         self.meta.setTrackEnd(trackNr, self.meta.getTrackEnd(t - 1))
 
     def addMetaTrackType(self, dfAggMeta):
-        self.meta.addTrackType(dfAggMeta)
+        single, aligned, cross = segment_filaments(self.df, dfAggMeta)
+        aggregate = dfAggMeta[dfAggMeta.n > 2].trackNr.values
+        self.meta.addTrackType(single, aligned, cross, aggregate)
 
     def getTrackNrPairs(self):
         return self.meta.getTrackNrPairs()
@@ -122,18 +125,22 @@ class Trackkeeper:
     def smoothCentroidPosition(self, wsize=11):
         columns = ["cx_um", "cy_um"]
         ma_columns = ["cx_ma", "cy_ma"]
-        self.df = calcMovingAverages(self.df, wsize, columns, ma_columns)
+        if not all(x in self.df.keys() for x in ma_columns):
+            self.df = calcMovingAverages(self.df, wsize, columns, ma_columns)
 
     def calcLengthVelocity(self, pxConversion):
         pxCols = ["length", "cx", "cy"]
         umCols = ["length_um", "cx_um", "cy_um"]
-        self.df = convertPxToMeter(self.df, pxCols, umCols, pxConversion)
+        if not all(x in self.df.keys() for x in umCols):
+            self.df = convertPxToMeter(self.df, pxCols, umCols, pxConversion)
         self.smoothCentroidPosition()
-        self.df = calcVelocity(self.df, 'cx_ma', 'cy_ma', 'time')
-        self.df['v_abs'] = self.df.v.abs()
+        if not all(x in self.df.keys() for x in ['v', 'v_abs']):
+            self.df = calcVelocity(self.df, 'cx_ma', 'cy_ma', 'time')
+            self.df['v_abs'] = self.df.v.abs()
 
     def calcReversals(self):
-        self.df = calcPeaksSingle(self.df, 'v')
+        if not 'peaks' in self.df.keys():
+            self.df = calcPeaksSingle(self.df, 'v')
 
     def save(self, trackFile, pixelFile, trackMetaFile):
         self.df.to_csv(trackFile)
