@@ -17,48 +17,94 @@ from segmentation import (calc_chamber_df_ulisetup,
                           getChamber,
                           filterParticlesArea,
                           particles_sequence, dilate_border)
-from trackkeeper import Aggkeeper, Pairkeeper, Trackkeeper
+from trackkeeper import Aggkeeper, Pairkeeper, Trackkeeper, Pairtrackkeeper
+
+from pdb import set_trace
 
 
-class ProcessExperiment():
+def parse_args(arguments):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--src', help='source folder of images')
+    parser.add_argument('--dest', help='destination folder of images')
+    parser.add_argument('--plot',
+                        help='Flag indicating if picutures are plotted',
+                        type=bool,
+                        default=False)
+    parser.add_argument('--meta', help='file containing meta information')
+    args = parser.parse_args(arguments[1:])
 
-    def __init__(self, argv):
-        self.parse_args(argv)
-        self.getMetaInfo()
-        self.defineFiles()
+    srcDir = args.src
+    plot = args.plot
+
+    if args.dest is None:
+        args.dest = join(args.src, 'results')
+    dest = args.dest
+    if not os.path.isdir(dest):
+        os.mkdir(dest)
+
+    if abspath(args.meta) != args.meta:
+        meta = abspath(join(args.src, args.meta))
+    else:
+        meta = args.meta
+
+    return srcDir, dest, plot, meta
+
+
+class ProcessExperiment:
+
+    def __init__(self, arguments):
+        (self.srcDir,
+         self.dest,
+         self.plot,
+         self.meta) = parse_args(arguments)
+
+        (self.blur,
+         self.border,
+         self.dark,
+         self.dt,
+         self.linkDist,
+         self.pxConversion,
+         self.timestamp) = self.getMetaInfo()
+
+        (self.background,
+         self.dchamber,
+         self.trackFile,
+         self.pixelFile,
+         self.timesFile,
+         self.tracksMetaFile,
+         self.aggregatesMetaFile,
+         self.pairsMetaFile,
+         self.pairTrackFile) = self.defineFiles()
+
         t0 = time.time()
-        self.process()
+        if not (isfile(self.trackFile)
+                and isfile(self.pixelFile)
+                and isfile(self.timesFile)
+                and isfile(self.tracksMetaFile)
+                and isfile(self.aggregatesMetaFile)
+                and isfile(self.pairsMetaFile)):
+            (self.keeper,
+             self.aggkeeper,
+             self.pairkeeper,
+             self.listTimes) = self.process()
+
+        else:
+            self.keeper = Trackkeeper.fromFiles(self.trackFile, self.pixelFile, self.tracksMetaFile)
+            self.aggkeeper = Aggkeeper.fromFile(self.aggregatesMetaFile)
+            self.pairkeeper = Pairkeeper.fromFile(self.pairsMetaFile)
+            self.listTimes = np.loadtxt(self.timesFile)
+
+        if not isfile(self.pairTrackFile):
+            dfPairTracks = self.overlap()
+            self.pairTrackKeeper = Pairtrackkeeper(dfPairTracks, self.pairkeeper)
+        else:
+            self.pairTrackKeeper = Pairtrackkeeper.fromFiles(self.pairTrackFile, self.pairkeeper)
 
         t1 = time.time()
         print("Used time = {} s".format(t1 - t0))
 
-        postprocessor = Postprocesser(self.keeper, self.aggkeeper, self.pairkeeper, self.dest)
-
-    def parse_args(self, argv):
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--src', help='source folder of images')
-        parser.add_argument('--dest', help='destination folder of images')
-        parser.add_argument('--plot',
-                            help='Flag indicating if picutures are plotted',
-                            type=bool,
-                            default=False)
-        parser.add_argument('--meta', help='file containing meta information')
-        args = parser.parse_args(argv[1:])
-
-        self.srcDir = args.src
-
-        if args.dest is None:
-            args.dest = join(args.src, 'results')
-        self.dest = args.dest
-        if not os.path.isdir(self.dest):
-            os.mkdir(self.dest)
-
-        self.plot = args.plot
-
-        if abspath(args.meta) != args.meta:
-            self.meta = abspath(join(args.src, args.meta))
-        else:
-            self.meta = args.meta
+        Postprocesser(self.keeper, self.aggkeeper, self.pairTrackKeeper, self.listTimes, self.dest, self.pxConversion)
+        self.save_all()
 
     def getMetaInfo(self):
         metad = {}
@@ -66,82 +112,55 @@ class ProcessExperiment():
             for line in f:
                 (key, val) = (line.strip().split(': '))
                 metad[key] = val
-        self.dark = metad['Darkfield']
-        self.blur = True
-        self.pxConversion = float(metad['pxConversion'])
-        self.linkDist = int(metad['LinkDist'])
+        dark = metad['Darkfield']
+        pxConversion = float(metad['pxConversion'])
+        linkDist = int(metad['LinkDist'])
         if 'timestamp' in metad.keys():
-            self.timestamp = (metad['timestamp'] == 'True')
-            self.dt = int(metad['dt'])
+            timestamp = (metad['timestamp'] == 'True')
+            dt = int(metad['dt'])
         else:
-            self.timestamp = True
-
+            timestamp = True
+            dt = None
         if 'blur' in metad.keys():
-            self.blur = True
+            blur = True
         else:
-            self.blur = False
-
+            blur = False
         if 'ChamberBorder' in metad.keys():
-            self.border = int(metad['ChamberBorder'])
+            border = int(metad['ChamberBorder'])
         else:
-            self.border = 50
-
-        self.linkDist = int(metad['LinkDist'])
+            border = 50
+        return blur, border, dark, dt, linkDist, pxConversion, timestamp
 
     def defineFiles(self):
-        self.background = getBackground(self.srcDir)
-        self.chamber = getChamber(self.srcDir, self.background, calc_chamber_df_ulisetup)
-        self.dchamber = dilate_border(self.chamber, ksize=self.border)
+        background = getBackground(self.srcDir)
+        chamber = getChamber(self.srcDir, background, calc_chamber_df_ulisetup)
+        dchamber = dilate_border(chamber, ksize=self.border)
 
-        self.trackFile = join(self.dest, 'tracks.csv')
-        self.pixelFile = join(self.dest, 'pixellists.pkl')
-        self.timesFile = join(self.dest, 'times.csv')
-        self.tracksMetaFile = join(self.dest, 'tracks_meta.csv')
-        self.aggregatesMetaFile = join(self.dest, 'aggregates_meta.csv')
-        self.pairsMetaFile = join(self.dest, 'pairs_meta.csv')
+        trackFile = join(self.dest, 'tracks.csv')
+        pixelFile = join(self.dest, 'pixellists.pkl')
+        timesFile = join(self.dest, 'times.csv')
+        tracksMetaFile = join(self.dest, 'tracks_meta.csv')
+        aggregatesMetaFile = join(self.dest, 'aggregates_meta.csv')
+        pairsMetaFile = join(self.dest, 'pairs_meta.csv')
+        pairsTrackFile = join(self.dest, 'overlap', 'tracks_pair.csv')
+        return (
+            background, dchamber, trackFile, pixelFile, timesFile, tracksMetaFile, aggregatesMetaFile, pairsMetaFile,
+            pairsTrackFile)
 
     def process(self):
-        if not isfile(self.trackFile):
-            df, listTimes, dfPixellist = self.segment()
-            listTimes = self.get_times(listTimes)
-            dfTracks = link(df)
-            keeper = Trackkeeper.fromDf(dfTracks, dfPixellist)
-            df_merge, df_split = merge(keeper)
-            aggkeeper = Aggkeeper.fromScratch(df_merge, df_split, keeper)
-            keeper.addMetaTrackType(aggkeeper.getDf())
-            pairTrackNrs = keeper.getTrackNrPairs()
-            keeper.addMetaTrackType(aggkeeper.df)
-            keeper.setTime(listTimes)
-            keeper.setLabel()
-            keeper.calcLengthVelocity(self.pxConversion)
-            keeper.calcReversals()
-            keeper.saveAnimation(self.srcDir, self.dest)
-
-            self.keeper = keeper
-
-            pairkeeper = Pairkeeper.fromScratch(aggkeeper.getDf(),
-                                                keeper.getDfTracksMeta(),
-                                                pairTrackNrs)
-            self.pairkeeper = pairkeeper
-            self.listTimes = listTimes
-            self.overlap()
-
-        else:
-            keeper = Trackkeeper.fromFiles(self.trackFile,
-                                           self.pixelFile,
-                                           self.tracksMetaFile)
-            listTimes = np.loadtxt(self.timesFile)
-            aggkeeper = Aggkeeper.fromFile(self.aggregatesMetaFile)
-            pairkeeper = Pairkeeper.fromFile(self.pairsMetaFile)
-
-        self.keeper = keeper
-        self.aggkeeper = aggkeeper
-        self.pairkeeper = pairkeeper
-        self.listTimes = listTimes
-
-        keeper.save(self.trackFile, self.pixelFile, self.tracksMetaFile)
-        aggkeeper.save(self.aggregatesMetaFile)
-        np.savetxt(self.timesFile, listTimes)
+        df, listTimes, dfPixellist = self.segment()
+        listTimes = self.get_times(listTimes)
+        dfTracks = link(df)
+        keeper = Trackkeeper.fromDf(dfTracks, dfPixellist)
+        df_merge, df_split = merge(keeper)
+        aggkeeper = Aggkeeper.fromScratch(df_merge, df_split, keeper)
+        keeper.addMetaTrackType(aggkeeper.getDf())
+        pairTrackNrs = keeper.getTrackNrPairs()
+        keeper.addMetaTrackType(aggkeeper.df)
+        pairkeeper = Pairkeeper.fromScratch(aggkeeper.getDf(),
+                                            keeper.getDfTracksMeta(),
+                                            pairTrackNrs)
+        return keeper, aggkeeper, pairkeeper, listTimes
 
     def segment(self):
         df, listTimes = particles_sequence(self.srcDir,
@@ -185,8 +204,15 @@ class ProcessExperiment():
                               darkphases=None,
                               plotAnimation=True,
                               plotImages=False)
+        return overlap.getDf()
 
+    def save_all(self):
+        self.keeper.save(self.trackFile, self.pixelFile, self.tracksMetaFile)
+        self.keeper.saveAnimation(self.srcDir, self.dest)
+        self.aggkeeper.save(self.aggregatesMetaFile)
+        self.pairTrackKeeper.save(self.pairTrackFile)
         self.pairkeeper.save(self.pairsMetaFile)
+        np.savetxt(self.timesFile, self.listTimes)
 
 
 if __name__ == '__main__':
