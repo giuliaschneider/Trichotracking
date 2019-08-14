@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
+from .metakeeper import Metakeeper
 
 
-class Pairkeeper:
+class Pairkeeper(Metakeeper):
     """
     Class storing and providing information about filament pair tracks.
 
@@ -18,7 +19,7 @@ class Pairkeeper:
     """
 
     def __init__(self, df):
-        self.df = df
+        super().__init__(df)
 
     @classmethod
     def fromScratch(cls, dfAggMeta, dfTracksMeta, pairTrackNrs):
@@ -33,11 +34,6 @@ class Pairkeeper:
                            'breakup': breakup,
                            'type': np.nan})
         return cls(df)
-
-    @classmethod
-    def fromFile(cls, pairsMetaFile):
-        dfPairMeta = pd.read_csv(pairsMetaFile)
-        return cls(dfPairMeta)
 
     def getTrackNr(self):
         return self.df.trackNr.values

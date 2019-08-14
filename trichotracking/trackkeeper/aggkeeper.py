@@ -2,9 +2,11 @@ import numpy as np
 import pandas as pd
 
 from dfmanip import columnsToListColumns, combineNanCols, listToColumns
+from .metakeeper import Metakeeper
+from pdb import set_trace
 
 
-class Aggkeeper:
+class Aggkeeper(Metakeeper):
     """ 
     Class storing and providing information about aggregate tracks.
 
@@ -85,22 +87,12 @@ class Aggkeeper:
         dfagg = combineNanCols(dfagg, 'deftracks', 'tracks0', 'tracks1')
         # Split column
         dfagg = listToColumns(dfagg, 'deftracks', ['mTrack1', 'mTrack2'])
-        dfagg.drop(columns=['deftracks'], inplace=True)
+        dfagg.drop(columns=['deftracks', 'n0', 'n1', 'ns0', 'ns1'], inplace=True)
+
         return cls(dfagg)
 
-    @classmethod
-    def fromFile(cls, aggMetaFile):
-        dfagg = pd.read_csv(aggMetaFile)
-        return cls(dfagg)
 
-    def getDf(self):
-        return self.df
 
-    def save(self, aggregatesMetaFile):
-        self.df.to_csv(aggregatesMetaFile)
-
-    def getDf(self):
-        return self.df
 
 
 def fillTimes(row, col, df_tracks, col_tr):
@@ -153,5 +145,4 @@ def countFrames(dfagg):
     dfagg['n1'] = dfagg.tracks1.str.len()
     dfagg['ns1'] = dfagg.stracks1.str.len()
     dfagg['n'] = dfagg[['ns0', 'ns1']].max(axis=1)
-    dfagg.drop(columns=['n0', 'ns0', 'n1', 'ns1'])
     return dfagg
