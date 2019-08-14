@@ -1,10 +1,10 @@
 import numpy as np
 import scipy.signal
 
+from pdb import set_trace
+
 
 __all__ = ['calcPeaks', 'calcPeaksSingle', 'calcReversalPeriod']
-
-
 
 
 def calcPeaks(df, col, p=0):
@@ -12,9 +12,9 @@ def calcPeaks(df, col, p=0):
     df["peaks"] = np.nan
     labels = np.unique(df.label)
     for label in labels:
-        x = df[df.label==label][col].values
-        ind = df[df.label==label].index.values
-        #print("Label = {}, p = {}".format(label, p))
+        x = df[df.label == label][col].values
+        ind = df[df.label == label].index.values
+        # print("Label = {}, p = {}".format(label, p))
         # Local maxima
         pe = scipy.signal.find_peaks(x, prominence=p)[0]
         df.loc[df.index.isin(ind[pe]), 'peaks'] = 1
@@ -27,9 +27,9 @@ def calcPeaks(df, col, p=0):
 
 def calcPeaksSingle(dflinked, cv):
     """Calculates the reversal period for single tracks based on vel (cv)."""
-    v = dflinked[dflinked[cv].abs()>=0.1][[cv, 'label']]
-    v['peaks'] = ( (v.label == v.label.shift())
-                  &(np.sign(v[cv]).diff()<0))
+    v = dflinked[dflinked[cv].abs() >= 0.1][[cv, 'label']]
+    v['peaks'] = ((v.label == v.label.shift())
+                  & (np.sign(v[cv]).diff() < 0))
     dflinked = dflinked.join(v.peaks)
     return dflinked
 
@@ -41,7 +41,6 @@ def calcReversalPeriod(df, peakcond, slabels=None):
         dfpeaks = df[peakcond].copy()
     dfg = dfpeaks.groupby('label')
     dfpeaks['trev'] = dfg.time.transform(lambda x: x.diff())
-    dfpeaks['trev']=dfpeaks.trev.dt.seconds
+    dfpeaks['trev'] = dfpeaks.trev.dt.seconds
     df = df.join(dfpeaks.trev)
     return df
-
