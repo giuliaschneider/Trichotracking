@@ -1,15 +1,11 @@
 import numpy as np
-import numpy.linalg as la
-import pandas as pd
 
-
-__all__  = ['calcChangeInTime', 'calcVelocity', 'calcSingleFilamentVelocity'] 
-
+__all__ = ['calcChangeInTime', 'calcVelocity', 'calcSingleFilamentVelocity']
 
 
 def calcDTime(df, ctime):
     time = df[ctime].diff(periods=-1).values
-    dtime = pd.to_timedelta(time, unit='s') / np.timedelta64(1, 's')
+    # dtime = pd.to_timedelta(time, unit='s') / np.timedelta64(1, 's')
     return time
 
 
@@ -24,12 +20,13 @@ def calcVLabel(dflabel, ccx, ccy, ctime):
     """Calculates the velocitiy between centroid points for one label."""
     dtime = calcDTime(dflabel, ctime)
     r = dflabel[[ccx, ccy]].diff(periods=-1)
-    v = ((r[ccx]**2 + r[ccy]**2)**0.5) / dtime
+    v = ((r[ccx] ** 2 + r[ccy] ** 2) ** 0.5) / dtime
     theta = np.arctan2(r[ccy], r[ccx])
-    v = np.sign(theta)*v
+    v = np.sign(theta) * v
     return v
 
-def calcVelocity(df, ccx, ccy, ctime):
+
+def calcVelocity_returnV(df, ccx, ccy, ctime):
     """
     Calculates the velocitiy between centroid points (cols ccx, ccy).
     
@@ -52,12 +49,18 @@ def calcVelocity(df, ccx, ccy, ctime):
     dfg = df.groupby('label')
     v = dfg.apply(lambda x: calcVLabel(x, ccx, ccy, ctime))
     vnew = v.reset_index().set_index('level_1').drop('label', axis=1)
-    df['v'] = vnew
+    return vnew
+
+
+def calcVelocity(df, ccx, ccy, ctime):
+    df['v'] = calcVelocity_returnV(df, ccx, ccy, ctime)
     return df
 
 
 def calcSingleFilamentVelocity(df):
     """ Calculates the single filament |v| based on change in abs position."""
-    df = calcVelocity(df, 'cx1_ma', 'cy1_ma', 'time')
-    df = calcVelocity(df, 'cx2_ma', 'cy2_ma', 'time')
+    v1 = calcVelocity_returnV(df, 'cx1_ma', 'cy1_ma', 'time')
+    v2 = calcVelocity_returnV(df, 'cx2_ma', 'cy2_ma', 'time')
+    df['v1'] = v1
+    df['v2'] = v2
     return df
