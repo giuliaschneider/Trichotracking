@@ -38,8 +38,18 @@ class Pairkeeper(Metakeeper):
     def getTrackNr(self):
         return self.df.trackNr.values
 
+    def getSuccessfulTrackNr(self):
+        return self.df[self.df.couldSegement].trackNr.values
+
     def getLengths(self,):
         return self.df[['length1', 'length2']].values
+
+    def add_revb(self):
+        self.df['revb'] = 0
+        self.df.loc[(self.df.npeaks > 0) & (self.df.breakup != 2), 'revb'] = 1
+        self.df.loc[(self.df.npeaks > 0) & (self.df.breakup == 2), 'revb'] = 2
+        self.df.loc[(self.df.npeaks == 0) & (self.df.breakup != 2), 'revb'] = 3
+        self.df.loc[(self.df.npeaks == 0) & (self.df.breakup == 2), 'revb'] = 4
 
     def save(self, file):
         self.df.to_csv(file)
