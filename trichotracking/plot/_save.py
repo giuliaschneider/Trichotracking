@@ -7,9 +7,9 @@ import matplotlib as mpl
 __all__ = ['saveplot']
 
 
-def saveplot(fig, filename, saveDir):
-    mpl.rcParams.update({'font.size': 10})
-    #"""
+def saveplot(fig, filename):
+    mpl.rcParams.update({'font.size': 9})
+    """
     mpl.use("pgf", warn=False, force=True)
 
     pgf_with_custom_preamble = {
@@ -27,7 +27,7 @@ def saveplot(fig, filename, saveDir):
     }
     mpl.rcParams['text.latex.unicode'] = True
     mpl.rcParams.update(pgf_with_custom_preamble)
-    #"""
+    """
 
     basename = os.path.basename(filename)
     if basename.endswith(".png"):
@@ -39,6 +39,3 @@ def saveplot(fig, filename, saveDir):
     fig.savefig(filename + ".pdf",bbox_inches='tight')
 
 
-    #updateFig(fig, 'serif')
-    file_str =  os.path.join(saveDir, basename)
-    fig.savefig(file_str + ".pdf",bbox_inches='tight', dpi=300)
