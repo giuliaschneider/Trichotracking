@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
+
+
 from dfmanip import convertPxToMeter, calcMovingAverages, calcSingleFilamentVelocity, calcChangeInTime, calcPeaks
+from .pairkeeper import Pairkeeper
 
 
 class Pairtrackkeeper:
@@ -70,9 +73,10 @@ class Pairtrackkeeper:
         return cls(df, meta)
 
     @classmethod
-    def fromFiles(cls, tracksPairFile, dfMeta):
+    def fromFiles(cls, tracksPairFile, metaPairFile):
         df = pd.read_csv(tracksPairFile)
-        return cls(df, dfMeta)
+        meta = Pairkeeper.fromFile(metaPairFile)
+        return cls(df, meta)
 
     def addColumnMeta(self, df_new):
         self.meta.addColumn(df_new)
@@ -137,3 +141,9 @@ class Pairtrackkeeper:
 
     def save(self, file):
         self.df.to_csv(file)
+
+    def getTrackNrPairs(self):
+        return self.meta.getSuccessfulTrackNr()
+
+    def add_revb(self):
+        self.meta.add_revb()
