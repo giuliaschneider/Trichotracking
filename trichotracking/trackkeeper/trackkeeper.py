@@ -36,7 +36,10 @@ class Trackkeeper:
     @classmethod
     def fromFiles(cls, tracksFile, pixelFile, trackMetaFile):
         dfTracks = pd.read_csv(tracksFile)
-        dfPixellist = pd.read_pickle(pixelFile)
+        if pixelFile is None:
+            dfPixellist = None
+        else:
+            dfPixellist = pd.read_pickle(pixelFile)
         meta = Trackmeta.fromFile(trackMetaFile)
         return cls(dfTracks, dfPixellist, meta)
 
@@ -146,6 +149,10 @@ class Trackkeeper:
         self.df.to_csv(trackFile)
         self.dfPixellist.to_pickle(pixelFile)
         self.meta.save(trackMetaFile)
+
+    def update_meta(self):
+        self.meta.update(self.df)
+
 
     def saveAnimation(self, dataDir, destDir):
         nTracks = int(np.max(self.df.trackNr.values)) + 1
