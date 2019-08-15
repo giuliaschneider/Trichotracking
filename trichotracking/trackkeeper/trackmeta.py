@@ -22,6 +22,8 @@ class Trackmeta(Metakeeper):
         df_tr = createDfTracksMeta(df)
         return cls(df_tr)
 
+    def update(self, df):
+        self.df = createDfTracksMeta(df)
 
     def getStartTimes(self):
         """ Returns all frames in which at least one track is starting. """
