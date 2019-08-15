@@ -46,10 +46,7 @@ def hist_twoQuantities(df, col, filename, xlabel, cond1, label1, cond2,
 
     if xlim is None:
         xlim = (0.9 * df[col].min(), 1.1 * df[col].max())
-    try:
         ax.set_xlim(xlim)
-    except:
-        set_trace()
 
     if cdf:
         props['hist_kws'] = dict(cumulative=True)
@@ -211,7 +208,7 @@ def getHistData(df, col, labels, minTh, maxTh):
 
 
 def getLabels(l1, l2, n1, n2):
-    if ((n1 < 1000) or (n2 < 1000)):
+    if (n1 < 1000) or (n2 < 1000):
         label1 = l1 + r', $n$ = {}'.format(n1)
         label2 = l2 + r', $n$ = {}'.format(n2)
     else:
@@ -224,8 +221,7 @@ def hist_all(df, col, filename, xlabel, labels=None, minTh=None,
              maxTh=None, text=None, xscale=None, yscale=None,
              cdf=False, xlim=None, kde=False, plotMean=False,
              bins=None, report=False, fit=False, xfitstr=None,
-             yfitstr=None, legend_out=True, appAgglabel='',
-             appNaggLabel='', legendMean=False, sigTest=False,
+             yfitstr=None, legend_out=True, legendMean=False, sigTest=False,
              legendTimescale=False, meanL=None):
     """ Saves a histogram of all v in vcol. """
 
@@ -256,11 +252,12 @@ def hist_aggregating(df, col, filename, xlabel, labels=None, minTh=None,
     """ Saves a histogram of all v in vcol. """
 
     d = getHistData(df, col, labels, minTh, maxTh)
+    d = getHistData(df, col, labels, minTh, maxTh)
 
     cond1 = (d.aggregating == 1)
     cond2 = (d.aggregating == 0)
 
-    label1, label2 = getLabels('Aggregating', 'Non-aggregating',
+    label1, label2 = getLabels('Menadione', 'Control',
                                d[cond1][col].size, d[cond2][col].size)
 
     label1 += appAgglabel
@@ -317,7 +314,7 @@ def hist_lol(df, col, filename, xlabel, labelAgg, labels=None, minTh=None,
              maxTh=None, text=None, xscale=None, yscale=None, cdf=False,
              xlim=None, kde=False, plotMean=False, bins=None, report=False,
              fit=False, xfitstr=None, yfitstr=None, legend_out=True,
-             sigTest=False, legendTimescale=False, meanL=None,
+             sigTest=False, legendTimescale=False,
              legendMean=False):
     d = getHistData(df, col, labels, minTh, maxTh)
 
@@ -343,7 +340,7 @@ def hist_peak(df, col, filename, xlabel, labels=None, minTh=None,
               legendMean=False):
     d = getHistData(df, col, labels, minTh, maxTh)
 
-    cond1 = (d.hasPeaks)
+    cond1 = d.hasPeaks
     cond2 = (~d.hasPeaks)
 
     c1 = REV_COLOR
