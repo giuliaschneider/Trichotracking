@@ -39,3 +39,6 @@ REV_SPLIT_LABEL = ['Reversing and non-separating pairs', 'Reversing and separati
          'Non-reversing and non-separating pairs', 'Non-reversing and separating pairs']
 REV_SPLIT_LABEL_W = ['Reversing and non-separating pairs', 'Reversing and separating pairs',
                   'Non-reversing and separating pairs']
+
+
+V_UNIT = ' [' + u'\u03bc' + 'm/s]'
