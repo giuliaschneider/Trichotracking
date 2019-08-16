@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+from IPython.core.debugger import set_trace
+
 from .metakeeper import Metakeeper
 
 
@@ -39,7 +41,7 @@ class Pairkeeper(Metakeeper):
         return self.df.trackNr.values
 
     def getSuccessfulTrackNr(self):
-        return self.df[self.df.couldSegement].trackNr.values
+        return self.df[self.df.couldSegment].trackNr.values
 
     def getLengths(self,):
         return self.df[['length1', 'length2']].values
