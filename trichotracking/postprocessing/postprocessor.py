@@ -1,5 +1,6 @@
 from os.path import join
 
+from IPython.core.debugger import set_trace
 from plot import hist_oneQuantity, ts_oneQuantity
 
 
@@ -14,7 +15,6 @@ class Postprocesser:
         self.pxConversion = pxConversion
 
         self.singleTrackNrs = trackkeeper.getTrackNrSingles()
-        self.pairTrackNrs = pairtrackskeeper.getTrackNrPairs()
 
         self.calculate_trackkeeper()
         self.calculate_pairtrackkeeper()
@@ -78,21 +78,28 @@ class Postprocesser:
 
     def generateOverview(self):
         file = join(self.dest, 'exp_overview.txt')
+
         df = self.pairtrackskeeper.meta.getDf()
         df = df[df.couldSegment].copy()
         df['hasPeaks'] = df.npeaks > 0
         df['separates'] = df.breakup == 2
 
-        nPairs = self.pairTrackNrs.size
+        pairTrackNrs = self.pairtrackskeeper.getTrackNrPairs()
+
+        nPairs = pairTrackNrs.size
         with open(file, 'w') as f:
             f.write('# single tracks: {:d} \n'.format(self.singleTrackNrs.size))
             f.write('# pair tracks: {:d}\n'.format(nPairs))
             ns = df.groupby('hasPeaks').count().trackNr.reset_index()
-            f.write('  {:d} reversing\n'.format(100 * ns[ns.hasPeaks].trackNr / nPairs))
-            f.write('  {:d} not reversing\n'.format(100 * ns[~ns.hasPeaks].trackNr / nPairs))
+            n = ns[ns.hasPeaks].trackNr.values[0]
+            f.write('  {:d}({:.0f}%) reversing\n'.format(n, 100 * n / nPairs))
+            n = ns[~ns.hasPeaks].trackNr.values[0]
+            f.write('  {:d}({:.0f}%) not reversing\n'.format(n, 100 * n / nPairs))
             ns = df.groupby('separates').count().trackNr.reset_index()
-            f.write('  {:d} separating \n'.format(100 * ns[ns.separates].trackNr / nPairs))
-            f.write('  {:d} not separating\n'.format(100 * ns[~ns.separates].trackNr / nPairs))
+            n = ns[ns.separates].trackNr.values[0]
+            f.write('  {:d}({:.0f}%) separating \n'.format(n, 100 * n / nPairs))
+            n = ns[~ns.separates].trackNr.values[0]
+            f.write('  {:d}({:.0f}%) not separating\n'.format(n, 100 * n / nPairs))
 
     def saveHist_vSingle(self):
         df = self.trackkeeper.getDf()
