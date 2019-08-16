@@ -46,7 +46,7 @@ def hist_twoQuantities(df, col, filename, xlabel, cond1, label1, cond2,
 
     if xlim is None:
         xlim = (0.9 * df[col].min(), 1.1 * df[col].max())
-        ax.set_xlim(xlim)
+    ax.set_xlim(xlim)
 
     if cdf:
         props['hist_kws'] = dict(cumulative=True)
