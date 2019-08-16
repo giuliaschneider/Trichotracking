@@ -90,7 +90,9 @@ class ProcessExperiment:
 
         else:
             self.keeper = Trackkeeper.fromFiles(self.trackFile, self.pixelFile, self.tracksMetaFile)
+            self.keeper.update_meta()
             self.aggkeeper = Aggkeeper.fromFile(self.aggregatesMetaFile)
+            self.keeper.addMetaTrackType(self.aggkeeper.getDf())
             self.pairkeeper = Pairkeeper.fromFile(self.pairsMetaFile)
             self.listTimes = np.loadtxt(self.timesFile)
 
@@ -98,7 +100,7 @@ class ProcessExperiment:
             dfPairTracks = self.overlap()
             self.pairTrackKeeper = Pairtrackkeeper(dfPairTracks, self.pairkeeper)
         else:
-            self.pairTrackKeeper = Pairtrackkeeper.fromFiles(self.pairTrackFile, self.pairkeeper)
+            self.pairTrackKeeper = Pairtrackkeeper.fromFiles(self.pairTrackFile, self.pairsMetaFile)
 
         t1 = time.time()
         print("Used time = {} s".format(t1 - t0))
@@ -154,9 +156,9 @@ class ProcessExperiment:
         keeper = Trackkeeper.fromDf(dfTracks, dfPixellist)
         df_merge, df_split = merge(keeper)
         aggkeeper = Aggkeeper.fromScratch(df_merge, df_split, keeper)
+        keeper.update_meta()
         keeper.addMetaTrackType(aggkeeper.getDf())
         pairTrackNrs = keeper.getTrackNrPairs()
-        keeper.addMetaTrackType(aggkeeper.df)
         pairkeeper = Pairkeeper.fromScratch(aggkeeper.getDf(),
                                             keeper.getDfTracksMeta(),
                                             pairTrackNrs)
