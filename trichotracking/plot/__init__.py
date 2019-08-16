@@ -3,6 +3,7 @@ from ._draw import *
 from ._hist import *
 from ._lolhist import *
 from ._save import *
+from ._scatter import *
 from ._thist import *
 from ._ts import *
 from ._vhist import *
@@ -13,6 +14,7 @@ __all__.extend(_draw.__all__)
 __all__.extend(_hist.__all__)
 __all__.extend(_lolhist.__all__)
 __all__.extend(_save.__all__)
+__all__.extend(_scatter.__all__)
 __all__.extend(_thist.__all__)
 __all__.extend(_ts.__all__)
 __all__.extend(_vhist.__all__)
