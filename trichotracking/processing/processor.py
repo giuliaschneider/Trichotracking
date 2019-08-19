@@ -1,8 +1,7 @@
 import argparse
 import os
-import sys
 import time
-from os.path import abspath, isfile, join
+from os.path import abspath, isfile, join, isdir
 
 import numpy as np
 from iofiles import find_img
@@ -18,8 +17,6 @@ from segmentation import (calc_chamber_df_ulisetup,
                           filterParticlesArea,
                           particles_sequence, dilate_border)
 from trackkeeper import Aggkeeper, Pairkeeper, Trackkeeper, Pairtrackkeeper
-
-from pdb import set_trace
 
 
 def parse_args(arguments):
@@ -39,7 +36,7 @@ def parse_args(arguments):
     if args.dest is None:
         args.dest = join(args.src, 'results')
     dest = args.dest
-    if not os.path.isdir(dest):
+    if not isdir(dest):
         os.mkdir(dest)
 
     if abspath(args.meta) != args.meta:
@@ -50,7 +47,7 @@ def parse_args(arguments):
     return srcDir, dest, plot, meta
 
 
-class ProcessExperiment:
+class Processor:
 
     def __init__(self, arguments):
         (self.srcDir,
@@ -215,8 +212,3 @@ class ProcessExperiment:
         self.pairTrackKeeper.save(self.pairTrackFile)
         self.pairkeeper.save(self.pairsMetaFile)
         np.savetxt(self.timesFile, self.listTimes)
-
-
-if __name__ == '__main__':
-    argv = sys.argv
-    exp = ProcessExperiment(argv)
