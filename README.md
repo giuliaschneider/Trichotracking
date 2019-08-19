@@ -10,7 +10,7 @@ Implementational details are found [here](https://github.com/giuliaschneider/Tri
 Usage
 -----
 
-    $ trichotracking --src <dirpath> --meta <metafile> [OPTIONS]
+    $ trichotracking.py --src <dirpath> --meta <metafile> [OPTIONS]
 
     Options:
       --src         Source directory of image sequence
