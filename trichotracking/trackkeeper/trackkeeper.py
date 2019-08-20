@@ -31,7 +31,8 @@ class Trackkeeper:
     @classmethod
     def fromDf(cls, df, dfPixellist, pixelFile):
         meta = Trackmeta.fromScratch(df)
-        dfPixellist.to_hdf(pixelFile)
+        if dfPixellist is not None:
+            dfPixellist.to_pickle(pixelFile)
         return cls(df, pixelFile, meta)
 
     @classmethod
@@ -110,7 +111,7 @@ class Trackkeeper:
         return self.meta.getTrackNrSingles()
 
     def getDfTracksComplete(self, trackNrs=None):
-        dfPixellist = pd.read_hdf(self.pixelFile)
+        dfPixellist = pd.read_pickle(self.pixelFile)
         if trackNrs is None:
             df = self.df.merge(dfPixellist, left_on='index', right_on='index')
         else:
