@@ -19,9 +19,9 @@ class Trackkeeper:
 
     """
 
-    def __init__(self, df, dfPixellist, meta):
+    def __init__(self, df, pixelFile, meta):
         self.df = df
-        self.dfPixellist = dfPixellist
+        self.pixelFile = pixelFile
         self.meta = meta
         self.startExp = 0
         self.endExp = np.max(self.df.frame.values)
@@ -29,19 +29,16 @@ class Trackkeeper:
         self.maxTrack = self.df.trackNr.max()
 
     @classmethod
-    def fromDf(cls, df, dfPixellist):
+    def fromDf(cls, df, dfPixellist, pixelFile):
         meta = Trackmeta.fromScratch(df)
-        return cls(df, dfPixellist, meta)
+        dfPixellist.to_hdf(pixelFile)
+        return cls(df, pixelFile, meta)
 
     @classmethod
     def fromFiles(cls, tracksFile, pixelFile, trackMetaFile):
         dfTracks = pd.read_csv(tracksFile)
-        if pixelFile is None:
-            dfPixellist = None
-        else:
-            dfPixellist = pd.read_pickle(pixelFile)
         meta = Trackmeta.fromFile(trackMetaFile)
-        return cls(dfTracks, dfPixellist, meta)
+        return cls(dfTracks, pixelFile, meta)
 
     def addColumnMeta(self, df_new):
         self.meta.addColumn(df_new)
@@ -112,8 +109,12 @@ class Trackkeeper:
     def getTrackNrSingles(self):
         return self.meta.getTrackNrSingles()
 
-    def getDfTracksComplete(self):
-        df = self.df.merge(self.dfPixellist, left_on='index', right_on='index')
+    def getDfTracksComplete(self, trackNrs=None):
+        dfPixellist = pd.read_hdf(self.pixelFile)
+        if trackNrs is None:
+            df = self.df.merge(dfPixellist, left_on='index', right_on='index')
+        else:
+            df = self.df[self.df.trackNr.isin(trackNrs)].merge(dfPixellist, left_on='index', right_on='index')
         return df
 
     def getDf(self):
@@ -147,12 +148,10 @@ class Trackkeeper:
 
     def save(self, trackFile, pixelFile, trackMetaFile):
         self.df.to_csv(trackFile)
-        self.dfPixellist.to_pickle(pixelFile)
         self.meta.save(trackMetaFile)
 
     def update_meta(self):
         self.meta.update(self.df)
-
 
     def saveAnimation(self, dataDir, destDir):
         nTracks = int(np.max(self.df.trackNr.values)) + 1

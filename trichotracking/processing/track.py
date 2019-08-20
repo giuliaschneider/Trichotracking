@@ -19,8 +19,6 @@ from segmentation import (calc_chamber_df_ulisetup,
                           particles_sequence, dilate_border)
 from trackkeeper import Aggkeeper, Pairkeeper, Trackkeeper, Pairtrackkeeper
 
-from pdb import set_trace
-
 
 def parse_args(arguments):
     parser = argparse.ArgumentParser()
@@ -153,7 +151,7 @@ class ProcessExperiment:
         df, listTimes, dfPixellist = self.segment()
         listTimes = self.get_times(listTimes)
         dfTracks = link(df)
-        keeper = Trackkeeper.fromDf(dfTracks, dfPixellist)
+        keeper = Trackkeeper.fromDf(dfTracks, dfPixellist, self.pixelFile)
         df_merge, df_split = merge(keeper)
         aggkeeper = Aggkeeper.fromScratch(df_merge, df_split, keeper)
         keeper.update_meta()
@@ -171,6 +169,8 @@ class ProcessExperiment:
                                            self.linkDist,
                                            filterParticlesArea,
                                            background=self.background,
+                                           dfFile=self.trackFile,
+                                           pixelFile=self.pixelFile,
                                            plotImages=self.plot,
                                            threshold=30,
                                            roi=self.dchamber,
@@ -196,7 +196,7 @@ class ProcessExperiment:
         overlap = calcOverlap(listImgs,
                               self.listTimes,
                               self.pairkeeper,
-                              self.keeper.getDfTracksComplete(),
+                              self.keeper.getDfTracksComplete(self.keeper.getTrackNrPairs()),
                               os.path.join(self.dest, 'overlap'),
                               self.background,
                               getDist,
