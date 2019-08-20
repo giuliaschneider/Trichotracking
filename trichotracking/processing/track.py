@@ -150,7 +150,7 @@ class ProcessExperiment:
     def process(self):
         df, listTimes, dfPixellist = self.segment()
         listTimes = self.get_times(listTimes)
-        dfTracks = link(df)
+        dfTracks = link(df, maxLinkDist=self.linkDist)
         keeper = Trackkeeper.fromDf(dfTracks, dfPixellist, self.pixelFile)
         df_merge, df_split = merge(keeper)
         aggkeeper = Aggkeeper.fromScratch(df_merge, df_split, keeper)
@@ -169,15 +169,13 @@ class ProcessExperiment:
                                            self.linkDist,
                                            filterParticlesArea,
                                            background=self.background,
-                                           dfFile=self.trackFile,
-                                           pixelFile=self.pixelFile,
                                            plotImages=self.plot,
-                                           threshold=30,
+                                           threshold=45,
                                            roi=self.dchamber,
                                            blur=self.blur,
                                            darkField=self.dark)
 
-        cols = ['pixellist_xcoord', 'pixellist_ycoord', 'contours']
+        cols = ['contours']
         dfPixellist = df[['index'] + cols]
         df.drop(columns=cols, inplace=True)
         return df, listTimes, dfPixellist
