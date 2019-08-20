@@ -7,19 +7,19 @@ import cv2
 from iofiles import (find_img,
                      getTime,
                      loadImage)
-from plot.plot_images import plotAllImages
+from plot.plot_images import plotAllImages, plotAllContoursTracking
 from regionprops import Contour, insideROI
 
 
 flags  = ["area", "angle", "bounding_box", "centroid", "contours", "eccentricity", 
           "eigen", "length", "min_box", "min_rect_angle", "orientation", 
-          "solidity",  "pixellist"]
+          "solidity"]
 
 
 def filterParticlesArea(img, bw, roi=None):
     allObjects = Contour(img, bw, flags=flags, cornerImage=None)
     particles = allObjects.particles
-    particles = particles[((particles.area>100)
+    particles = particles[((particles.area>150)
                           &(particles.area<5000)
                           )]
     if roi is not None:
@@ -64,19 +64,17 @@ def particles_image(file,
                                   cv2.bitwise_not(background))
         _, bw = cv2.threshold(subtracted, threshold, 255, cv2.THRESH_BINARY)
 
-    # Close gaps by morphological closing
-    #kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    #bw = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel)
+
 
     if chamber is not None:
         bw[chamber == 0] = [0]
 
-    # plot images
-    if plotImages:
-        imgs = [img, bw, subtracted]
-        labels = ["Original", "Threshold", "Sub"]
-        plotAllImages(imgs, labels)
-        plt.show()
+    # Close gaps by morphological closing
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    bw = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel)
+    #bw = cv2.morphologyEx(bw, cv2.MORPH_OPEN, kernel)
+
+
 
     # Get particles
     particles = findingFunction(img, bw, chamber)
@@ -87,6 +85,14 @@ def particles_image(file,
     particleList = getParticleList(particles, indexes, frame, particleNr)
 
     time = getTime(file)
+
+    # plot images
+    if plotImages:
+        imgs = [img, bw, subtracted]
+        labels = ["Original", "Threshold", "Sub"]
+        plotAllImages(imgs, labels)
+        plotAllContoursTracking(img, particles.contours, particles.cx, particles.cy)
+        plt.show()
 
     return particleList, time
 
