@@ -149,8 +149,8 @@ class Processor:
     def process(self):
         df, listTimes, dfPixellist = self.segment()
         listTimes = self.get_times(listTimes)
-        dfTracks = link(df)
-        keeper = Trackkeeper.fromDf(dfTracks, dfPixellist)
+        dfTracks = link(df, maxLinkDist=self.linkDist)
+        keeper = Trackkeeper.fromDf(dfTracks, dfPixellist, self.pixelFile)
         df_merge, df_split = merge(keeper)
         aggkeeper = Aggkeeper.fromScratch(df_merge, df_split, keeper)
         keeper.update_meta()
@@ -169,12 +169,12 @@ class Processor:
                                            filterParticlesArea,
                                            background=self.background,
                                            plotImages=self.plot,
-                                           threshold=30,
+                                           threshold=45,
                                            roi=self.dchamber,
                                            blur=self.blur,
                                            darkField=self.dark)
 
-        cols = ['pixellist_xcoord', 'pixellist_ycoord', 'contours']
+        cols = ['contours']
         dfPixellist = df[['index'] + cols]
         df.drop(columns=cols, inplace=True)
         return df, listTimes, dfPixellist
@@ -193,7 +193,7 @@ class Processor:
         overlap = calcOverlap(listImgs,
                               self.listTimes,
                               self.pairkeeper,
-                              self.keeper.getDfTracksComplete(),
+                              self.keeper.getDfTracksComplete(self.keeper.getTrackNrPairs()),
                               os.path.join(self.dest, 'overlap'),
                               self.background,
                               getDist,

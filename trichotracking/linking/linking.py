@@ -1,18 +1,15 @@
-import os
-import numpy as np
-import pandas as pd
 import multiprocessing as mp
 
+import pandas as pd
 from trackkeeper import Trackkeeper
 from utility import split_list
 
 from .match import matcher
 
-from IPython.core.debugger import set_trace
 
-
-def link(dfTracks):
-    
+def link(dfTracks,
+         maxLinkTime=3,
+         maxLinkDist=10):
     print("Start Linking")
 
     processes = mp.cpu_count()
@@ -20,9 +17,9 @@ def link(dfTracks):
     dfs = [dfTracks[dfTracks.frame.isin(frames[i])] for i in range(processes)]
 
     pool = mp.Pool(processes=processes)
-    results = [pool.apply_async(link_part, 
-                args=(dfs[x],)) for x in range(processes)]
-    
+    results = [pool.apply_async(link_part,
+                                args=(dfs[x],maxLinkTime, maxLinkDist)) for x in range(processes)]
+
     pool.close()
     pool.join()
 
@@ -39,15 +36,14 @@ def link_part(dfTracks,
               maxdArea=80):
     """ Links track segments by connecting ends to starts. """
 
-
-    keeper = Trackkeeper.fromDf(dfTracks, 'a')
-
+    keeper = Trackkeeper.fromDf(dfTracks, None, None)
+    print("Link dist = {}".format(maxLinkDist))
 
     # Iterate through linking time steps
-    for i in range(1, maxLinkTime+1):
+    for i in range(1, maxLinkTime + 1):
         endTimes = keeper.getEndTimes()
 
-    # Iterate through unique endtimes
+        # Iterate through unique endtimes
         for endTime in endTimes:
             startTime = endTime + i
             startTracks = keeper.getStartTracks(startTime)
@@ -69,26 +65,24 @@ def link_part(dfTracks,
                 lCurr = dfC.length.values
                 aCurr = dfC.area.values
 
-                indMP, indMC = matcher(cxPrev, 
-                                        cyPrev,
-                                        cxCurr, 
-                                        cyCurr,
-                                        maxLinkDist, 
-                                        #lengthPrevious=lPrev, 
-                                        #lengthCurrent=lCurr, 
-                                        #maxdLength=maxdLength,
-                                        #areaPrevious=aPrev, 
-                                        #areaCurrent=aCurr, 
-                                        #maxdArea=maxdArea
-                                        )
+                indMP, indMC = matcher(cxPrev,
+                                       cyPrev,
+                                       cxCurr,
+                                       cyCurr,
+                                       maxLinkDist,
+                                       # lengthPrevious=lPrev,
+                                       # lengthCurrent=lCurr,
+                                       # maxdLength=maxdLength,
+                                       # areaPrevious=aPrev,
+                                       # areaCurrent=aCurr,
+                                       # maxdArea=maxdArea
+                                       )
                 if len(indMP) > 0:
                     trackNrP = trackNrPrev[indMP]
                     trackNrC = trackNrCurr[indMC]
                     for tNP, tNC in zip(trackNrP, trackNrC):
                         keeper.linkTracks(tNP, tNC)
-            
+
             print("t: {} - {}, linked {} particles".format(endTime, startTime, len(indMP)))
 
     return dfTracks
-
-

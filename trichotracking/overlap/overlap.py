@@ -6,6 +6,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from IPython.terminal.debugger import set_trace
 from geometry import cropRectangleKeepSize
 from iofiles import (extractPixelListFromString,
                      find_img,
@@ -171,13 +172,11 @@ class calcOverlap():
             self.nBy = nby
 
             # Extract pixellist and update pixellist indexes
-            pX = df_frame.pixellist_xcoord.values[0]
-            pY = df_frame.pixellist_ycoord.values[0]
-            pX_cropped = extractPixelListFromString(pX) - nbx - 1
-            pY_cropped = extractPixelListFromString(pY) - nby - 1
-            # Create bw image
+            contour = df_frame.contours.values[0]
+
+            cropped_contour = contour -  np.tile(np.array([nbx+1, nby+1]), (contour.shape[0],1,1))
             self.cropped_bw = np.zeros(self.cropped.shape[0:2], np.uint8)
-            self.cropped_bw[pY_cropped, pX_cropped] = [255]
+            cv2.drawContours(self.cropped_bw, [cropped_contour], 0, (255), -1)
             kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
             self.cropped_bw = cv2.morphologyEx(self.cropped_bw, cv2.MORPH_CLOSE, kernel)
 

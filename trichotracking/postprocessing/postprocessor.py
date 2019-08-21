@@ -91,14 +91,14 @@ class Postprocesser:
             f.write('# single tracks: {:d} \n'.format(self.singleTrackNrs.size))
             f.write('# pair tracks: {:d}\n'.format(nPairs))
             ns = df.groupby('hasPeaks').count().trackNr.reset_index()
-            n = ns[ns.hasPeaks].trackNr.values[0]
+            n = ns[ns.hasPeaks].trackNr.values[0] if ns[ns.hasPeaks].trackNr.size > 0 else 0
             f.write('  {:d}({:.0f}%) reversing\n'.format(n, 100 * n / nPairs))
-            n = ns[~ns.hasPeaks].trackNr.values[0]
+            n = ns[~ns.hasPeaks].trackNr.values[0] if ns[~ns.hasPeaks].trackNr.size > 0 else 0
             f.write('  {:d}({:.0f}%) not reversing\n'.format(n, 100 * n / nPairs))
             ns = df.groupby('separates').count().trackNr.reset_index()
-            n = ns[ns.separates].trackNr.values[0]
+            n = ns[ns.separates].trackNr.values[0] if ns[ns.separates].trackNr.size > 0 else 0
             f.write('  {:d}({:.0f}%) separating \n'.format(n, 100 * n / nPairs))
-            n = ns[~ns.separates].trackNr.values[0]
+            n = ns[~ns.separates].trackNr.values[0] if ns[~ns.separates].trackNr.size > 0 else 0
             f.write('  {:d}({:.0f}%) not separating\n'.format(n, 100 * n / nPairs))
 
     def saveHist_vSingle(self):

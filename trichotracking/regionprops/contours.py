@@ -1,9 +1,8 @@
+import cv2
 import numpy as np
 import numpy.linalg
-from scipy.spatial import distance_matrix
-import matplotlib.pyplot as plt
 import pandas as pd
-import cv2
+
 from .contour_functions import (calcArea,
                                 calcBoundingBox,
                                 calcConvexArea,
@@ -17,10 +16,6 @@ from .contour_functions import (calcArea,
                                 calcSolidity,
                                 getAngleFromMoments,
                                 getExtremes)
-
-
-from IPython.core.debugger import set_trace
-
 
 # Index of x, y coordinates in numpy array
 NP_YCOORD = 0
@@ -88,11 +83,11 @@ class Contour:
         # Find contours
         self.getContours()
         self.nContours = len(self.contours)
-        if("contours" in self.flags):
+        if ("contours" in self.flags):
             self.particles["contours"] = self.contours
 
         # Calculate properties
-        if self.nContours==0:
+        if self.nContours == 0:
             self.calcRegionpropsEmpty()
         else:
             self.calcRegionprops()
@@ -100,32 +95,32 @@ class Contour:
     def getContours(self):
         """ Extracts contours from bw."""
         img, contours, hierarchy = cv2.findContours(self.bw_img,
-            cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                                                    cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         self.contours = contours
 
     def getFilledImage(self):
         self.filledImage = np.zeros(self.img.shape[0:2])
         for i, c in enumerate(self.contours):
-            cv2.drawContours(self.filledImage, [c], 0, (i+1), -1)
+            cv2.drawContours(self.filledImage, [c], 0, (i + 1), -1)
         # Draw contours fill holes,
         nlabels, mask = cv2.connectedComponents(self.bw_img, 8, cv2.CV_32S)
-        mask[mask>0] = [255]
+        mask[mask > 0] = [255]
         mask = mask.astype(np.uint8)
         self.filledImage = cv2.bitwise_and(self.filledImage,
-                                           self.filledImage, mask = mask)
+                                           self.filledImage, mask=mask)
 
     def getCornerImage(self):
         if self.cornerImage is None:
             harris_corners = cv2.cornerHarris(self.img, 2, 3, 0.04)
-            self.cornerImage = np.zeros(self.img.shape[0:2],np.uint8)
-            self.cornerImage[harris_corners>0.02*harris_corners.max()]=[255]
+            self.cornerImage = np.zeros(self.img.shape[0:2], np.uint8)
+            self.cornerImage[harris_corners > 0.02 * harris_corners.max()] = [255]
 
     def getDistImage(self):
         h, w = self.bw_img.shape[:2]
-        bwpadded = np.zeros((h+2, w+2)).astype(np.uint8)
-        bwpadded[1:-1,1:-1] = self.bw_img
+        bwpadded = np.zeros((h + 2, w + 2)).astype(np.uint8)
+        bwpadded[1:-1, 1:-1] = self.bw_img
         dist = cv2.distanceTransform(bwpadded, cv2.DIST_L2, 3)
-        self.distImage = dist[1:-1,1:-1]
+        self.distImage = dist[1:-1, 1:-1]
 
     def calcRegionprops(self):
         """ Calculates the flagged properties of the contours."""
@@ -150,16 +145,16 @@ class Contour:
                 area = calcArea(self.contours)
             if perimeter is None:
                 perimeter = calcPerimeter(self.contours)
-            a = 4*np.pi*area
-            b = perimeter**2
-            form = np.divide(a, b, out=np.zeros_like(a), where=b!=0)
+            a = 4 * np.pi * area
+            b = perimeter ** 2
+            form = np.divide(a, b, out=np.zeros_like(a), where=b != 0)
             self.particles["form"] = form
 
         # Equivalent diameter
         if ("equivalent_diameter" in self.flags):
             if area is None:
                 area = calcArea(self.contours)
-            equi_diameter= np.sqrt(4*area/np.pi)
+            equi_diameter = np.sqrt(4 * area / np.pi)
             self.particles["equivalent_diameter"] = equi_diameter
 
         # Moments
@@ -192,7 +187,7 @@ class Contour:
             self.particles["min_box"] = min_box
 
         # Min Rectangle
-        if("min_rect_angle" in self.flags):
+        if ("min_rect_angle" in self.flags):
             if min_rect_angle is None:
                 min_rect, min_box, min_rect_angle = calcMinRect(self.contours)
             self.particles["min_rect_angle"] = min_rect_angle
@@ -202,12 +197,12 @@ class Contour:
             if min_box is None:
                 min_rect, min_box, min_rect_angle = calcMinRect(self.contours)
             min_box = np.array(min_box)
-            lr = numpy.linalg.norm(min_box[:,0,:]-min_box[:,1,:],axis=1)
-            tb = numpy.linalg.norm(min_box[:,0,:]-min_box[:,2,:],axis=1)
-            bfw = np.max(np.vstack((lr, tb)),axis=0)
-            bfh = np.min(np.vstack((lr, tb)),axis=0)
+            lr = numpy.linalg.norm(min_box[:, 0, :] - min_box[:, 1, :], axis=1)
+            tb = numpy.linalg.norm(min_box[:, 0, :] - min_box[:, 2, :], axis=1)
+            bfw = np.max(np.vstack((lr, tb)), axis=0)
+            bfh = np.min(np.vstack((lr, tb)), axis=0)
             min_rect_aspect = np.divide(bfw, bfh, out=np.zeros_like(bfw),
-                                        where=bfh!=0)
+                                        where=bfh != 0)
             self.particles["min_rect_aspect"] = min_rect_aspect
 
         # Min rect Extent
@@ -217,13 +212,13 @@ class Contour:
             if min_box is None:
                 min_rect, min_box, min_rect_angle = calcMinRect(self.contours)
             min_box = np.array(min_box)
-            lr = numpy.linalg.norm(min_box[:,0,:]-min_box[:,1,:],axis=1)
-            tb = numpy.linalg.norm(min_box[:,0,:]-min_box[:,2,:],axis=1)
-            bfw = np.max(np.vstack((lr, tb)),axis=0)
-            bfh = np.min(np.vstack((lr, tb)),axis=0)
-            b = bfw*bfh
+            lr = numpy.linalg.norm(min_box[:, 0, :] - min_box[:, 1, :], axis=1)
+            tb = numpy.linalg.norm(min_box[:, 0, :] - min_box[:, 2, :], axis=1)
+            bfw = np.max(np.vstack((lr, tb)), axis=0)
+            bfh = np.min(np.vstack((lr, tb)), axis=0)
+            b = bfw * bfh
             min_rect_extent = np.divide(area, b, out=np.zeros_like(area),
-                                where=b!=0)
+                                        where=b != 0)
             self.particles["min_rect_extent"] = min_rect_extent
 
         # Length
@@ -248,7 +243,7 @@ class Contour:
             if bounding_box is None:
                 bounding_box, bx, by, bw, bh = calcBoundingBox(self.contours)
             bfw, bfh = bw.astype('float'), bh.astype('float')
-            aspect_ratio = np.divide(bfw, bfh,out=np.zeros_like(bfw), where=bfh!=0)
+            aspect_ratio = np.divide(bfw, bfh, out=np.zeros_like(bfw), where=bfh != 0)
             self.particles["aspect_ratio"] = aspect_ratio
 
         # Extent
@@ -257,11 +252,10 @@ class Contour:
                 area = calcArea(self.contours)
             if bounding_box is None:
                 bounding_box, bx, by, bw, bh = calcBoundingBox(self.contours)
-            b = bw*bh
+            b = bw * bh
             extent = np.divide(area, b, out=np.zeros_like(area),
-                                where=b!=0)
+                               where=b != 0)
             self.particles["extent"] = extent
-
 
         # Convex Hull
         if ("convex_hull" in self.flags):
@@ -289,10 +283,10 @@ class Contour:
 
         # Ellipse
         if (("orientation" in self.flags) or ("eccentricity" in self.flags)
-            or ("majoraxis_length" in self.flags)
-            or ("minoraxis_length" in self.flags)):
+                or ("majoraxis_length" in self.flags)
+                or ("minoraxis_length" in self.flags)):
             orientation, majoraxis_length, minoraxis_length, eccentricity \
-             = calcEllipse(self.contours)
+                = calcEllipse(self.contours)
 
             # Orientation
             if ("orientation" in self.flags):
@@ -314,27 +308,25 @@ class Contour:
             majoraxis_length, minoraxis_length = None, None
 
         # Angle
-        if("angle" in self.flags):
+        if ("angle" in self.flags):
             theta = getAngleFromMoments(self.contours)
             self.particles['angle'] = theta
 
-
         # Extremes
-        if("extremes" in self.flags):
+        if ("extremes" in self.flags):
             leftmost, rightmost, topmost, bottommost = getExtremes(self.contours)
             self.particles["leftmost"] = leftmost
             self.particles["rigthmost"] = rightmost
             self.particles["topmost"] = topmost
             self.particles["bottommost"] = bottommost
 
-
         # Pixellist
-        if("pixellist" in self.flags):
+        if ("pixellist" in self.flags):
             if bounding_box is None:
                 bounding_box, bx, by, bw, bh = calcBoundingBox(self.contours)
             self.getFilledImage()
             pixellist_ycoord, pixellist_xcoord = calcPixellist(
-                        self.filledImage, self.contours, bx, by, bw, bh)
+                self.filledImage, self.contours, bx, by, bw, bh)
             self.particles["pixellist_xcoord"] = pixellist_xcoord
             self.particles["pixellist_ycoord"] = pixellist_ycoord
         else:
@@ -342,75 +334,72 @@ class Contour:
             pixellist_ycoord = None
             self.filledImage = None
 
-
-
         # Corners
-        if("corners" in self.flags):
+        if ("corners" in self.flags):
             if bounding_box is None:
                 bounding_box, bx, by, bw, bh = calcBoundingBox(self.contours)
             cornerList, cornerPts = calcCorners(self.filledImage,
-                                        self.cornerImage, bx, by, bw, bh)
+                                                self.cornerImage, bx, by, bw, bh)
             self.particles["corners"] = cornerList
         else:
             cornerList = None
 
         # Weighed centroid
-        if("weighted_centroid" in self.flags):
+        if ("weighted_centroid" in self.flags):
             if bounding_box is None:
                 bounding_box, bx, by, bw, bh = calcBoundingBox(self.contours)
             if pixellist_xcoord is None or pixellist_xcoord is None:
                 if self.filledImage is None:
                     self.getFilledImage()
                 pixellist_ycoord, pixellist_xcoord = calcPixellist(
-                        self.filledImage, self.contours, bx, by, bw, bh)
+                    self.filledImage, self.contours, bx, by, bw, bh)
             w = self.weigthing_function
             xP = pixellist_xcoord
             yP = pixellist_ycoord
-            wCx = [np.sum(x*w(self.img[y,x])) / np.sum(w(self.img[y,x])) \
-                  if np.sum(w(self.img[y,x])) > 0 else 0 \
-                  for x, y in zip(xP, yP)]
-            wCy = [np.sum(y*w(self.img[y,x])) / np.sum(w(self.img[y,x])) \
-                  if np.sum(w(self.img[y,x])) > 0 else 0 \
-                  for x, y in zip(xP, yP)]
+            wCx = [np.sum(x * w(self.img[y, x])) / np.sum(w(self.img[y, x])) \
+                       if np.sum(w(self.img[y, x])) > 0 else 0 \
+                   for x, y in zip(xP, yP)]
+            wCy = [np.sum(y * w(self.img[y, x])) / np.sum(w(self.img[y, x])) \
+                       if np.sum(w(self.img[y, x])) > 0 else 0 \
+                   for x, y in zip(xP, yP)]
 
             self.particles["cx"] = wCx
             self.particles["cy"] = wCy
 
         # intensities
-        if("intensities" in self.flags):
+        if ("intensities" in self.flags):
             if bounding_box is None:
                 bounding_box, bx, by, bw, bh = calcBoundingBox(self.contours)
             if pixellist_xcoord is None or pixellist_xcoord is None:
                 if self.filledImage is None:
                     self.getFilledImage()
                 pixellist_ycoord, pixellist_xcoord = calcPixellist(
-                        self.filledImage, self.contours, bx, by, bw, bh)
+                    self.filledImage, self.contours, bx, by, bw, bh)
             w = self.weigthing_function
             xP = pixellist_xcoord
             yP = pixellist_ycoord
-            minI = [np.quantile(self.img[y,x], 0.1) if len(x)>0 else 0
+            minI = [np.quantile(self.img[y, x], 0.1) if len(x) > 0 else 0
                     for x, y in zip(xP, yP)]
-            maxI = [np.quantile(self.img[y,x], 0.9) if len(x)>0 else 0
+            maxI = [np.quantile(self.img[y, x], 0.9) if len(x) > 0 else 0
                     for x, y in zip(xP, yP)]
 
             self.particles["minI"] = minI
             self.particles["maxI"] = maxI
 
-
         # Distance transform
-        if("dist" in self.flags):
+        if ("dist" in self.flags):
             if bounding_box is None:
                 bounding_box, bx, by, bw, bh = calcBoundingBox(self.contours)
             if pixellist_xcoord is None or pixellist_xcoord is None:
                 if self.filledImage is None:
                     self.getFilledImage()
                 pixellist_ycoord, pixellist_xcoord = calcPixellist(
-                        self.filledImage, self.contours, bx, by, bw, bh)
+                    self.filledImage, self.contours, bx, by, bw, bh)
             self.getDistImage()
             dist = []
             for i in range(len(self.contours)):
-                distImage = self.distImage[by[i]:by[i]+bh[i], \
-                                           bx[i]:bx[i]+bw[i]].copy()
+                distImage = self.distImage[by[i]:by[i] + bh[i], \
+                            bx[i]:bx[i] + bw[i]].copy()
                 pY = pixellist_ycoord[i] - by[i]
                 pX = pixellist_xcoord[i] - bx[i]
                 dist.append(np.quantile(distImage[pY, pX], 0.975))
@@ -423,13 +412,11 @@ class Contour:
                     plt.show()"""
             self.particles["dist"] = dist
 
-
         # Eigenvectors
-        if("eigen" in self.flags):
+        if ("eigen" in self.flags):
             ew1, ew2 = calcEigenvalues(self.contours)
             self.particles['ew1'] = ew1
             self.particles['ew2'] = ew2
-
 
     def calcRegionpropsEmpty(self):
         flags = self.flags.copy()
