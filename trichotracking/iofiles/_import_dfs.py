@@ -1,5 +1,5 @@
 import pandas as pd
-from dfmanip import combineNanCols, listToColumns
+from trichotracking.dfmanip import combineNanCols, listToColumns
 
 from ._import_df_func import extractValuesFromListOfString as listValues
 

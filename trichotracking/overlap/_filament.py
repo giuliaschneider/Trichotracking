@@ -3,8 +3,8 @@ import cv2
 import matplotlib.pyplot as plt
 from numpy.linalg import norm
 
-from linking import matcher
-from regionprops import (calcCentroidGlobal,
+from trichotracking.linking import matcher
+from trichotracking.regionprops import (calcCentroidGlobal,
                          calcEigenvector,
                          calcMinRect,
                          connectContours,

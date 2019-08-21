@@ -5,9 +5,9 @@ from os.path import join
 
 import numpy as np
 import pandas as pd
-from plot import plot_vhist, V_UNIT, plot_thist, plot_lolhist, scatterplot
+from trichotracking.plot import plot_vhist, V_UNIT, plot_thist, plot_lolhist, scatterplot
 from postprocessing import bars
-from trackkeeper import Trackkeeper, Pairtrackkeeper
+from trichotracking.trackkeeper import Trackkeeper, Pairtrackkeeper
 
 
 def parse_args(arguments):

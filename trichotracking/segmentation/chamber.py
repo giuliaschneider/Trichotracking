@@ -4,7 +4,7 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
-from iofiles import loadImage, find_img
+from trichotracking.iofiles import loadImage, find_img
 
 from IPython.core.debugger import set_trace
 

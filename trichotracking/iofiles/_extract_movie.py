@@ -15,8 +15,8 @@ from ._metadata import getTime_timestamp
 from ._image import loadImage
 
 
-from geometry import cropRectangleKeepSize
-from utility import split_list
+from trichotracking.geometry import cropRectangleKeepSize
+from trichotracking.utility import split_list
 
 __all__ = ['export_movie', 'export_movie_track']
 

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 
-from dfmanip import convertPxToMeter, calcMovingAverages, calcSingleFilamentVelocity, calcChangeInTime, calcPeaks
+from trichotracking.dfmanip import convertPxToMeter, calcMovingAverages, calcSingleFilamentVelocity, calcChangeInTime, calcPeaks
 from .pairkeeper import Pairkeeper
 
 

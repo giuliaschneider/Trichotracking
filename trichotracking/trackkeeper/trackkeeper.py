@@ -2,10 +2,10 @@ import os.path
 
 import numpy as np
 import pandas as pd
-from dfmanip import (calcMovingAverages,
+from trichotracking.dfmanip import (calcMovingAverages,
                      calcVelocity,
                      convertPxToMeter, calcPeaksSingle)
-from iofiles import export_movie
+from trichotracking.iofiles import export_movie
 
 from ._classifier import segment_filaments
 from .trackmeta import Trackmeta

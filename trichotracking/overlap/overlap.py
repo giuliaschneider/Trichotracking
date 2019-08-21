@@ -7,12 +7,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from IPython.terminal.debugger import set_trace
-from geometry import cropRectangleKeepSize
-from iofiles import (extractPixelListFromString,
+from trichotracking.geometry import cropRectangleKeepSize
+from trichotracking.iofiles import (extractPixelListFromString,
                      find_img,
                      loadImage,
                      removeFilesinDir)
-from utility import meanOfList
+from trichotracking.utility import meanOfList
 
 from ._segment_overlap import SegmentOverlap
 

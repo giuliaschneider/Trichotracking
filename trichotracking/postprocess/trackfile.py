@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from dfmanip import (calcMovingAverages,
+from trichotracking.dfmanip import (calcMovingAverages,
                      calcPeaksSingle,
                      calcVelocity,
                      convertPxToMeter,)

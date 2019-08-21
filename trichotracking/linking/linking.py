@@ -1,8 +1,8 @@
 import multiprocessing as mp
 
 import pandas as pd
-from trackkeeper import Trackkeeper
-from utility import split_list
+from trichotracking.trackkeeper import Trackkeeper
+from trichotracking.utility import split_list
 
 from .match import matcher
 

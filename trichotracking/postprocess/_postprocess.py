@@ -1,6 +1,6 @@
 import numpy as np
 
-from dfmanip import (calcChangeInTime, 
+from trichotracking.dfmanip import (calcChangeInTime,
                      calcMovingAverages, 
                      calcPeaks,
                      calcSingleFilamentVelocity)

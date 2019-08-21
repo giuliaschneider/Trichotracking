@@ -1,19 +1,19 @@
 import cv2
 import numpy as np
 import numpy.linalg
-from geometry import (areaAboveLine,
+from trichotracking.geometry import (areaAboveLine,
                       areaBelowLine,
                       areaRightOfLine,
                       areaLeftOfLine,
                       getLine,
                       isPointBelowLine)
-from regionprops import (calcCentroidMatrix,
+from trichotracking.regionprops import (calcCentroidMatrix,
                          calcCentroidGlobal,
                          connectContours,
                          getLengths,
                          filterForLargestContour,
                          filterForNLargestContour)
-from segmentation import removeNoise
+from trichotracking.segmentation import removeNoise
 
 from ._filament import Filament
 from ._match_filaments import MatchFilamentEnds

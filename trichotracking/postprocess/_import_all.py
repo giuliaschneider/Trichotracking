@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from dfmanip import convertPxToMeter
-from iofiles import find_txt
+from trichotracking.dfmanip import convertPxToMeter
+from trichotracking.iofiles import find_txt
 
 from ._get_agg_inducer import get_aggregating
 

@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import seaborn as sns
 
-from dfmanip import fit_log
-from plot import saveplot
+from trichotracking.dfmanip import fit_log
+from trichotracking.plot import saveplot
 from plot._constants import *
 
 

@@ -3,7 +3,7 @@ from os.path import join
 import numpy as np
 import cv2
 
-from iofiles import loadImage, find_img
+from trichotracking.iofiles import loadImage, find_img
 
 
 def getBackground(inputDir, blur=True):

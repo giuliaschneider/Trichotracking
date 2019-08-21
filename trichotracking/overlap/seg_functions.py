@@ -1,5 +1,5 @@
 import numpy as np
-from segmentation import removeNoise
+from trichotracking.segmentation import removeNoise
 
 
 def get_segFunctions(distTh, minArea, distIntAreaThresh1=None,

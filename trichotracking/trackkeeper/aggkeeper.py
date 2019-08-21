@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from dfmanip import columnsToListColumns, combineNanCols, listToColumns
+from trichotracking.dfmanip import columnsToListColumns, combineNanCols, listToColumns
 from .metakeeper import Metakeeper
 from pdb import set_trace
 

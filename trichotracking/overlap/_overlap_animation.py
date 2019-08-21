@@ -5,7 +5,7 @@ import matplotlib.animation as animation
 from matplotlib import cm
 from matplotlib.colors import ListedColormap
 
-from iofiles import loadImage
+from trichotracking.iofiles import loadImage
 from postprocess import getDarkPhases
 
 

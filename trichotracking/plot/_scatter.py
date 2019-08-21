@@ -1,7 +1,7 @@
 import pandas as pd
 import seaborn as sns
 from IPython.terminal.debugger import set_trace
-from dfmanip import fit_log
+from trichotracking.dfmanip import fit_log
 
 from ._constants import *
 from ._save import saveplot

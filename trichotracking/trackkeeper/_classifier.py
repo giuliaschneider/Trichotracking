@@ -1,7 +1,6 @@
 import numpy as np
-import pandas as pd
-from dfmanip import combineNanCols, groupdf, listToColumns
-from IPython.core.debugger import set_trace
+
+from trichotracking.dfmanip import combineNanCols, groupdf, listToColumns
 
 
 def getSingleFilamentTracks(df, dfg, aggTracks):
@@ -13,12 +12,14 @@ def getSingleFilamentTracks(df, dfg, aggTracks):
     dfg.loc[:, 'area_std_n'] = dfg.loc[:, 'area_std'] / dfg.loc[:, 'area_mean']
 
     fsingleTracks1 = dfg[((~dfg['trackNr'].isin(aggTracks))
-                         &(dfg['eccentricity_mean']>0.98)
-                         &(dfg['length_std_n']<0.06))].trackNr.values
+                          & (dfg['eccentricity_mean'] > 0.98)
+                          & (dfg['length_std_n'] < 0.06)
+                          & (dfg['length_count'] > 4))].trackNr.values
 
     fsingleTracks2 = dfg[((~dfg['trackNr'].isin(aggTracks))
-                         &(dfg['eccentricity_mean']>0.93)
-                         &(dfg['length_std_n']<0.02))].trackNr.values
+                          & (dfg['eccentricity_mean'] > 0.93)
+                          & (dfg['length_std_n'] < 0.02)
+                          & (dfg['length_count'] > 4))].trackNr.values
 
     fsingleTracks = np.append(fsingleTracks1, fsingleTracks2)
     fsingleTracks = np.unique(fsingleTracks)
@@ -26,22 +27,20 @@ def getSingleFilamentTracks(df, dfg, aggTracks):
     return fsingleTracks
 
 
-
 def get2FilamentTracks(df, dfg, dfagg, fsingleTracks=[]):
     """ Returns trackNrs of for aligned 2 filament particles. """
-    ffilTracks = dfagg[dfagg.n==2].trackNr.values
+    ffilTracks = dfagg[dfagg.n == 2].trackNr.values
 
     filAlignedTracks = dfg[((dfg['trackNr'].isin(ffilTracks))
-                     &(dfg['ews_mean']<0.02))].trackNr.values
+                            & (dfg['ews_mean'] < 0.02))].trackNr.values
     filCrossTracks = dfg[((dfg['trackNr'].isin(ffilTracks))
-                     &(dfg['ews_mean']>=0.02))].trackNr.values
+                          & (dfg['ews_mean'] >= 0.02))].trackNr.values
     if len(fsingleTracks) > 0:
         ffilTracks2 = dfagg[(((dfagg.trackNr.isin(ffilTracks))
-        &((dfagg.tracks00.isin(fsingleTracks)) | (dfagg.tracks00.isnull()))
-        &((dfagg.tracks01.isin(fsingleTracks)) | (dfagg.tracks01.isnull()))
-        &((dfagg.tracks10.isin(fsingleTracks)) | (dfagg.tracks10.isnull()))
-        &(dfagg.tracks11.isin(fsingleTracks))) | (dfagg.tracks11.isnull()))
-        ].trackNr.values
+                              & ((dfagg.tracks00.isin(fsingleTracks)) | (dfagg.tracks00.isnull()))
+                              & ((dfagg.tracks01.isin(fsingleTracks)) | (dfagg.tracks01.isnull()))
+                              & ((dfagg.tracks10.isin(fsingleTracks)) | (dfagg.tracks10.isnull()))
+                              & (dfagg.tracks11.isin(fsingleTracks))) | (dfagg.tracks11.isnull()))].trackNr.values
         filAlignedTracks = np.intersect1d(filAlignedTracks, ffilTracks2)
         filCrossTracks = np.intersect1d(filCrossTracks, ffilTracks2)
     return filAlignedTracks, filCrossTracks
@@ -80,8 +79,6 @@ def segment_filaments(df, dfagg):
     dfg = groupdf(df)
 
     fsingleTracks = getSingleFilamentTracks(df, dfg, aggTracks)
-    filAlignedTracks, filCrossTracks = get2FilamentTracks(df, dfg, dfagg,
-                                                         fsingleTracks)
-
+    filAlignedTracks, filCrossTracks = get2FilamentTracks(df, dfg, dfagg, fsingleTracks)
 
     return fsingleTracks, filAlignedTracks, filCrossTracks

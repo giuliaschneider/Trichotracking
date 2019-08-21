@@ -1,9 +1,9 @@
 import numpy as np
 import numpy.linalg
-from geometry import (getPairedIndex,
+from trichotracking.geometry import (getPairedIndex,
                       orderCornersRectangle)
-from linking import matcher
-from regionprops import (calcCentroidGlobal,
+from trichotracking.linking import matcher
+from trichotracking.regionprops import (calcCentroidGlobal,
                          filterForNLargestContour,
                          getAngleFromMoments,
                          getLengths)

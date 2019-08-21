@@ -1,25 +1,19 @@
-import os
 import numpy as np
 import pandas as pd
-
-from geometry import minDistMinBoxes, calcCenterOfMass
-from trackkeeper import Trackkeeper
-from utility import split_list
+from IPython.core.debugger import set_trace
+from trichotracking.geometry import minDistMinBoxes, calcCenterOfMass
 
 from .match import matcher
 
 
-from IPython.core.debugger import set_trace
-
-
-def merge(keeper):
+def merge(keeper,
+          maxLinkTime=3,
+          maxMergeDistBox=15,
+          maxMergeDist=15):
     merger = Merger(keeper)
     df_merge = merger.getDfMerge()
     df_split = merger.getDfSplit()
     return df_merge, df_split
-
-
-
 
 
 class dfMerge:
@@ -30,7 +24,7 @@ class dfMerge:
         self.df_split = pd.DataFrame(columns=cols)
 
     def addTrack(self, df, time1, mt, t1, t2):
-        ind = df.shape[0]+1
+        ind = df.shape[0] + 1
         df.loc[ind] = [time1, mt, t1, t2]
 
     def addTrackSplit(self, time1, mt, t1, t2):
@@ -40,10 +34,9 @@ class dfMerge:
         self.addTrack(self.df_merge, time1, mt, t1, t2)
 
 
-
 class Merger:
 
-    def __init__(self, 
+    def __init__(self,
                  keeper,
                  maxLinkTime=3,
                  maxMergeDistBox=15,
@@ -53,19 +46,18 @@ class Merger:
         self.maxLinkTime = maxLinkTime
         self.maxMergeDistBox = maxMergeDistBox
         self.maxMergeDist = maxMergeDist
-        
+
         self.maxTrack = self.keeper.maxTrack
         self.maxFrame = self.keeper.maxFrame
 
         self.iterate_times()
 
-
     def iterate_times(self):
         """ Iterates through all start- and endtimes and merge/split."""
 
-        for i in range(1, self.maxLinkTime+1):
+        for i in range(1, self.maxLinkTime + 1):
             self.endTimes = self.keeper.getEndTimes()
-            self.startTimes = self.keeper.getStartTimes()-1
+            self.startTimes = self.keeper.getStartTimes() - 1
             self.times = np.unique(np.append(self.startTimes, self.endTimes))
             for endTime in self.times:
                 self.startTime = endTime + i
@@ -75,21 +67,20 @@ class Merger:
                 self.split()
                 self.merge()
 
-
     def split(self):
         """ Merges track segments by connecting ends to track midpoints. """
 
         # Splitting one ending track to to starting tracks
         mt1_t0, mt2_t0, mt_t1 = self.matchTwoOneTrackEnds(self.startTracks,
-                                                          self.startTime, 
-                                                          self.endTracks, 
+                                                          self.startTime,
+                                                          self.endTracks,
                                                           self.endTime)
         self.updateDataFramesSplitEnds(self.endTime, mt1_t0, mt2_t0, mt_t1)
 
         # Merge one ending track to the middle of other track
         midTracks = self.keeper.getMidTracks(self.startTime, self.endTime)
         mt1_t0, mt2_t0, mt_t1 = self.matchOneEndOneMiddleTrack(
-                self.startTracks, self.startTime, midTracks, self.endTime)
+            self.startTracks, self.startTime, midTracks, self.endTime)
         self.updateDataFramesSplitMiddle(self.endTime, mt1_t0, mt2_t0, mt_t1)
 
     def merge(self):
@@ -97,17 +88,16 @@ class Merger:
 
         # Merge to ending tracks to one starting track
         mt1_t0, mt2_t0, mt_t1 = self.matchTwoOneTrackEnds(self.endTracks,
-                                                          self.endTime, 
-                                                          self.startTracks, 
+                                                          self.endTime,
+                                                          self.startTracks,
                                                           self.startTime)
         self.updateDataFramesMergeEnds(self.startTime, mt1_t0, mt2_t0, mt_t1)
 
         # Merge one ending track to the middle of other track
         midTracks = self.keeper.getMidTracks(self.endTime, self.startTime)
         mt1_t0, mt2_t0, mt_t1 = self.matchOneEndOneMiddleTrack(
-                self.endTracks, self.endTime, midTracks, self.startTime)
+            self.endTracks, self.endTime, midTracks, self.startTime)
         self.updateDataFramesMergeMiddle(self.startTime, mt1_t0, mt2_t0, mt_t1)
-
 
     def matchTwoOneTrackEnds(self, tracks_t0, t0, tracks_t1, t1):
         """ matcher two track starts/ends at t0, to one track start/end t1.
@@ -119,7 +109,7 @@ class Merger:
         """
 
         # Check if at least two ending/starting tracks
-        if (tracks_t0.size >= 2) and  (tracks_t1.size >= 1):
+        if (tracks_t0.size >= 2) and (tracks_t1.size >= 1):
             dft0 = self.keeper.getTracksAtTime(t0, tracks_t0)
             tracks1 = dft0.trackNr.values
             tracks2 = dft0.trackNr.values
@@ -179,7 +169,7 @@ class Merger:
 
         for mt, t1, t2 in zip(mt_t1, mt1_t0, mt2_t0):
             print("t = {}, merged {} with {}, new {}".format(
-                    time1, t1, t2, mt))
+                time1, t1, t2, mt))
             self.mergekeeper.addTrackMerge(time1, mt, t1, t2)
             self.updateEndTracks(t1)
             self.updateEndTracks(t2)
@@ -192,7 +182,7 @@ class Merger:
             self.maxTrack += 1
             newTrack = int(self.maxTrack)
             print("t = {}, merged {} with {}, new {}".format(
-                    t, t1, t2, newTrack))
+                t, t1, t2, newTrack))
 
             self.mergekeeper.addTrackMerge(t, newTrack, t1, t2)
             self.keeper.splitTrack(t2, newTrack, t)
@@ -204,7 +194,7 @@ class Merger:
         """ Update self.df and self.df_tracks. """
         for mt, t1, t2 in zip(mt_t1, mt1_t0, mt2_t0):
             print("t = {}, split {} into {} and {}".format(
-                    time1, mt, t1, t2))
+                time1, mt, t1, t2))
             self.mergekeeper.addTrackSplit(time1, mt, t1, t2)
             self.updateEndTracks(mt)
             self.updateStartTracks(t1)
@@ -216,7 +206,7 @@ class Merger:
             self.maxTrack += 1
             newTrack = int(self.maxTrack)
             print("t = {}, split {} into {} and {}".format(
-                    time1, t2, t1, newTrack))
+                time1, t2, t1, newTrack))
             self.mergekeeper.addTrackSplit(time1, t2, t1, newTrack)
             self.keeper.splitTrack(t2, newTrack, self.startTime)
             self.updateStartTracks(t1)
@@ -232,7 +222,7 @@ class Merger:
         bdist = minDistMinBoxes(boxes1, boxes2)
         return bdist
 
-    def matchCOM(self, tracks1, tracks2, t0,  mTracks, tm,
+    def matchCOM(self, tracks1, tracks2, t0, mTracks, tm,
                  dft0=None, dfm=None):
         """ Matches merging/splitting based on center of mass of two fil.
 
@@ -246,12 +236,12 @@ class Merger:
             """
         # Calculalte the center of mass for each track1 / track2 pair
         if dft0 is None:
-            dft0 = self.keeper.df[self.keeper.df.frame==t0]
+            dft0 = self.keeper.df[self.keeper.df.frame == t0]
         comx, comy = np.zeros(tracks1.shape), np.zeros(tracks1.shape)
         for i, (t1, t2) in enumerate(zip(tracks1, tracks2)):
-            r1 = dft0[dft0.trackNr == t1][['cx','cy']].values
+            r1 = dft0[dft0.trackNr == t1][['cx', 'cy']].values
             a1 = dft0[dft0.trackNr == t1].area.values
-            r2 = dft0[dft0.trackNr == t2][['cx','cy']].values
+            r2 = dft0[dft0.trackNr == t2][['cx', 'cy']].values
             a2 = dft0[dft0.trackNr == t2].area.values
             try:
                 comx[i], comy[i] = calcCenterOfMass(r1, a1, r2, a2)
@@ -265,22 +255,18 @@ class Merger:
         cxCurr = dfm.cx.values
         cyCurr = dfm.cy.values
         indMP, indMC = matcher(comx, comy, cxCurr, cyCurr, self.maxMergeDist,
-                            indP1=tracks1, indP2=tracks2, indC=mTracks)
+                               indP1=tracks1, indP2=tracks2, indC=mTracks)
         return tracks1[indMP], tracks2[indMP], trackNrCurr[indMC]
-
 
     def updateStartTracks(self, trackNr):
         """ Removes trackNr from endTracks."""
         self.startTracks = self.startTracks[self.startTracks != trackNr]
         self.keeper.setTrackStart(trackNr, 0)
 
-
     def updateEndTracks(self, trackNr):
         """ Removes trackNr from endTracks."""
         self.endTracks = self.endTracks[self.endTracks != trackNr]
         self.keeper.setTrackEnd(trackNr, self.maxFrame)
-
-
 
     def getDfMerge(self):
         return self.mergekeeper.df_merge

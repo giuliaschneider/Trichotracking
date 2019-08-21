@@ -3,7 +3,7 @@ import pandas as pd
 from os.path import join
 from datetime import datetime
 
-from dfmanip import (calcChangeInTime,
+from trichotracking.dfmanip import (calcChangeInTime,
                      calcVelocity,
                      calcMovingAverages,
                      calcLabel,
