@@ -293,7 +293,7 @@ class calcOverlap():
         nAll = nanValues.size
         self.df_track['block'] = (nanValues != nanValues.shift()).cumsum()
         nNotNan = self.df_track.groupby(by='block').length1.count().max()
-        success = (nNan / nAll < 0.5) & ((nNotNan) > 5)
+        success = (nNan / nAll < 0.3) & ((nNotNan) > 5)
         return success, nNan, nAll
 
     def getBasename(self, track):
