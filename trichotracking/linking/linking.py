@@ -30,7 +30,7 @@ def link(dfTracks,
 
 
 def link_part(dfTracks,
-              maxLinkTime=3,
+              maxLinkTime=1,
               maxLinkDist=10,
               maxdLength=15,
               maxdArea=80):
