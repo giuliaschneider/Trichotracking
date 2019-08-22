@@ -1,10 +1,12 @@
 import os
+import threading
 import time
 from os.path import isfile, join, isdir
 
 import numpy as np
+from IPython.terminal.debugger import set_trace
 
-from trichotracking.iofiles import find_img
+from trichotracking.iofiles import find_img, getTime
 from trichotracking.linking import link, merge
 from trichotracking.overlap import (calcOverlap,
                                     get_segFunctions,
@@ -98,8 +100,8 @@ class Processor:
             pairsTrackFile)
 
     def process(self):
-        df, listTimes, dfPixellist = self.segment()
-        listTimes = self.get_times(listTimes)
+        df, dfPixellist = self.segment()
+        listTimes = self.get_times()
         dfTracks = link(df, maxLinkDist=self.dLink)
         keeper = Trackkeeper.fromDf(dfTracks, dfPixellist, self.pixelFile)
 
@@ -116,28 +118,34 @@ class Processor:
         return keeper, aggkeeper, pairkeeper, listTimes
 
     def segment(self):
-        df, listTimes = particles_sequence(self.srcDir,
-                                           self.dest,
-                                           self.px,
-                                           self.dLink,
-                                           filterParticlesArea,
-                                           background=self.background,
-                                           plotImages=self.plot,
-                                           threshold=self.threshold,
-                                           roi=self.dchamber,
-                                           blur=self.blur,
-                                           darkField=self.dark)
+        df = particles_sequence(self.srcDir,
+                                self.dest,
+                                self.px,
+                                self.dLink,
+                                filterParticlesArea,
+                                background=self.background,
+                                plotImages=self.plot,
+                                threshold=self.threshold,
+                                roi=self.dchamber,
+                                blur=self.blur,
+                                darkField=self.dark)
 
         cols = ['contours']
-        dfPixellist = df[['index'] + cols]
+        dfPixellist = df[['index', ] + cols]
         df.drop(columns=cols, inplace=True)
-        return df, listTimes, dfPixellist
+        return df, dfPixellist
 
-    def get_times(self, listTimes):
-        if self.dt is not None:
-            listTimes = self.dt * np.arange(len(listTimes))
+    def get_times(self):
         if os.path.isfile(self.timesFile):
             listTimes = np.loadtxt(self.timesFile)
+        elif self.dt is not None:
+            listImgs = find_img(self.srcDir, mustKw='.jpg')
+            listTimes = self.dt * np.arange(len(listImgs))
+        else:
+            listImgs = find_img(self.srcDir, mustKw='.jpg')
+            listTimes = [getTime(img) for img in listImgs]
+            listTimes = np.array(listTimes)
+
         return listTimes
 
     def overlap(self):
@@ -161,10 +169,10 @@ class Processor:
 
     def save_all(self):
         self.keeper.save(self.trackFile, self.pixelFile, self.tracksMetaFile)
-        self.keeper.saveAnimation(self.srcDir, self.dest)
         self.aggkeeper.save(self.aggregatesMetaFile)
-
         np.savetxt(self.timesFile, self.listTimes)
+        animation_thread = threading.Thread(target=self.keeper.saveAnimation, args=(self.srcDir, self.dest))
+        animation_thread.start()
 
     def save_pairs(self):
         self.pairTrackKeeper.save(self.pairTrackFile)

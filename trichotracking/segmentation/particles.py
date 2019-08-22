@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 
 from trichotracking.iofiles import (find_img,
-                                    getTime,
                                     loadImage)
 from trichotracking.plot import plotAllImages, plotAllContoursTracking
 from trichotracking.regionprops import Contour, insideROI
@@ -80,8 +79,6 @@ def particles_image(file,
     indexes = np.arange(0, nCurrent)
     particleList = getParticleList(particles, indexes, frame, particleNr)
 
-    time = getTime(file)
-
     # plot images
     if plotImages:
         imgs = [img, bw, subtracted]
@@ -90,7 +87,7 @@ def particles_image(file,
         plotAllContoursTracking(img, particles.contours, particles.cx, particles.cy)
         plt.show()
 
-    return particleList, time
+    return particleList
 
 
 def particles_sequence(input_dir,
@@ -128,7 +125,6 @@ def particles_sequence(input_dir,
 
     particleList = []
     for result in results:
-        particleList += result.get()[0]
-    imgTimes = [result.get()[1] for result in results]
+        particleList += result.get()
 
-    return pd.DataFrame(particleList), np.array(imgTimes)
+    return pd.DataFrame(particleList)
