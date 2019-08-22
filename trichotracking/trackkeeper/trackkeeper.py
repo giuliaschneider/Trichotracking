@@ -59,8 +59,8 @@ class Trackkeeper:
     def getEndTracks(self, t):
         return self.meta.getEndTracks(t)
 
-    def getMidTracks(self, *t):
-        return self.meta.getMidTracks(t)
+    def getMidTracks(self, startTime, endTime):
+        return self.meta.getMidTracks(startTime, endTime )
 
     def setTrackStart(self, trackNr, newStartT):
         self.meta.setTrackStart(trackNr, newStartT)
@@ -97,7 +97,7 @@ class Trackkeeper:
         """Renames track2 to newTrack from time t, updates df and df_tracks."""
         self.updateTrackNr(trackNr, newTrackNr, t)
         self.meta.addTrack(newTrackNr, t, self.meta.getTrackEnd(trackNr))
-        self.meta.setTrackEnd(trackNr, self.meta.getTrackEnd(t - 1))
+        self.meta.setTrackEnd(trackNr, t - 1)
 
     def addMetaTrackType(self, dfAggMeta):
         single, aligned, cross = segment_filaments(self.df, dfAggMeta)

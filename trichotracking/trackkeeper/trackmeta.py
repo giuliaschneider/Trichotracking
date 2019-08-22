@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from IPython.terminal.debugger import set_trace
 
 from .metakeeper import Metakeeper
 
@@ -47,10 +48,10 @@ class Trackmeta(Metakeeper):
         """ Returns trackNrs ending at time t. """
         return self.df[self.df.endTime == t].trackNr.values
 
-    def getMidTracks(self, *t):
-        """ Returns trackNrs neither starting nor ending at times *t. """
-        condition = ((self.df.startTime.isin(t))
-                     & (self.df.endTime.isin(t)))
+    def getMidTracks(self, startTime, endTime):
+        """ Returns trackNrs neither starting nor ending at times *t.
+        """
+        condition = ((self.df.startTime < startTime) & (self.df.endTime > endTime))
         return self.df[condition].trackNr.values
 
     def getTrackStart(self, trackNr):
@@ -73,7 +74,8 @@ class Trackmeta(Metakeeper):
 
     def addTrack(self, trackNr, startTime, endTime):
         nFrames = endTime - startTime
-        self.df.loc[trackNr] = [trackNr, startTime, endTime, nFrames]
+        self.df.loc[self.df.index.max()+1] = [trackNr, startTime, endTime, nFrames, np.nan]
+
 
     def dropTrack(self, trackNr):
         """ Drops tracks trackNr from meta dataframe. """
