@@ -67,7 +67,7 @@ def particles_image(file,
         bw[chamber == 0] = [0]
 
     # Close gaps by morphological closing
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     bw = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel)
     # bw = cv2.morphologyEx(bw, cv2.MORPH_OPEN, kernel)
 
