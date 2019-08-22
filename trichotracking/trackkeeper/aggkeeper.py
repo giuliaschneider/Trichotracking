@@ -1,9 +1,7 @@
 import numpy as np
-import pandas as pd
 
 from trichotracking.dfmanip import columnsToListColumns, combineNanCols, listToColumns
 from .metakeeper import Metakeeper
-from pdb import set_trace
 
 
 class Aggkeeper(Metakeeper):
@@ -90,9 +88,6 @@ class Aggkeeper(Metakeeper):
         dfagg.drop(columns=['deftracks', 'n0', 'n1', 'ns0', 'ns1'], inplace=True)
 
         return cls(dfagg)
-
-
-
 
 
 def fillTimes(row, col, df_tracks, col_tr):

@@ -1,14 +1,9 @@
 import numpy as np
-import pandas as pd
-
-from ._filter import removeNan
-
 
 __all__ = ['fit_log', 'fit_semilog']
 
 
-
-def fit_log(df, xcol, ycol):   
+def fit_log(df, xcol, ycol):
     """
     Linearly fits log(x) to log(y) and returns coefficients.
 
@@ -58,5 +53,5 @@ def fit_semilog(df, xcol, ycol):
     ycol_log = ycol + '_log'
     dview[ycol_log] = np.log(dview[ycol])
 
-    coeff = np.polyfit( dview[xcol].values , np.log( dview[ycol].values ), 1)
+    coeff = np.polyfit(dview[xcol].values, np.log(dview[ycol].values), 1)
     return coeff

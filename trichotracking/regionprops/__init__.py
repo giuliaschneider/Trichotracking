@@ -1,9 +1,7 @@
 """Measure properties of labeled image regions. """
 
-
 from .contour_functions import *
 from .contours import Contour
-
 
 __all__ = ('calcArea',
            'calcBoundingBox',

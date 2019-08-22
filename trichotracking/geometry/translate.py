@@ -1,5 +1,6 @@
-import numpy as np
 import cv2
+import numpy as np
+
 
 def translateObjectUp(img, angle, L):
     """ Returns translated image in pos x, y direction. """

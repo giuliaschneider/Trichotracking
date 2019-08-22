@@ -1,9 +1,9 @@
 import multiprocessing as mp
 
 import pandas as pd
+
 from trichotracking.trackkeeper import Trackkeeper
 from trichotracking.utility import split_list
-
 from .match import matcher
 
 
@@ -18,7 +18,7 @@ def link(dfTracks,
 
     pool = mp.Pool(processes=processes)
     results = [pool.apply_async(link_part,
-                                args=(dfs[x],maxLinkTime, maxLinkDist)) for x in range(processes)]
+                                args=(dfs[x], maxLinkTime, maxLinkDist)) for x in range(processes)]
 
     pool.close()
     pool.join()

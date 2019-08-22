@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import os.path
-import matplotlib as mpl
 
+import matplotlib as mpl
 
 __all__ = ['saveplot']
 
@@ -36,6 +36,4 @@ def saveplot(fig, filename):
     if filename.endswith(".png"):
         filename = filename[:-4]
 
-    fig.savefig(filename + ".pdf",bbox_inches='tight')
-
-
+    fig.savefig(filename + ".pdf", bbox_inches='tight')

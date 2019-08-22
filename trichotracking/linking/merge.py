@@ -1,9 +1,7 @@
 import numpy as np
 import pandas as pd
-from IPython.terminal.debugger import set_trace
 
 from trichotracking.geometry import minDistMinBoxes, calcCenterOfMass
-
 from .match import matcher
 
 
@@ -247,7 +245,6 @@ class Merger:
             r2 = dft0[dft0.trackNr == t2][['cx', 'cy']].values
             a2 = dft0[dft0.trackNr == t2].area.values
             comx[i], comy[i] = calcCenterOfMass(r1, a1, r2, a2)
-
 
         # Calculate center of mass of merged particle current time
         if dfm is None:

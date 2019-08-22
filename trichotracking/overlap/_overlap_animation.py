@@ -1,21 +1,20 @@
-import numpy as np
 import matplotlib as mpl
-import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib import cm
 from matplotlib.colors import ListedColormap
-
-from trichotracking.iofiles import loadImage
 from postprocess import getDarkPhases
 
+from trichotracking.iofiles import loadImage
 
 
 def get_mycmap():
-    t10 = cm.get_cmap('tab10',3)
-    mycmap = np.zeros((4,4))
+    t10 = cm.get_cmap('tab10', 3)
+    mycmap = np.zeros((4, 4))
     mycmap[2:] = t10(np.arange(2))
     mycmap[1] = t10(3)
-    #mycmap[:,3] *= 0.8
+    # mycmap[:,3] *= 0.8
     new_cmp = ListedColormap(mycmap)
     return new_cmp
 
@@ -31,8 +30,8 @@ class OverlapAnimation(animation.TimedAnimation):
         self.length_overlap = df_tracks.length_overlap.values
         self.xlov = df_tracks.xlov
         self.ylov = df_tracks.ylov
-        self.overlap1 =  self.length_overlap / self.length1
-        self.overlap2 =  self.length_overlap / self.length2
+        self.overlap1 = self.length_overlap / self.length1
+        self.overlap2 = self.length_overlap / self.length2
 
         self.darkphases = darkphases
         if darkphases is not None:
@@ -45,9 +44,9 @@ class OverlapAnimation(animation.TimedAnimation):
         ax4 = fig.add_subplot(322)
 
         plt.setp(self.ax1.get_xticklabels(), visible=False)
-        min_y = 1.1*np.min(self.xlov[~np.isnan(self.xlov)])
-        max_y = 1.1*max( np.max(self.length1[~np.isnan(self.length1)]),
-                         np.max(self.length2[~np.isnan(self.length2)]))
+        min_y = 1.1 * np.min(self.xlov[~np.isnan(self.xlov)])
+        max_y = 1.1 * max(np.max(self.length1[~np.isnan(self.length1)]),
+                          np.max(self.length2[~np.isnan(self.length2)]))
         self.line1, = self.ax1.plot_date([], [], '-')
         self.line2, = self.ax1.plot_date([], [], '-')
         self.line2b, = self.ax1.plot_date([], [], '-')
@@ -71,12 +70,11 @@ class OverlapAnimation(animation.TimedAnimation):
             trans = mtransforms.blended_transform_factory(self.ax1.transData,
                                                           self.ax1.transAxes)
             self.ax1.fill_between(self.times, 0, 1, where=self.dark,
-                transform=trans, facecolor='black', alpha=0.3)
+                                  transform=trans, facecolor='black', alpha=0.3)
             trans = mtransforms.blended_transform_factory(ax2.transData,
                                                           ax2.transAxes)
             ax2.fill_between(self.times, 0, 1, where=self.dark,
-                transform=trans, facecolor='black', alpha=0.3)
-
+                             transform=trans, facecolor='black', alpha=0.3)
 
         img = loadImage(self.list_img[0])[0]
         self.img1 = ax3.imshow(img, cmap='gray', animated=True)

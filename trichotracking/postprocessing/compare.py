@@ -5,8 +5,9 @@ from os.path import join
 
 import numpy as np
 import pandas as pd
-from trichotracking.plot import plot_vhist, V_UNIT, plot_thist, plot_lolhist, scatterplot
 from postprocessing import bars
+
+from trichotracking.plot import plot_vhist, V_UNIT, plot_thist, plot_lolhist, scatterplot
 from trichotracking.trackkeeper import Trackkeeper, Pairtrackkeeper
 
 

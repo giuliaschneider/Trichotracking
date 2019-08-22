@@ -3,18 +3,19 @@ import time
 from os.path import isfile, join, isdir
 
 import numpy as np
+
 from trichotracking.iofiles import find_img
 from trichotracking.linking import link, merge
 from trichotracking.overlap import (calcOverlap,
-                     get_segFunctions,
-                     getDist,
-                     getIntDark)
+                                    get_segFunctions,
+                                    getDist,
+                                    getIntDark)
 from trichotracking.postprocessing import Postprocesser
 from trichotracking.segmentation import (calc_chamber_df_ulisetup,
-                          getBackground,
-                          getChamber,
-                          filterParticlesArea,
-                          particles_sequence, dilate_border)
+                                         getBackground,
+                                         getChamber,
+                                         filterParticlesArea,
+                                         particles_sequence, dilate_border)
 from trichotracking.trackkeeper import Aggkeeper, Pairkeeper, Trackkeeper, Pairtrackkeeper
 
 

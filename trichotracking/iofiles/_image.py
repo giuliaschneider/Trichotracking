@@ -1,12 +1,5 @@
-import os
-import os.path
-import numpy as np
 import cv2
-
-from ._list_files import find_img
-
-from IPython.core.debugger import set_trace
-
+import numpy as np
 
 __all__ = ['loadImage']
 
@@ -46,8 +39,7 @@ def loadImage(file, as_gray=True, as_8bit=True):
     """
 
     if file.lower().endswith('.jpg') and is_corrupted(file):
-        return -1, -1,  -1
-
+        return -1, -1, -1
 
     img = cv2.imread(file, cv2.IMREAD_UNCHANGED)
     if (img.ndim > 2) and as_gray:
@@ -55,6 +47,5 @@ def loadImage(file, as_gray=True, as_8bit=True):
     if as_8bit:
         img = np.uint8(cv2.normalize(img, None, 255, 0, cv2.NORM_MINMAX))
     height, width = img.shape[:2]
-
 
     return img, height, width

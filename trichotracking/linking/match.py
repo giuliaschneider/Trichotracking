@@ -1,19 +1,18 @@
 import numpy as np
 
-from IPython.core.debugger import set_trace
-
 
 def getDistMatrix(cxPrevious, cyPrevious, cxCurrent, cyCurrent):
     """Returns dist matrix of all particle in previous and current time."""
     xPrev, xCurr = np.meshgrid(cxPrevious, cxCurrent)
     yPrev, yCurr = np.meshgrid(cyPrevious, cyCurrent)
-    dist = (xCurr-xPrev)**2 + (yCurr-yPrev)**2
+    dist = (xCurr - xPrev) ** 2 + (yCurr - yPrev) ** 2
     return dist
 
+
 def matcher(cxPrevious, cyPrevious, cxCurrent, cyCurrent, maxDist,
-          lengthPrevious=None, lengthCurrent=None, maxdLength=None,
-          indP1=None, indP2=None, indC=None,
-          areaPrevious=None, areaCurrent=None, maxdArea=None):
+            lengthPrevious=None, lengthCurrent=None, maxdLength=None,
+            indP1=None, indP2=None, indC=None,
+            areaPrevious=None, areaCurrent=None, maxdArea=None):
     """ Matches based on nearest distance, returns indexes of match.
 
     Positional arguments:
@@ -49,18 +48,18 @@ def matcher(cxPrevious, cyPrevious, cxCurrent, cyCurrent, maxDist,
     # Additional length conditionmatcher
     if lengthPrevious is not None:
         lPrev, lCurr = np.meshgrid(lengthPrevious, lengthCurrent)
-        dl = np.abs(lCurr -  lPrev)
+        dl = np.abs(lCurr - lPrev)
         dist[dl > maxdLength] = dist.max()
 
     # Additional area conditon
     if areaPrevious is not None:
         aPrev, aCurr = np.meshgrid(areaPrevious, areaCurrent)
-        da = np.abs(aCurr -  aPrev)
+        da = np.abs(aCurr - aPrev)
         dist[da > maxdArea] = dist.max()
 
     # Get index of previous and current particle
     # which are closer than maxDist
-    rowIndexCurr, colIndexPrev = np.where(dist<maxDist**2)
+    rowIndexCurr, colIndexPrev = np.where(dist < maxDist ** 2)
     v = dist[rowIndexCurr, colIndexPrev]
 
     # Sort index according to closest distance
@@ -97,5 +96,5 @@ def matcher(cxPrevious, cyPrevious, cxCurrent, cyCurrent, maxDist,
     indCurrent = indCurrent[maskDuplicates]
     indPrevious = indPrevious[maskDuplicates]
 
-    #print("Matched {} of {} particles".format(len(indPrevious), len(cxPrevious)))
+    # print("Matched {} of {} particles".format(len(indPrevious), len(cxPrevious)))
     return list(indPrevious), list(indCurrent)

@@ -1,6 +1,5 @@
 """Utilities to manipulate dataframes of tracking data."""
 
-
 from ._columns import *
 from ._conversion import *
 from ._filter import *
@@ -10,8 +9,6 @@ from ._label import *
 from ._ma import *
 from ._reversals import *
 from ._velocity import *
-
-
 
 __all__ = []
 __all__.extend(_columns.__all__)

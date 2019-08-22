@@ -1,12 +1,13 @@
 import numpy as np
 import numpy.linalg
+
 from trichotracking.geometry import (getPairedIndex,
-                      orderCornersRectangle)
+                                     orderCornersRectangle)
 from trichotracking.linking import matcher
 from trichotracking.regionprops import (calcCentroidGlobal,
-                         filterForNLargestContour,
-                         getAngleFromMoments,
-                         getLengths)
+                                        filterForNLargestContour,
+                                        getAngleFromMoments,
+                                        getLengths)
 
 
 class MatchFilamentEnds():

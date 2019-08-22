@@ -1,6 +1,5 @@
-
-
 __all__ = ['groupdf', 'reset_col_levels']
+
 
 def groupdf(df, groupcol='trackNr', aggfunc=['mean', 'std', 'count']):
     """ Return grouped dataframe. """

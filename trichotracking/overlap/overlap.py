@@ -1,19 +1,16 @@
 import os
 import os.path
-from datetime import datetime
 
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from IPython.terminal.debugger import set_trace
-from trichotracking.geometry import cropRectangleKeepSize
-from trichotracking.iofiles import (extractPixelListFromString,
-                     find_img,
-                     loadImage,
-                     removeFilesinDir)
-from trichotracking.utility import meanOfList
 
+from trichotracking.geometry import cropRectangleKeepSize
+from trichotracking.iofiles import (find_img,
+                                    loadImage,
+                                    removeFilesinDir)
+from trichotracking.utility import meanOfList
 from ._segment_overlap import SegmentOverlap
 
 PARAMS_CONTOURS = (cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -73,8 +70,6 @@ class calcOverlap():
         self.plotAnimation = plotAnimation
         self.plotImages = plotImages
 
-
-
         self.success = []
         self.failFraction = []
 
@@ -85,7 +80,6 @@ class calcOverlap():
         self.df.to_csv(os.path.join(self.saveDir, 'tracks_pair.csv'))
         self.pairkeeper.df['couldSegment'] = self.success
         self.pairkeeper.df['failFraction'] = self.failFraction
-
 
     def iterate_tracks(self):
         """ Calculates the overlap of each track and save results to txt."""
@@ -174,7 +168,7 @@ class calcOverlap():
             # Extract pixellist and update pixellist indexes
             contour = df_frame.contours.values[0]
 
-            cropped_contour = contour -  np.tile(np.array([nbx+1, nby+1]), (contour.shape[0],1,1))
+            cropped_contour = contour - np.tile(np.array([nbx + 1, nby + 1]), (contour.shape[0], 1, 1))
             self.cropped_bw = np.zeros(self.cropped.shape[0:2], np.uint8)
             cv2.drawContours(self.cropped_bw, [cropped_contour], 0, (255), -1)
             kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))

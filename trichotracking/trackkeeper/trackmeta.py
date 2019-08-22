@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from IPython.terminal.debugger import set_trace
 
 from .metakeeper import Metakeeper
 
@@ -74,8 +73,7 @@ class Trackmeta(Metakeeper):
 
     def addTrack(self, trackNr, startTime, endTime):
         nFrames = endTime - startTime
-        self.df.loc[self.df.index.max()+1] = [trackNr, startTime, endTime, nFrames, np.nan]
-
+        self.df.loc[self.df.index.max() + 1] = [trackNr, startTime, endTime, nFrames, np.nan]
 
     def dropTrack(self, trackNr):
         """ Drops tracks trackNr from meta dataframe. """

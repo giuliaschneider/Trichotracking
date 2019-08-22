@@ -1,7 +1,5 @@
-
 """Utilities to read images sequences in different formats
    and generate movies from sequences."""
-
 
 from ._extract_movie import *
 from ._image import *

@@ -1,5 +1,5 @@
 import numpy as np
-from IPython.core.debugger import set_trace
+
 __all__ = ['calcMovingAverages']
 
 

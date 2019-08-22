@@ -2,11 +2,11 @@ import os.path
 
 import numpy as np
 import pandas as pd
-from trichotracking.dfmanip import (calcMovingAverages,
-                     calcVelocity,
-                     convertPxToMeter, calcPeaksSingle)
-from trichotracking.iofiles import export_movie
 
+from trichotracking.dfmanip import (calcMovingAverages,
+                                    calcVelocity,
+                                    convertPxToMeter, calcPeaksSingle)
+from trichotracking.iofiles import export_movie
 from ._classifier import segment_filaments
 from .trackmeta import Trackmeta
 
@@ -60,7 +60,7 @@ class Trackkeeper:
         return self.meta.getEndTracks(t)
 
     def getMidTracks(self, startTime, endTime):
-        return self.meta.getMidTracks(startTime, endTime )
+        return self.meta.getMidTracks(startTime, endTime)
 
     def setTrackStart(self, trackNr, newStartT):
         self.meta.setTrackStart(trackNr, newStartT)

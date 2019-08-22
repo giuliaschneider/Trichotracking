@@ -1,6 +1,5 @@
 import numpy as np
 
-from IPython.core.debugger import set_trace
 
 def extractPixelListFromString(str_list):
     if isinstance(str_list, str):

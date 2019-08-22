@@ -1,5 +1,5 @@
-import numpy as np
 import cv2
+import numpy as np
 
 
 def calc_chamber(background):
@@ -10,8 +10,8 @@ def calc_chamber(background):
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (11, 11))
     bw = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel)
     h, w = bw.shape[:2]
-    mask = np.zeros((h+2, w+2), np.uint8)
-    cv2.floodFill(bw, mask, (int(w/2),int(h/2)), 255)
+    mask = np.zeros((h + 2, w + 2), np.uint8)
+    cv2.floodFill(bw, mask, (int(w / 2), int(h / 2)), 255)
     bw = cv2.morphologyEx(bw, cv2.MORPH_OPEN, kernel)
     return bw
 
@@ -20,9 +20,9 @@ def calc_chamber_df_ulisetup(background):
     """ Get bw image, pixels inside set to 255, outside 0,
         adjusted for uli's setup """
     # Find well wall (high intensity circle)
-    ret, bw = cv2.threshold(background,150,255,cv2.THRESH_BINARY)
+    ret, bw = cv2.threshold(background, 150, 255, cv2.THRESH_BINARY)
     h, w = bw.shape[:2]
-    mask = np.zeros((h+2, w+2), np.uint8)
-    cv2.floodFill(bw, mask, (int(w/2),int(h/2)), 255)
-    mask[mask==1] = [255]
-    return mask[1:-1,1:-1]
+    mask = np.zeros((h + 2, w + 2), np.uint8)
+    cv2.floodFill(bw, mask, (int(w / 2), int(h / 2)), 255)
+    mask[mask == 1] = [255]
+    return mask[1:-1, 1:-1]

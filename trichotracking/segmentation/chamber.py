@@ -1,12 +1,9 @@
 import os
 import os.path
-import numpy as np
+
 import cv2
-import matplotlib.pyplot as plt
 
-from trichotracking.iofiles import loadImage, find_img
-
-from IPython.core.debugger import set_trace
+from trichotracking.iofiles import loadImage
 
 
 def getChamber(inputDir, background, chamber_function):
@@ -31,20 +28,20 @@ def getChamber(inputDir, background, chamber_function):
     """
 
     if "chamber.tif" in os.listdir(inputDir):
-        chamber, h, w = loadImage(os.path.join(inputDir,"chamber.tif"))
+        chamber, h, w = loadImage(os.path.join(inputDir, "chamber.tif"))
     else:
         chamber = chamber_function(background)
         cv2.imwrite(os.path.join(inputDir, "chamber.tif"), chamber)
     return chamber
 
 
-
 def dilate_border(chamber, ksize=40):
-
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
     chamber = cv2.morphologyEx(chamber, cv2.MORPH_CLOSE, kernel)
-    chamber[:1,:] = [0]; chamber[-1:,:] = [0]
-    chamber[:,:1] = [0]; chamber[:,-1:] = [0]
+    chamber[:1, :] = [0];
+    chamber[-1:, :] = [0]
+    chamber[:, :1] = [0];
+    chamber[:, -1:] = [0]
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (ksize, ksize))
     dchamber = cv2.erode(chamber, kernel)
     return dchamber

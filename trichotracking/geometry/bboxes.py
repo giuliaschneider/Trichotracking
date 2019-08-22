@@ -10,9 +10,9 @@ def minDistBoundingBox(box1, box2):
         distance-between-two-rectangles-context-a-game-in-lua#26178015"""
 
     x1, y1, bw1, bh1 = box1[0], box1[1], box1[2], box1[3]
-    x1b, y1b = x1+bw1, y1+bh1
+    x1b, y1b = x1 + bw1, y1 + bh1
     x2, y2, bw2, bh2 = box2[0], box2[1], box2[2], box2[3]
-    x2b, y2b = x2+bw2, y2+bh2
+    x2b, y2b = x2 + bw2, y2 + bh2
     left = x2b < x1
     right = x1b < x2
     bottom = y2b < y1
@@ -33,7 +33,7 @@ def minDistBoundingBox(box1, box2):
         return y1 - y2b
     elif top:
         return y2 - y1b
-    else:             # rectangles intersect
+    else:  # rectangles intersect
         return 0.
 
 
@@ -43,10 +43,9 @@ def minDistBoundingBoxes(boxes1, boxes2):
     dist = np.empty((boxes1.shape[0], boxes2.shape[0]))
     for box1 in range(boxes1.shape[0]):
         for box2 in range(boxes2.shape[0]):
-            dist[box1, box2] = minDistBoundingBox(boxes1[box1,:],
-                                                 boxes2[box2,:])
+            dist[box1, box2] = minDistBoundingBox(boxes1[box1, :],
+                                                  boxes2[box2, :])
     return dist
-
 
 
 def do_polygons_intersect(a, b):
@@ -83,14 +82,14 @@ def do_polygons_intersect(a, b):
             p2 = polygon[i2]
 
             # find the line perpendicular to this edge
-            normal = { 'x': p2[1] - p1[1], 'y': p1[0] - p2[0] }
+            normal = {'x': p2[1] - p1[1], 'y': p1[0] - p2[0]}
 
             minA, maxA = None, None
             # for each vertex in the first shape, project it onto the line perpendicular to the edge
             # and keep track of the min and max of these values
             for j in range(len(a)):
                 projected = normal['x'] * a[j][0] + normal['y'] * a[j][1]
-                if (minA is None) or (projected < minA): 
+                if (minA is None) or (projected < minA):
                     minA = projected
 
                 if (maxA is None) or (projected > maxA):
@@ -99,7 +98,7 @@ def do_polygons_intersect(a, b):
             # for each vertex in the second shape, project it onto the line perpendicular to the edge
             # and keep track of the min and max of these values
             minB, maxB = None, None
-            for j in range(len(b)): 
+            for j in range(len(b)):
                 projected = normal['x'] * b[j][0] + normal['y'] * b[j][1]
                 if (minB is None) or (projected < minB):
                     minB = projected
@@ -128,7 +127,7 @@ def boxCenter(box):
     -------
     [cx, cy] : array of center coordinates
     """
-    return (box[0,:] + box[2,:]) / 2 
+    return (box[0, :] + box[2, :]) / 2
 
 
 def boxExtent(box):
@@ -145,7 +144,7 @@ def boxExtent(box):
     [x-extent, y-extent] : array of extent
 
     """
-    return (np.max(box,axis=0) - np.min(box,axis=0)) / 2
+    return (np.max(box, axis=0) - np.min(box, axis=0)) / 2
 
 
 def minDistMinBox(box1, box2):
@@ -179,10 +178,9 @@ def minDistMinBox(box1, box2):
     extent1 = boxExtent(box1)
     extent2 = boxExtent(box2)
 
-    dmin = la.norm(np.maximum(0, np.abs(np.abs(c1-c2) -  (extent1 + extent2))))
+    dmin = la.norm(np.maximum(0, np.abs(np.abs(c1 - c2) - (extent1 + extent2))))
 
     return dmin
-
 
 
 def minDistMinBoxes(boxes1, boxes2):
@@ -206,6 +204,5 @@ def minDistMinBoxes(boxes1, boxes2):
     for i1 in range(boxes1.shape[0]):
         for i2 in range(boxes2.shape[0]):
             dist[i1, i2] = minDistMinBox(boxes1[i1],
-                                                 boxes2[i2])
+                                         boxes2[i2])
     return dist
-    

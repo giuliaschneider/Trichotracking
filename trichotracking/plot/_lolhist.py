@@ -1,7 +1,7 @@
 from ._hist import hist_all, hist_aggregating, hist_breakup
 
-
 __all__ = ['plot_lolhist', 'plot_lolhist_breakup']
+
 
 def plot_lolhist(df, vcol, filename, xlabel, labels=None, text=None,
                  xscale=None, yscale=None, report=False, fit=False,

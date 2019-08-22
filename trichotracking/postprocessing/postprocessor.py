@@ -1,6 +1,5 @@
 from os.path import join
 
-from IPython.core.debugger import set_trace
 from trichotracking.plot import hist_oneQuantity, ts_oneQuantity
 
 

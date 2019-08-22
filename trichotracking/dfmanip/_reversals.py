@@ -1,9 +1,6 @@
 import numpy as np
 import scipy.signal
 
-from pdb import set_trace
-
-
 __all__ = ['calcPeaks', 'calcPeaksSingle', 'calcReversalPeriod']
 
 

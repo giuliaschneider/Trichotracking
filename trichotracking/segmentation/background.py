@@ -1,7 +1,8 @@
 import os
 from os.path import join
-import numpy as np
+
 import cv2
+import numpy as np
 
 from trichotracking.iofiles import loadImage, find_img
 
@@ -27,15 +28,13 @@ def getBackground(inputDir, blur=True):
 
     # Check if background exists already
     if "background.tif" in os.listdir(inputDir):
-        background, h, w = loadImage(join(inputDir,"background.tif"))
+        background, h, w = loadImage(join(inputDir, "background.tif"))
         return background
-
 
     images = find_img(inputDir)
     background = calcBackground(images, blur)
     cv2.imwrite(os.path.join(inputDir, "background.tif"), background)
     return background
-
 
 
 def calcBackground(images, blur=True):
@@ -58,15 +57,15 @@ def calcBackground(images, blur=True):
 
     nFiles = len(images)
     img, height, width = loadImage(images[0])
-    files = np.arange(0, nFiles, int(0.1*nFiles))
+    files = np.arange(0, nFiles, int(0.1 * nFiles))
 
     # Calculate the median image
-    imgs = np.zeros((height,width,files.size), np.uint8)
+    imgs = np.zeros((height, width, files.size), np.uint8)
     for i, index in enumerate(files):
         filepath = images[index]
         img, height, width = loadImage(filepath)
         if blur:
-            img = cv2.GaussianBlur(img,(3, 3),0)
-        imgs[:,:,i] = img
+            img = cv2.GaussianBlur(img, (3, 3), 0)
+        imgs[:, :, i] = img
     bg = np.uint8(np.median(imgs, axis=2))
     return bg

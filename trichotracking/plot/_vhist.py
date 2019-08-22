@@ -1,7 +1,7 @@
 from ._hist import hist_aggregating
 
-
 __all__ = ['plot_vhist']
+
 
 def plot_vhist(df, vcol, filename, xlabel, labels=None, text=None,
                xscale=None, yscale=None, cdf=False, maxTh=4, minTh=None,

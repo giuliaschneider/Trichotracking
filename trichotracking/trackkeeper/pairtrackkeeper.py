@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 
-
-from trichotracking.dfmanip import convertPxToMeter, calcMovingAverages, calcSingleFilamentVelocity, calcChangeInTime, calcPeaks
+from trichotracking.dfmanip import convertPxToMeter, calcMovingAverages, calcSingleFilamentVelocity, calcChangeInTime, \
+    calcPeaks
 from .pairkeeper import Pairkeeper
 
 
@@ -64,9 +64,8 @@ class Pairtrackkeeper:
         self.df = df
         self.meta = meta
 
-        if not("xlov_norm" in self.df.keys()):
+        if not ("xlov_norm" in self.df.keys()):
             self.df["xlov_norm"] = self.df.xlov / self.df.length2
-
 
     @classmethod
     def fromDf(cls, df, meta):
@@ -87,7 +86,7 @@ class Pairtrackkeeper:
         if not all(x in self.df.keys() for x in umCols):
             self.df = convertPxToMeter(self.df, pxCols, umCols, pxConversion)
 
-        if not("pos_abs" in self.df.keys()):
+        if not ("pos_abs" in self.df.keys()):
             self.df['pos_abs'] = self.df.pos_short * self.df.l1_um
 
         columns = ["cx1_um", "cy1_um", "cx2_um", "cy2_um", "pos_abs", "xlov_norm", "xlov"]
@@ -120,7 +119,7 @@ class Pairtrackkeeper:
         self.df.loc[cond, new_col] = self.df[cond][col]
 
     def calcReversals(self, pxConversion):
-        if not("peaks" in self.df.keys()):
+        if not ("peaks" in self.df.keys()):
             self.df = calcPeaks(self.df, 'pos_abs_ma', p=20)
 
         if not all(x in self.df.keys() for x in ['xlov_ma_abs', 'xlov_abs_ma']):

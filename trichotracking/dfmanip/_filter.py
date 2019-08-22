@@ -1,6 +1,5 @@
 import numpy as np
 
-
 __all__ = ['removeNan']
 
 
@@ -19,9 +18,9 @@ def removeNan(df, cols):
         Filtered dataframe
 
     """
-    if(isinstance(cols, 'str')):
+    if (isinstance(cols, 'str')):
         cols = [cols]
-    
+
     d = df
     for col in cols:
         d = d[~d[col].isin([np.inf, -np.inf, np.nan])]
