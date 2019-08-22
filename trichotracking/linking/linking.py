@@ -37,7 +37,6 @@ def link_part(dfTracks,
     """ Links track segments by connecting ends to starts. """
 
     keeper = Trackkeeper.fromDf(dfTracks, None, None)
-    print("Link dist = {}".format(maxLinkDist))
 
     # Iterate through linking time steps
     for i in range(1, maxLinkTime + 1):
