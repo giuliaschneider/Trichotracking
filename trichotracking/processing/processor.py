@@ -20,13 +20,14 @@ from trichotracking.trackkeeper import Aggkeeper, Pairkeeper, Trackkeeper, Pairt
 
 class Processor:
 
-    def __init__(self, srcDir, px, dest, plot, dark, blur, dLink, dMerge, dMergeBox, kChamber, dt):
+    def __init__(self, srcDir, px, dest, plot, dark, blur, threshold, dLink, dMerge, dMergeBox, kChamber, dt):
         self.srcDir = srcDir
         self.px = px
         self.dest = dest
         self.plot = plot
         self.dark = dark
         self.blur = blur
+        self.threshold = threshold
         self.dLink = dLink
         self.dMerge = dMerge
         self.dMergeBox = dMergeBox
@@ -121,7 +122,7 @@ class Processor:
                                            filterParticlesArea,
                                            background=self.background,
                                            plotImages=self.plot,
-                                           threshold=45,
+                                           threshold=self.threshold,
                                            roi=self.dchamber,
                                            blur=self.blur,
                                            darkField=self.dark)
