@@ -8,7 +8,7 @@ from .match import matcher
 
 
 def link(dfTracks,
-         maxLinkTime=3,
+         maxLinkTime=2,
          maxLinkDist=10):
     print("Start Linking")
 
