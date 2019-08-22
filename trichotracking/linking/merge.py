@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
-from IPython.core.debugger import set_trace
+from IPython.terminal.debugger import set_trace
+
 from trichotracking.geometry import minDistMinBoxes, calcCenterOfMass
 
 from .match import matcher
@@ -10,7 +11,10 @@ def merge(keeper,
           maxLinkTime=3,
           maxMergeDistBox=15,
           maxMergeDist=15):
-    merger = Merger(keeper)
+    merger = Merger(keeper,
+                    maxLinkTime=maxLinkTime,
+                    maxMergeDistBox=maxMergeDistBox,
+                    maxMergeDist=maxMergeDist)
     df_merge = merger.getDfMerge()
     df_split = merger.getDfSplit()
     return df_merge, df_split
@@ -54,7 +58,6 @@ class Merger:
 
     def iterate_times(self):
         """ Iterates through all start- and endtimes and merge/split."""
-
         for i in range(1, self.maxLinkTime + 1):
             self.endTimes = self.keeper.getEndTimes()
             self.startTimes = self.keeper.getStartTimes() - 1
@@ -94,7 +97,7 @@ class Merger:
         self.updateDataFramesMergeEnds(self.startTime, mt1_t0, mt2_t0, mt_t1)
 
         # Merge one ending track to the middle of other track
-        midTracks = self.keeper.getMidTracks(self.endTime, self.startTime)
+        midTracks = self.keeper.getMidTracks(self.endTime, self.startTime, )
         mt1_t0, mt2_t0, mt_t1 = self.matchOneEndOneMiddleTrack(
             self.endTracks, self.endTime, midTracks, self.startTime)
         self.updateDataFramesMergeMiddle(self.startTime, mt1_t0, mt2_t0, mt_t1)
@@ -243,10 +246,8 @@ class Merger:
             a1 = dft0[dft0.trackNr == t1].area.values
             r2 = dft0[dft0.trackNr == t2][['cx', 'cy']].values
             a2 = dft0[dft0.trackNr == t2].area.values
-            try:
-                comx[i], comy[i] = calcCenterOfMass(r1, a1, r2, a2)
-            except:
-                set_trace()
+            comx[i], comy[i] = calcCenterOfMass(r1, a1, r2, a2)
+
 
         # Calculate center of mass of merged particle current time
         if dfm is None:
