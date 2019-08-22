@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import numpy as np
 import pandas as pd
 
@@ -131,6 +133,8 @@ class Pairtrackkeeper:
 
     def setTime(self, times):
         self.df['time'] = times[self.df.frame]
+        self.df['timestamp'] = [datetime.utcfromtimestamp(t) for t in self.df.time.values]
+
 
     def setLabel(self):
         self.df['label'] = self.df.trackNr

@@ -1,5 +1,7 @@
 from os.path import join
 
+from IPython.terminal.debugger import set_trace
+
 from trichotracking.plot import hist_oneQuantity, ts_oneQuantity
 
 
@@ -115,6 +117,6 @@ class Postprocesser:
     def save_ts_vFrame(self):
         df = self.trackkeeper.getDf()
         df_single = df[df.trackNr.isin(self.singleTrackNrs)]
-        dfg = df_single.groupby('frame').mean()
+        dfg = df_single.groupby('timestamp').mean()
         filename = join(self.dest, 'ts_vsingle.png')
-        ts_oneQuantity(dfg, 'v_abs', '|v|', filename)
+        ts_oneQuantity(dfg.reset_index(), 'v_abs', '|v|', filename)

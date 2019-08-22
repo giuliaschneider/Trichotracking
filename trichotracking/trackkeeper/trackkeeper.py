@@ -1,7 +1,9 @@
 import os.path
-
 import numpy as np
 import pandas as pd
+from datetime import datetime
+
+from IPython.terminal.debugger import set_trace
 
 from trichotracking.dfmanip import (calcMovingAverages,
                                     calcVelocity,
@@ -123,6 +125,7 @@ class Trackkeeper:
 
     def setTime(self, times):
         self.df['time'] = times[self.df.frame]
+        self.df['timestamp'] = [datetime.fromtimestamp(t) for t in self.df.time.values]
 
     def setLabel(self):
         self.df['label'] = self.df.trackNr
@@ -160,3 +163,7 @@ class Trackkeeper:
                      dfparticles=self.df,
                      nTracks=nTracks,
                      filename=os.path.join(destDir, 'animation.avi'))
+        export_movie(dataDir,
+                     dfparticles=self.df[self.df.trackNr.isin(self.getTrackNrPairs())],
+                     nTracks=nTracks,
+                     filename=os.path.join(destDir, 'animation_pairs.avi'))

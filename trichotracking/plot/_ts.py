@@ -1,7 +1,6 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from IPython.core.debugger import set_trace
 
 # Time series settings
 from matplotlib import cm
@@ -33,7 +32,8 @@ def ts(df, cols, labels, colors, props, ylabels, filename,
         axes = [axes]
     if title is not None:
         axes[0].set_title(title)
-    dates = mpl.dates.epoch2num(df.time.values)
+
+    dates = mpl.dates.date2num(df.timestamp.values)
 
     # Get darkphases
     if darkphases is not None:
@@ -92,8 +92,5 @@ def ts(df, cols, labels, colors, props, ylabels, filename,
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.85, box.height])
 
-    try:
-        fig.savefig(filename, bbox_inches='tight', dpi=300)
-    except:
-        set_trace()
+    fig.savefig(filename, bbox_inches='tight', dpi=300)
     plt.close(fig)
