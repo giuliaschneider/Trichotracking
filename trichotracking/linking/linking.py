@@ -18,14 +18,14 @@ def link(dfTracks,
 
     pool = mp.Pool(processes=processes)
     results = [pool.apply_async(link_part,
-                                args=(dfs[x], maxLinkTime, maxLinkDist)) for x in range(processes)]
+                                args=(dfs[x], 1, maxLinkDist)) for x in range(processes)]
 
     pool.close()
     pool.join()
 
     dfs = [result.get() for result in results]
     dfTracks = pd.concat(dfs, ignore_index=True)
-    dfTracks = link_part(dfTracks)
+    dfTracks = link_part(dfTracks, maxLinkTime=2, maxLinkDist=maxLinkDist)
     return dfTracks
 
 
