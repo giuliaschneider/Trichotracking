@@ -6,7 +6,7 @@ from .match import matcher
 
 
 def merge(keeper,
-          maxLinkTime=3,
+          maxLinkTime=1,
           maxMergeDistBox=15,
           maxMergeDist=15):
     merger = Merger(keeper,
@@ -142,6 +142,11 @@ class Merger:
         t0 --           time step
         tracks_t1 --    tracks not ending / starting at t0, t1
         t1 --
+
+        Returns:
+        mt1_t0 - Matched tracks ending at t0
+        mt2_t0 - Matched middle track at t0
+        mt_t1 - Matched middle track at t1
         """
         if (tracks_t0.size > 0) and (tracks_t1.size > 0):
             dft1t0 = self.keeper.getTracksAtTime(t0, tracks_t0)
@@ -169,27 +174,32 @@ class Merger:
         """ Update self.df and self.df_tracks. """
 
         for mt, t1, t2 in zip(mt_t1, mt1_t0, mt2_t0):
-            print("t = {}, merged {} with {}, new {}".format(
-                time1, t1, t2, mt))
+            print("t = {}, merged {} with {}, new {}".format(time1, t1, t2, mt))
             self.mergekeeper.addTrackMerge(time1, mt, t1, t2)
             self.updateEndTracks(t1)
             self.updateEndTracks(t2)
             self.updateStartTracks(mt)
 
     def updateDataFramesMergeMiddle(self, t, mt1_t0, mt2_t0, mt_t1):
-        """ Update self.df and self.df_tracks. """
+        """
+        Update self.df and self.df_tracks.
+
+        Arguments
+        mt1_t0 - Matched tracks ending at t0
+        mt2_t0 - Matched middle track at t0
+        mt_t1 - Matched middle track at t1
+        """
 
         for mt, t1, t2 in zip(mt_t1, mt1_t0, mt2_t0):
             self.maxTrack += 1
             newTrack = int(self.maxTrack)
-            print("t = {}, merged {} with {}, new {}".format(
+            print("t = {}, merged {} with middle {}, new {}".format(
                 t, t1, t2, newTrack))
 
             self.mergekeeper.addTrackMerge(t, newTrack, t1, t2)
             self.keeper.splitTrack(t2, newTrack, t)
             self.updateEndTracks(t1)
             self.updateEndTracks(t2)
-            self.updateStartTracks(newTrack)
 
     def updateDataFramesSplitEnds(self, time1, mt1_t0, mt2_t0, mt_t1):
         """ Update self.df and self.df_tracks. """
@@ -259,12 +269,10 @@ class Merger:
     def updateStartTracks(self, trackNr):
         """ Removes trackNr from endTracks."""
         self.startTracks = self.startTracks[self.startTracks != trackNr]
-        self.keeper.setTrackStart(trackNr, 0)
 
     def updateEndTracks(self, trackNr):
         """ Removes trackNr from endTracks."""
         self.endTracks = self.endTracks[self.endTracks != trackNr]
-        self.keeper.setTrackEnd(trackNr, self.maxFrame)
 
     def getDfMerge(self):
         return self.mergekeeper.df_merge
