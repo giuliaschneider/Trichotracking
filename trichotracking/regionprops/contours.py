@@ -185,7 +185,8 @@ class Contour:
             if min_box is None:
                 min_rect, min_box, min_rect_angle = calcMinRect(self.contours)
             self.particles["min_box"] = min_box
-
+            self.particles["min_box_w"] = [rect[1][0] for rect in min_rect]
+            self.particles["min_box_h"] = [rect[1][1] for rect in min_rect]
         # Min Rectangle
         if ("min_rect_angle" in self.flags):
             if min_rect_angle is None:
@@ -334,15 +335,6 @@ class Contour:
             pixellist_ycoord = None
             self.filledImage = None
 
-        # Corners
-        if ("corners" in self.flags):
-            if bounding_box is None:
-                bounding_box, bx, by, bw, bh = calcBoundingBox(self.contours)
-            cornerList, cornerPts = calcCorners(self.filledImage,
-                                                self.cornerImage, bx, by, bw, bh)
-            self.particles["corners"] = cornerList
-        else:
-            cornerList = None
 
         # Weighed centroid
         if ("weighted_centroid" in self.flags):

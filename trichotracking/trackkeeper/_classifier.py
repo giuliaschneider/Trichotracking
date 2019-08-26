@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 from trichotracking.dfmanip import combineNanCols, groupdf, listToColumns
 
@@ -14,12 +15,12 @@ def getSingleFilamentTracks(df, dfg, aggTracks):
     fsingleTracks1 = dfg[((~dfg['trackNr'].isin(aggTracks))
                           & (dfg['eccentricity_mean'] > 0.98)
                           & (dfg['length_std_n'] < 0.04)
-                          & (dfg['length_count'] > 4))].trackNr.values
+                          & (dfg['nFrames'] > 4))].trackNr.values
 
     fsingleTracks2 = dfg[((~dfg['trackNr'].isin(aggTracks))
                           & (dfg['eccentricity_mean'] > 0.93)
                           & (dfg['length_std_n'] < 0.02)
-                          & (dfg['length_count'] > 4))].trackNr.values
+                          & (dfg['nFrames'] > 4))].trackNr.values
 
     fsingleTracks = np.append(fsingleTracks1, fsingleTracks2)
     fsingleTracks = np.unique(fsingleTracks)
@@ -33,19 +34,34 @@ def get2FilamentTracks(df, dfg, dfagg, fsingleTracks=[]):
 
     filAlignedTracks = dfg[((dfg['trackNr'].isin(ffilTracks))
                             & (dfg['ews_mean'] < 0.02)
-                            & (dfg['length_count'] > 4))].trackNr.values
+                            & (dfg['nFrames'] > 4))].trackNr.values
     filCrossTracks = dfg[((dfg['trackNr'].isin(ffilTracks))
                           & (dfg['ews_mean'] >= 0.02)
-                          & (dfg['length_count'] > 4))].trackNr.values
+                          & (dfg['nFrames'] > 4))].trackNr.values
     if len(fsingleTracks) > 0:
         ffilTracks2 = dfagg[((dfagg.trackNr.isin(ffilTracks))
                              & ((dfagg.tracks00.isin(fsingleTracks)) | (dfagg.tracks00.isnull()))
                              & ((dfagg.tracks01.isin(fsingleTracks)) | (dfagg.tracks01.isnull()))
                              & ((dfagg.tracks10.isin(fsingleTracks)) | (dfagg.tracks10.isnull()))
                              & ((dfagg.tracks11.isin(fsingleTracks)) | (dfagg.tracks11.isnull())))].trackNr.values
+
         filAlignedTracks = np.intersect1d(filAlignedTracks, ffilTracks2)
-        print(filAlignedTracks)
         filCrossTracks = np.intersect1d(filCrossTracks, ffilTracks2)
+
+    dfagg = dfagg.join(dfg[['trackNr', 'length_mean']].set_index('trackNr'), on='deftrack1', rsuffix='1')
+    dfagg = dfagg.join(dfg[['trackNr', 'length_mean']].set_index('trackNr'), on='deftrack2', rsuffix='2')
+    dfagg['length_fraction'] = pd.DataFrame(
+        {'1': dfagg['length_mean'] / dfagg['length_mean2'], '2': dfagg['length_mean2'] / dfagg['length_mean']}).min(
+        axis=1)
+    dfagg = dfagg.join(dfg[['trackNr', 'ews_mean']].set_index('trackNr'), on='trackNr')
+    dfagg = dfagg.join(dfg[['trackNr', 'min_box_w_mean']].set_index('trackNr'), on='trackNr')
+    dfagg = dfagg.join(dfg[['trackNr', 'min_box_h_mean']].set_index('trackNr'), on='trackNr')
+    dfagg['min_box_fraction'] = pd.DataFrame({'1': dfagg['min_box_w_mean'] / dfagg['min_box_h_mean'],
+                                              '2': dfagg['min_box_h_mean'] / dfagg['min_box_w_mean']}).min(axis=1)
+
+    trueAlignedTracks = dfagg[dfagg.length_fraction / 2 > dfagg.min_box_fraction].trackNr.values
+    filAlignedTracks = np.intersect1d(filAlignedTracks, trueAlignedTracks)
+
     return filAlignedTracks, filCrossTracks
 
 
