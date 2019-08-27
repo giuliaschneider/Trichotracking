@@ -7,6 +7,22 @@
 CMakeCache.txt
 Makefile
 
+# Python files #
+################
+# setup.py working directory
+build
+# sphinx build directory
+_build
+# setup.py dist directory
+dist
+doc/build
+doc/cdoc/build
+# Egg metadata
+*.egg-info
+# The shelf plugin uses this dir
+./.shelf
+MANIFEST
+.cache
 
 # Packages #
 ############
