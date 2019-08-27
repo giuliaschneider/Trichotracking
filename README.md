@@ -3,8 +3,7 @@ TrichoTracking
 
 **TrichoTracking** is python package that processes image sequences of gliding filaments. 
 It finds and quantifies the movement of filament pairs. 
-Implementational details are found [here](https://github.com/giuliaschneider/Trichotracking/blob/master/Quantification-of-filament-interactions.pdf
-)
+Implementational details are found [here](https://polybox.ethz.ch/index.php/s/A6MDDqMowCVcJq8#pdfviewer)..
 
 
 Usage
@@ -24,6 +23,12 @@ Usage
       --dMergeBox   Maximal merging distance of minimal boxes in px {10}
       --kChamber    Kernel size to erode chamber {400}
       --dt          Image sequence capture time
+
+
+Preprocess image sequence
+-------------------------
+Adjust directories and parameters in [preprocess.sh](bin/preprocess/preprocess.sh) to move images from different camera positions
+to separate directoris and create a movie from each image sequence.  
 
 
 Installation
