@@ -10,5 +10,6 @@ __all__ = ['getBackground',
            'calc_chamber_df_ulisetup',
            'dilate_border',
            'filterParticlesArea',
+           'particles_image',
            'particles_sequence',
            'removeNoise']
