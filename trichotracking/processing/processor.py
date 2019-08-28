@@ -4,7 +4,6 @@ import time
 from os.path import isfile, join, isdir
 
 import numpy as np
-from IPython.terminal.debugger import set_trace
 
 from trichotracking.iofiles import find_img, getTime
 from trichotracking.linking import link, merge
@@ -52,11 +51,9 @@ class Processor:
                 and isfile(self.pixelFile)
                 and isfile(self.timesFile)
                 and isfile(self.tracksMetaFile)
-                and isfile(self.aggregatesMetaFile)
-                and isfile(self.pairsMetaFile)):
+                and isfile(self.aggregatesMetaFile)):
             (self.keeper,
              self.aggkeeper,
-             self.pairkeeper,
              self.listTimes) = self.process()
             self.save_all()
 
@@ -65,8 +62,15 @@ class Processor:
             self.keeper.update_meta()
             self.aggkeeper = Aggkeeper.fromFile(self.aggregatesMetaFile)
             self.keeper.addMetaTrackType(self.aggkeeper.getDf())
-            self.pairkeeper = Pairkeeper.fromFile(self.pairsMetaFile)
             self.listTimes = np.loadtxt(self.timesFile)
+
+        if not (isfile(self.pairsMetaFile)):
+            pairTrackNrs = self.keeper.getTrackNrPairs()
+            self.pairkeeper = Pairkeeper.fromScratch(self.aggkeeper.getDf(),
+                                                     self.keeper.getDfTracksMeta(),
+                                                     pairTrackNrs)
+        else:
+            self.pairkeeper = Pairkeeper.fromFile(self.pairsMetaFile)
 
         if not isfile(self.pairTrackFile):
             dfPairTracks = self.overlap()
@@ -111,11 +115,7 @@ class Processor:
         aggkeeper = Aggkeeper.fromScratch(df_merge, df_split, keeper)
         keeper.update_meta()
         keeper.addMetaTrackType(aggkeeper.getDf())
-        pairTrackNrs = keeper.getTrackNrPairs()
-        pairkeeper = Pairkeeper.fromScratch(aggkeeper.getDf(),
-                                            keeper.getDfTracksMeta(),
-                                            pairTrackNrs)
-        return keeper, aggkeeper, pairkeeper, listTimes
+        return keeper, aggkeeper, listTimes
 
     def segment(self):
         df = particles_sequence(self.srcDir,
