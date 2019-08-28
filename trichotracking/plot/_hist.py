@@ -1,3 +1,4 @@
+import numpy as np
 import seaborn as sns
 from IPython.core.debugger import set_trace
 from scipy.stats import mannwhitneyu

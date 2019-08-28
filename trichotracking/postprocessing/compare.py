@@ -5,18 +5,27 @@ from os.path import join
 
 import numpy as np
 import pandas as pd
-from postprocessing import bars
+# from postprocessing import bars
+from IPython.terminal.debugger import set_trace
 
 from trichotracking.plot import plot_vhist, V_UNIT, plot_thist, plot_lolhist, scatterplot
-from trichotracking.trackkeeper import Trackkeeper, Pairtrackkeeper
+from trichotracking.postprocessing import Postprocessor
+from trichotracking.trackkeeper import Trackkeeper, Pairtrackkeeper, Aggkeeper
 
 
 def parse_args(arguments):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--src', help='source folder')
+    parser.add_argument('--src', help='source directory')
+    parser.add_argument('--cDir', help='Folder containing image sequence of control experiment, path relative to src.')
+    parser.add_argument('--mDir',
+                        help='Folder containing image sequence of Menadione experiment, path relative to src.')
+    parser.add_argument('--px', help='px length in [µm/px]', required=True, type=int)
     args = parser.parse_args(arguments[1:])
     srcDir = args.src
-    return srcDir
+    cDir = args.cDir
+    mDir = args.mDir
+    px = args.px
+    return srcDir, cDir, mDir, px
 
 
 def defineFiles(dirPath):
@@ -26,15 +35,19 @@ def defineFiles(dirPath):
     timesFile = join(dirPath, 'times.csv')
     tracksMetaFile = join(dirPath, 'tracks_meta.csv')
     pairsMetaFile = join(dirPath, 'pairs_meta.csv')
+    aggregatesMetaFile = join(dirPath, 'aggregates_meta.csv')
     pairsTrackFile = join(dirPath, 'overlap', 'tracks_pair.csv')
-    return trackFile, pixelFile, tracksMetaFile, pairsMetaFile, pairsTrackFile, timesFile
+    return trackFile, pixelFile, tracksMetaFile, aggregatesMetaFile, pairsMetaFile, pairsTrackFile, timesFile
 
 
-def loadFiles(dirPath):
-    trackFile, pixelFile, tracksMetaFile, pairsMetaFile, pairsTrackFile, timesFile = defineFiles(dirPath)
+def loadFiles(dirPath, px):
+    trackFile, pixelFile, tracksMetaFile, aggregatesMetaFile, pairsMetaFile, pairsTrackFile, timesFile = defineFiles(
+        dirPath)
     trackkeeper = Trackkeeper.fromFiles(trackFile, None, tracksMetaFile)
+    aggkeeper = Aggkeeper.fromFiles(aggregatesMetaFile)
     pairtrackkeeper = Pairtrackkeeper.fromFiles(pairsTrackFile, pairsMetaFile)
     listTimes = np.loadtxt(timesFile)
+    Postprocessor(trackkeeper, aggkeeper, pairtrackkeeper, listTimes, 'results', px)
     return trackkeeper, pairtrackkeeper, listTimes
 
 
@@ -44,20 +57,20 @@ CDF_PARAMS = {'report': False, 'cdf': False, 'sigTest': True, 'plotMean': True, 
 class Comparator:
 
     def __init__(self, arguments):
-        self.srcDir = parse_args(arguments)
+        self.srcDir, cDir, mDir, self.px = parse_args(arguments)
         self.dest = self.define_destination()
-        self.controlDir = join(self.srcDir, 'Control')
-        self.menadioneDir = join(self.srcDir, 'Menadione')
+        self.controlDir = join(self.srcDir, cDir)
+        self.menadioneDir = join(self.srcDir, mDir)
 
-        self.cTrackKeeper, self.cPairTrackKeeper, self.cTimes = loadFiles(self.controlDir)
-        self.mTrackKeeper, self.mPairTrackKeeper, self.mTimes = loadFiles(self.menadioneDir)
+        self.cTrackKeeper, self.cPairTrackKeeper, self.cTimes = loadFiles(self.controlDir, self.px)
+        self.mTrackKeeper, self.mPairTrackKeeper, self.mTimes = loadFiles(self.menadioneDir, self.px)
 
         self.dfMetaTracks, self.dfMetaPairTracks, self.dfPairTracks = self.combine_dataframes()
         self.compare_velocity()
         self.compare_time()
         self.compare_lol()
         self.scatter_plots()
-        self.bars()
+        # self.bars()
 
     def define_destination(self):
         dest = join(self.srcDir, 'compare')
@@ -107,6 +120,7 @@ class Comparator:
         xlabel = r'$|v_{s}|$' + V_UNIT
         xfitstr = r'|v_s|'
         filename = join(self.dest, "hist_vsingle_cdf.png")
+        set_trace()
         plot_vhist(mdfs, 'vabs_mean', filename, xlabel, cdf=True, report=False, legend_out=True,
                    sigTest=True, legendMean=True, plotMean=True, xfitstr=xfitstr)
         filename = join(self.dest, "hist_vsingle_nostalling_cdf.png")
@@ -204,9 +218,9 @@ class Comparator:
         scatterplot(dfin, xcol, ycol, 'aggregating', filename, xlabel, ylabel,
                     ylim=(0, 4), report=False)
 
-    def bars(self):
-        bars.bars_of_breakup(mdfo, overlapDir)
-        bars.bars_of_agg(mdfo, overlapDir)
+    # def bars(self):
+    #     bars.bars_of_breakup(mdfo, overlapDir)
+    #     bars.bars_of_agg(mdfo, overlapDir)
 
 
 if __name__ == '__main__':

@@ -11,7 +11,7 @@ from trichotracking.overlap import (calcOverlap,
                                     get_segFunctions,
                                     getDist,
                                     getIntDark)
-from trichotracking.postprocessing import Postprocesser
+from trichotracking.postprocessing import Postprocessor
 from trichotracking.segmentation import (calc_chamber_df_ulisetup,
                                          getBackground,
                                          getChamber,
@@ -82,7 +82,7 @@ class Processor:
         t1 = time.time()
         print("Used time = {} s".format(t1 - t0))
 
-        Postprocesser(self.keeper, self.aggkeeper, self.pairTrackKeeper, self.listTimes, self.dest, self.px)
+        Postprocessor(self.keeper, self.aggkeeper, self.pairTrackKeeper, self.listTimes, self.dest, self.px)
 
     def defineFiles(self):
         background = getBackground(self.srcDir)

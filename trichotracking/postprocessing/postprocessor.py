@@ -1,11 +1,9 @@
 from os.path import join
 
-from IPython.terminal.debugger import set_trace
-
 from trichotracking.plot import hist_oneQuantity, ts_oneQuantity
 
 
-class Postprocesser:
+class Postprocessor:
 
     def __init__(self, trackkeeper, aggkeeper, pairtrackskeeper, listTimes, destDir, pxConversion):
         self.trackkeeper = trackkeeper
