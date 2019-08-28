@@ -1,10 +1,9 @@
 TrichoTracking
 ==============
 
-**TrichoTracking** is python package that processes image sequences of gliding filaments. 
+**TrichoTracking** is a python package that processes image sequences of gliding filaments. 
 It finds and quantifies the movement of filament pairs. 
-Implementational details are found [here](https://polybox.ethz.ch/index.php/s/A6MDDqMowCVcJq8#pdfviewer)..
-
+Implementational details are found [here].
 
 Usage
 -----
@@ -33,3 +32,4 @@ to separate directoris and create a movie from each image sequence.
 
 Installation
 ------------
+

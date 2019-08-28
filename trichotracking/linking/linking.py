@@ -25,7 +25,7 @@ def link(dfTracks,
 
     dfs = [result.get() for result in results]
     dfTracks = pd.concat(dfs, ignore_index=True)
-    dfTracks = link_part(dfTracks, maxLinkTime=2, maxLinkDist=maxLinkDist)
+    dfTracks = link_part(dfTracks, maxLinkTime=maxLinkTime, maxLinkDist=maxLinkDist)
     return dfTracks
 
 
@@ -82,6 +82,6 @@ def link_part(dfTracks,
                     for tNP, tNC in zip(trackNrP, trackNrC):
                         keeper.linkTracks(tNP, tNC)
 
-            print("t: {} - {}, linked {} particles".format(endTime, startTime, len(indMP)))
+                print("t: {} - {}, linked {} particles".format(endTime, startTime, len(indMP)))
 
     return dfTracks
