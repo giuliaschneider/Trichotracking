@@ -5,12 +5,13 @@ from os.path import join
 
 import numpy as np
 import pandas as pd
-# from postprocessing import bars
-from IPython.terminal.debugger import set_trace
 
 from trichotracking.plot import plot_vhist, V_UNIT, plot_thist, plot_lolhist, scatterplot
 from trichotracking.postprocessing import Postprocessor
 from trichotracking.trackkeeper import Trackkeeper, Pairtrackkeeper, Aggkeeper
+
+
+# from postprocessing import bars
 
 
 def parse_args(arguments):
@@ -29,7 +30,6 @@ def parse_args(arguments):
 
 
 def defineFiles(dirPath):
-    dirPath = join(dirPath, 'results')
     trackFile = join(dirPath, 'tracks.csv')
     pixelFile = join(dirPath, 'pixellists.pkl')
     timesFile = join(dirPath, 'times.csv')
@@ -41,17 +41,18 @@ def defineFiles(dirPath):
 
 
 def loadFiles(dirPath, px):
+    dirPath = join(dirPath, 'results')
     trackFile, pixelFile, tracksMetaFile, aggregatesMetaFile, pairsMetaFile, pairsTrackFile, timesFile = defineFiles(
         dirPath)
     trackkeeper = Trackkeeper.fromFiles(trackFile, None, tracksMetaFile)
-    aggkeeper = Aggkeeper.fromFiles(aggregatesMetaFile)
+    aggkeeper = Aggkeeper.fromFile(aggregatesMetaFile)
     pairtrackkeeper = Pairtrackkeeper.fromFiles(pairsTrackFile, pairsMetaFile)
     listTimes = np.loadtxt(timesFile)
-    Postprocessor(trackkeeper, aggkeeper, pairtrackkeeper, listTimes, 'results', px)
+    Postprocessor(trackkeeper, aggkeeper, pairtrackkeeper, listTimes, dirPath, px)
     return trackkeeper, pairtrackkeeper, listTimes
 
 
-CDF_PARAMS = {'report': False, 'cdf': False, 'sigTest': True, 'plotMean': True, 'legendMean': True}
+CDF_PARAMS = {'report': False, 'cdf': True, 'sigTest': True, 'plotMean': True, 'legendMean': True}
 
 
 class Comparator:
@@ -120,7 +121,6 @@ class Comparator:
         xlabel = r'$|v_{s}|$' + V_UNIT
         xfitstr = r'|v_s|'
         filename = join(self.dest, "hist_vsingle_cdf.png")
-        set_trace()
         plot_vhist(mdfs, 'vabs_mean', filename, xlabel, cdf=True, report=False, legend_out=True,
                    sigTest=True, legendMean=True, plotMean=True, xfitstr=xfitstr)
         filename = join(self.dest, "hist_vsingle_nostalling_cdf.png")
