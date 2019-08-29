@@ -20,7 +20,6 @@ def cropRectangleKeepSize(img, bx, by, bw, bh, mult=1):
     dy = int((mult * bh - bh) / 2)
     dx = int((mult * bw - bw) / 2)
     nBh, nBw = cropped.shape
-    # set_trace()
     m = np.mean(cropped).astype(np.uint8)
     if int(bx - dx) < 0:
         pad = np.zeros((nBh, 0 - (bx - dx))) + m

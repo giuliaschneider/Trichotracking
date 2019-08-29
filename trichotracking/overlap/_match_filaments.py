@@ -214,7 +214,6 @@ class MatchFilamentEnds():
         self.labels_curr = np.array([0, 0, 0])
 
         if self.avg is not None:
-            # set_trace()
             l_singles = self.length_singles
             lengths = np.array([
                 l_singles[i_furthest] + self.length_ov + l_singles[i_pair[0]],

@@ -8,7 +8,6 @@ from ._save import saveplot
 def setMeanLine(ax, mean, color, xlim, ypos):
     ax.axvline(mean, color=color, linestyle='dashed', linewidth=1)
     mean_figCoords = (mean - xlim[0]) / (xlim[1] - xlim[0])
-    # set_trace()
     """ax.text(mean_figCoords, ypos, '{:.2f}'.format(mean),
              transform=ax.transAxes,horizontalalignment='center',
              size='x-small')"""

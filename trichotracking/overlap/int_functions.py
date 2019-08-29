@@ -35,11 +35,8 @@ def getIntDark(img, bw, background, w_int):
     """ Returns the weighted intensity matrix ."""
     intensities = cv2.subtract((img), (background))
     # Normalize intensities
-    try:
-        minI = np.quantile(intensities[bw == 255], 0.01)
-        maxI = np.quantile(intensities[bw == 255], 0.99)
-    except:
-        set_trace()
+    minI = np.quantile(intensities[bw == 255], 0.01)
+    maxI = np.quantile(intensities[bw == 255], 0.99)
     intensities[intensities < minI] = minI
     intensities[intensities > maxI] = maxI
     intensities = (intensities - minI) / (maxI - minI)

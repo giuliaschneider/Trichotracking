@@ -1,6 +1,5 @@
 import numpy as np
 import seaborn as sns
-from IPython.core.debugger import set_trace
 from scipy.stats import mannwhitneyu
 
 from ._constants import *
@@ -83,12 +82,10 @@ def hist_twoQuantities(df, col, filename, xlabel, cond1, label1, cond2,
         c1 = cm.tab10(0)
         c2 = cm.tab10(1)
 
-    try:
-        sns.distplot(df[cond1][col], label=label1, **props, color=c1)
-        if cond2 is not None:
-            sns.distplot(df[cond2][col], label=label2, **props, color=c2)
-    except:
-        set_trace()
+    sns.distplot(df[cond1][col], label=label1, **props, color=c1)
+    if cond2 is not None:
+        sns.distplot(df[cond2][col], label=label2, **props, color=c2)
+
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)

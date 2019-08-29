@@ -89,14 +89,10 @@ class Filament():
                                    self.previous_startpoint[1],
                                    self.cxcy_endpoints[:, 0],
                                    self.cxcy_endpoints[:, 1], self.size * 3)
-            if len(indMP) <= 0:
-                set_trace()
             self.startpoint_gc = self.cxcy_endpoints[indMC, :][0]
         self.startpoint_lc = self.startpoint_gc.copy()
         self.startpoint_lc[0] -= self.nBx
         self.startpoint_lc[1] -= self.nBy
-        # print("Startpoint lc = {}".format(self.startpoint_lc))
-        # set_trace()
 
     def setOrientation(self):
         at1 = getAngleFromMoments(self.contour)[0]

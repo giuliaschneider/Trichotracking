@@ -162,6 +162,7 @@ class calcOverlap():
             self.cropped, nbx, nby = cropRectangleKeepSize(img, *crop_params)
             self.cropped_bg, *_ = cropRectangleKeepSize(self.background,
                                                         *crop_params)
+
             self.nBx = nbx
             self.nBy = nby
 

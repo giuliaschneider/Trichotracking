@@ -1,9 +1,8 @@
 import os.path
-import numpy as np
-import pandas as pd
 from datetime import datetime
 
-from IPython.terminal.debugger import set_trace
+import numpy as np
+import pandas as pd
 
 from trichotracking.dfmanip import (calcMovingAverages,
                                     calcVelocity,
