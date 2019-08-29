@@ -2,7 +2,7 @@
 
 # Data directory is passed as argument
 datadir=$1; echo $datadir
-dirs=( $2 $3 ); echo "${dirs[@]}"
+dirs=( $2 $3 $4 $5); echo "${dirs[@]}"
 
 # Save directories
 cd "$datadir"; cd ..
@@ -28,7 +28,7 @@ for file in "${files[@]}"; do
   if [ $i -lt $imax ]; then
    t1=$(date -r "${files[$i]}" +"%s");
    diff=$(($t1 - $t0))
-   if [ $diff -gt 2 ]; then
+   if [ $diff -gt 1 ]; then
      subdir="${dirs[$d]}"
      echo $d
      echo $subdir
