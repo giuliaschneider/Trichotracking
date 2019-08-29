@@ -1,6 +1,8 @@
 import numpy as np
+import pandas as pd
 
 from trichotracking.dfmanip import columnsToListColumns, combineNanCols, listToColumns
+from trichotracking.iofiles import extractValuesFromListOfString
 from .metakeeper import Metakeeper
 
 
@@ -88,6 +90,15 @@ class Aggkeeper(Metakeeper):
         dfagg.drop(columns=['deftracks', 'n0', 'n1', 'ns0', 'ns1'], inplace=True)
 
         return cls(dfagg)
+
+    @classmethod
+    def fromFile(cls, file):
+        cols = pd.read_csv(file, index_col=0, nrows=0).columns
+        cols = cols[~cols.str.startswith('Unnamed')]
+        df = pd.read_csv(file, usecols=cols, index_col=None, header=0)
+        df['tracks0'] = extractValuesFromListOfString(df.tracks0.values)
+        df['tracks1'] = extractValuesFromListOfString(df.tracks1.values)
+        return cls(df)
 
 
 def fillTimes(row, col, df_tracks, col_tr):
