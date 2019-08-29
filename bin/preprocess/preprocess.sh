@@ -6,7 +6,7 @@
 # 3. Generate a movie of the image sequence
 # 4. Calculate the background and roi image
 
-baseDir="/home/giu/Documents/Trichos_Uli_Setup/data/2019_08_19_Darkfield_C_M_12d/"
+baseDir="/home/giu/Documents/Trichos_Uli_Setup/data/SpeedTest/7mm"
 dataDir="$baseDir/data"
 dataDirs1="data1"
 dataDirs2="data2"
@@ -16,33 +16,32 @@ posDir2="Control_diluted"
 posDir3="Menadione_diluted"
 posDir4="Menadione_undiluted"
 
-mkdir "dataDir"
 
 
 #./rename_files.sh "$baseDir" "$dataDirs1" "$dataDirs2"
-#./move_files.sh "$dataDir" "$posDir1" "$posDir2" "$posDir3" "$posDir4"
-#./movie.sh "$baseDir" "$posDir1" "$posDir2" "$posDir3" "$posDir4"
+./move_files.sh "$dataDir" "$posDir1" "$posDir2" "$posDir3" "$posDir4"
+./movie.sh "$baseDir" "$posDir1" "$posDir2" "$posDir3" "$posDir4"
 #./background_threshold.sh "$baseDir" "$posDir2" "$posDir3"
 
 
-python3 /home/giu/Documents/projects/Trichotracking/bin/trichotracking.py \
---src "$baseDir/$posDir2" \
---px 5 \
---dark True \
---dLink 20 \
---dMerge 20 \
---dMergeBox 10 \
---kChamber 900 \
---thresh 28
-
-python3 /home/giu/Documents/projects/Trichotracking/bin/trichotracking.py \
---src "$baseDir/$posDir3" \
---px 5 \
---dark True \
---dLink 20 \
---dMerge 20 \
---dMergeBox 10 \
---kChamber 900 \
---thresh 28
+#python3 /home/giu/Documents/projects/Trichotracking/bin/run.py \
+#--src "$baseDir/$posDir2" \
+#--px 5 \
+#--dark True \
+#--dLink 20 \
+#--dMerge 20 \
+#--dMergeBox 10 \
+#--kChamber 900 \
+#--thresh 28
+#
+#python3 /home/giu/Documents/projects/Trichotracking/bin/run.py \
+#--src "$baseDir/$posDir3" \
+#--px 5 \
+#--dark True \
+#--dLink 20 \
+#--dMerge 20 \
+#--dMergeBox 10 \
+#--kChamber 900 \
+#--thresh 28
 
 
