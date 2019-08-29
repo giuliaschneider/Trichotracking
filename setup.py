@@ -5,6 +5,7 @@ requirements = [
     'scipy',
     'pandas',
     'matplotlib',
+    'seaborn',
 ]
 
 setup(

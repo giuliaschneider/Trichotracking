@@ -33,3 +33,15 @@ to separate directoris and create a movie from each image sequence.
 Installation
 ------------
 
+### a) Install OpenCV
+Follow the steps from the [OpenCV installation guide](https://docs.opencv.org/4.1.0/da/df6/tutorial_py_table_of_contents_setup.html).
+
+### b) Install Trichotracking
+Download or clone *Trichotracking*:
+
+    $ git clone https://github.com/giuliaschneider/Trichotracking.git
+    cd Trichotracking
+    python3 setup.py install
+    
+
+Use scripts in bin to process experiments. 
