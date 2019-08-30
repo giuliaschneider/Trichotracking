@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
-srcDir=$1; echo $srcDir
-dirs=( $2 $3 ); echo "${dirs[@]}"
+args=( $@ );
+baseDir=$1;
+dirs=${args[@]:1};
 
 cd "$srcDir"
+
+mkdir "$srcDir/data"
 
 i=0
 for dir in "${dirs[@]}"; do

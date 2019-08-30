@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 
 # Data directory is passed as argument
+args=( $@ );
 datadir=$1; echo $datadir
-dirs=( $2 $3 $4 $5); echo "${dirs[@]}"
+dirs=${args[@]:1}; echo "${dirs[@]}"
+
+
 
 # Save directories
 cd "$datadir"; cd ..
