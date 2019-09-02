@@ -39,7 +39,7 @@ class Postprocessor:
         dfTracks = self.trackkeeper.getDf()
         dfg = dfTracks.groupby('trackNr')
         self.trackkeeper.addColumnMeta(dfg.v_abs.mean().rename('vabs_mean').reset_index())
-        npeaks = dfg.peaks.count()
+        npeaks = dfg.reversals.count()
         self.trackkeeper.addColumnMeta(npeaks.rename('n_reversals').reset_index())
         dt = dfg.time.last() - dfg.time.first()
         self.trackkeeper.addColumnMeta((npeaks / dt).rename('f_reversal').reset_index())
@@ -54,12 +54,10 @@ class Postprocessor:
         dfgpairs = dfPairTracks.groupby('trackNr')
         t = (dfgpairs.time.last() - dfgpairs.time.first())
         self.pairtrackskeeper.addColumnMeta(t.reset_index())
-        self.pairtrackskeeper.addColumnMeta(dfgpairs.v1_ma.mean().rename('v1_mean').reset_index())
-        self.pairtrackskeeper.addColumnMeta(dfgpairs.v2_ma.mean().rename('v2_mean').reset_index())
-        self.pairtrackskeeper.addColumnMeta(dfgpairs.v_pos_abs.mean().rename('relative_v_mean').reset_index())
-        npeaks = dfgpairs.peaks.count()
+        self.pairtrackskeeper.addColumnMeta(dfgpairs.v_rel_abs.mean().rename('relative_v_mean').reset_index())
+        npeaks = dfgpairs.reversals.count()
         dt = dfgpairs.time.last() - dfgpairs.time.first()
-        self.pairtrackskeeper.addColumnMeta(npeaks.rename('npeaks').reset_index())
+        self.pairtrackskeeper.addColumnMeta(npeaks.rename('n_reversals').reset_index())
         self.pairtrackskeeper.add_revb()
         self.pairtrackskeeper.addColumnMeta((npeaks / dt).rename('f_reversal').reset_index())
         self.pairtrackskeeper.addColumnMeta(dfgpairs.lol_reversals.mean().rename('lol_reversals_mean').reset_index())
@@ -68,10 +66,10 @@ class Postprocessor:
         totallength = dfgpairs.l1_um.mean() + dfgpairs.l2_um.mean()
         self.pairtrackskeeper.addColumnMeta(totallength.rename('total_length').reset_index())
 
-        dfg_nostalling = dfPairTracks[dfPairTracks.v_pos_abs > 0.1].groupby('trackNr')
+        dfg_nostalling = dfPairTracks[dfPairTracks.v_rel_abs > 0.1].groupby('trackNr')
         self.pairtrackskeeper.addColumnMeta(
-            dfg_nostalling.v_pos_abs.mean().rename('rel_v_mean_without_stalling').reset_index())
-        dfg_stalling = dfPairTracks[dfPairTracks.v_pos_abs < 0.1].groupby('trackNr')
+            dfg_nostalling.v_rel_abs.mean().rename('rel_v_mean_without_stalling').reset_index())
+        dfg_stalling = dfPairTracks[dfPairTracks.v_rel_abs < 0.1].groupby('trackNr')
         fstalling = dfg_stalling.time.count() / dfg.time.count()
         self.pairtrackskeeper.addColumnMeta(fstalling.rename('fstalling').reset_index())
 
@@ -80,7 +78,7 @@ class Postprocessor:
 
         df = self.pairtrackskeeper.meta.getDf()
         df = df[df.couldSegment].copy()
-        df['hasPeaks'] = df.npeaks > 0
+        df['hasPeaks'] = df.n_reversals > 0
         df['separates'] = df.breakup == 2
 
         pairTrackNrs = self.pairtrackskeeper.getTrackNrPairs()

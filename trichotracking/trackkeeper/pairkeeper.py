@@ -32,8 +32,7 @@ class Pairkeeper(Metakeeper):
         df = pd.DataFrame({'trackNr': filTracks,
                            'length1': filLengths[:, 0],
                            'length2': filLengths[:, 1],
-                           'breakup': breakup,
-                           'type': np.nan})
+                           'breakup': breakup})
         return cls(df)
 
     def getTrackNr(self):
@@ -46,11 +45,11 @@ class Pairkeeper(Metakeeper):
         return self.df[['length1', 'length2']].values
 
     def add_revb(self):
-        self.df['revb'] = 0
-        self.df.loc[(self.df.npeaks > 0) & (self.df.breakup != 2), 'revb'] = 1
-        self.df.loc[(self.df.npeaks > 0) & (self.df.breakup == 2), 'revb'] = 2
-        self.df.loc[(self.df.npeaks == 0) & (self.df.breakup != 2), 'revb'] = 3
-        self.df.loc[(self.df.npeaks == 0) & (self.df.breakup == 2), 'revb'] = 4
+        self.df['type'] = 0
+        self.df.loc[(self.df.n_reversals > 0) & (self.df.breakup != 2), 'type'] = 1
+        self.df.loc[(self.df.n_reversals > 0) & (self.df.breakup == 2), 'type'] = 2
+        self.df.loc[(self.df.n_reversals == 0) & (self.df.breakup != 2), 'type'] = 3
+        self.df.loc[(self.df.n_reversals == 0) & (self.df.breakup == 2), 'type'] = 4
 
     def save(self, file):
         self.df.to_csv(file)

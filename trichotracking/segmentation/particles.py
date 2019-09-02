@@ -11,8 +11,7 @@ from trichotracking.plot import plotAllImages, plotAllContoursTracking
 from trichotracking.regionprops import Contour, insideROI
 
 flags = ["area", "angle", "bounding_box", "centroid", "contours", "eccentricity",
-         "eigen", "length", "min_box", "min_rect_angle", "orientation",
-         "solidity"]
+         "eigen", "length", "min_box"]
 
 
 def filterParticlesArea(img, bw, roi=None):

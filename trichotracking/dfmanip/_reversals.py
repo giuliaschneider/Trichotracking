@@ -6,7 +6,7 @@ __all__ = ['calcPeaks', 'calcPeaksSingle', 'calcReversalPeriod']
 
 def calcPeaks(df, col, p=0):
     """ Adds a column peaks to df, which is 1 if the value is a peak."""
-    df["peaks"] = np.nan
+    df["reversals"] = np.nan
     labels = np.unique(df.label)
     for label in labels:
         x = df[df.label == label][col].values
@@ -14,20 +14,20 @@ def calcPeaks(df, col, p=0):
         # print("Label = {}, p = {}".format(label, p))
         # Local maxima
         pe = scipy.signal.find_peaks(x, prominence=p)[0]
-        df.loc[df.index.isin(ind[pe]), 'peaks'] = 1
+        df.loc[df.index.isin(ind[pe]), 'reversals'] = 1
         # Local minima
         x = -x
         pe = scipy.signal.find_peaks(x, prominence=p)[0]
-        df.loc[df.index.isin(ind[pe]), 'peaks'] = 1
+        df.loc[df.index.isin(ind[pe]), 'reversals'] = 1
     return df
 
 
 def calcPeaksSingle(dflinked, cv):
     """Calculates the reversal period for single tracks based on vel (cv)."""
     v = dflinked[dflinked[cv].abs() >= 0.1][[cv, 'label']]
-    v['peaks'] = ((v.label == v.label.shift())
+    v['reversals'] = ((v.label == v.label.shift())
                   & (np.sign(v[cv]).diff() < 0))
-    dflinked = dflinked.join(v.peaks)
+    dflinked = dflinked.join(v.reversals)
     return dflinked
 
 

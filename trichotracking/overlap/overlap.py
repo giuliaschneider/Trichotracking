@@ -281,9 +281,9 @@ class calcOverlap():
             "dirx1": self.dirx1,
             "diry1": self.diry1,
             "length_overlap": self.lengths_overlap,
-            "xlov": self.xlovs,
-            "ylov": self.ylovs,
-            "pos_short": self.short_fil_pos,
+            "xlol": self.xlovs,
+            "ylol": self.ylovs,
+            "pos_rel": self.short_fil_pos,
             "frame": self.track_times,
             "trackNr": track})
 
