@@ -52,7 +52,7 @@ The image sequence is processed in three steps:
 
 Process the images by calling [bin/run.py]([bin/run.py]):
 
-    $ run.py --src <dirpath> --px <px> [OPTIONS]
+    $ run.py --src <path-to-image-folder> --px <px> [OPTIONS]
 
     Options:
       --src         Source directory of image sequence
@@ -67,10 +67,16 @@ Process the images by calling [bin/run.py]([bin/run.py]):
       --kChamber    Kernel size to erode chamber {400}
       --dt          Image sequence capture time
       
+### c) Output
 The script outputs different files (per default in a *result* folder in the image directory):
     
   - **tracks.csv**: contains data of each particle at each time step
-  
+      - `trackNr`: number of track
+      - `label`: unique track identifier to compare tracks from different experiments (expId + trackNr)
+      - `index`: index number of each particle at each time step
+      - `frame`: frame number
+      - `time`: image time in seconds since epoch (Linux)
+      - `timestamp`: image time as timestamp
       - `angle`: angle between horizontal axis and object in degrees
       - `area`: area
       - `cx`: centroid x-coordinate in pixel
@@ -87,20 +93,17 @@ The script outputs different files (per default in a *result* folder in the imag
       - `ew1`: largest eigenvalue
       - `ew2`: smallest eigenvalue
       - `ews`: quotient of eigenvalues (ew2/ew1)
-      - `frame`: frame number
-      - `index`: index number of each particle at each time step
       - `length`: filament length in pixel
       - `length_um`: filament length in micro meter
       - `min_box`: corners of minimal bounding box
       - `min_box_h`: height of minimal bounding rectangle
       - `min_box_w`: width of minimal bounding rectangle
       - `reversal`: boolean, 1 if particle reverses at current frame
-      - `time`: current time in seconds since epoch (Linux)
-      - `timestamp`: current time as timestamp
-      - `trackNr`: number of track
       - `v`: signed particle velocity, positive if particle is moving in positive y-direction
       - `v_abs`: absolute particle velocity
+      
   - **pixellist.pkl**: pickle file contains list of contours of each particle at each time step, merge with tracks.csv over `index`
+  
   - **tracks_meta.csv**: contains meta data of each track
     
       - `trackNr`: number of track
@@ -109,25 +112,78 @@ The script outputs different files (per default in a *result* folder in the imag
       - `nFrames`: number of track frames
       - `length_mean`: track-averaged filament length in pixel
       - `type`: track type (1: single filament, 2: aligned filament pair, 3: ghosting filament pair, 4: aggregate of multiple filaments)
-  - *aggregates_meta.csv*: contains meta data of each aggregate track
-  - *pairs_meta.csv*: contains meta data of each aligned filament pair track
+      - `vabs_mean`: track averaged absolute particle velocity
+      - `vabs_mean_without_stalling`: track averaged absolute particle velocity (v > 0.1 µm/s)
+      - `fstalling`: fraction of time the particle is stalling (v > 0.1 µm/s)
+      - `n_reversals`: number of reversals
+      - `f_reversal`: theoretical reversal frequency = n_reversals / track duration
+      
+  - **aggregates_meta.csv**: contains meta data of each aggregate track
+      - `trackNr`: number of track
+      - `t0`: frame number of track start
+      - `t1`: frame number of track end
+      - `tracks0`: tracks merged
+      - `stracks0`: single filament tracks merged
+      - `tracks1`: tracks split
+      - `stracks1`: single filament tracks split
+      - `mTrack1`: first merged or split track
+      - `mTrack2`: second merged or split track
+      - `n`: number of single filaments
+      - `breakup`: breakup reason (1: aggregate with other particle, 2: splits up, 3: movie finished, 4: unknown)
+      
+  - **pairs_meta.csv**: contains meta data of each aligned filament pair track
+      - `trackNr`: number of track
+      - `length1` / `length2`: length of longer / shorter filaments in pixel
+      - `breakup`: breakup reason (1: aggregate with other particle, 2: splits up, 3: movie finished, 4: unknown)
+      - `couldSegment`: boolean indicating if segmenation was successful
+      - `failFraction`: fraction of frames which were not segmented
+      - `time`:  image time in seconds since epoch (Linux)
+      - `v1_mean` /`v2_mean`: track averaged velocity of longer / shorter filament 
+      - `relative_v_mean`: track averaged relative velocity
+      - `type`: filament pair type (1: reversing, non-separating; 2: reversing, separating; 3: non-reversing, non-separating; 4: non-reversing, separating)
+      - `n_reversals`: number of reversals
+      - `f_reversal`: theoretical reversal frequency = n_reversals / track duration
+      - `lol_reversals_mean`: track averaged lol at reversals in microns
+      - `lol_reversals_normed_mean`: track averaged normed lol at reversals
+      - `total_length`: summed filament length
+      - `rel_v_mean_without_stalling`: track averaged relative velocity (v<sub>rel</sub> > 0.1 µm/s)
+      - `fstalling`: fraction of time the particle is stalling (v<sub>rel</sub> > 0.1 µm/s)
     
   - *pair_tracks.csv*: contains segmentation data of each aligned filament pair track 
-      
-      - length1 / length2: length of longer and shorter filaments in pixel
-      - cx1 / cy1 / cx2 / cy2: x / y-coordinate of centroid of longer and shorter filaments
-      - dirx1 / diry1: x
-      - length_overlap,
-      - xlov
-      - ylov
-      - pos_short
-      - frame
-      - trackNr
-      - block
+      - `frame`: frame number
+      - `trackNr`: track number
+      - `time`: image time in seconds since epoch (Linux)
+      - `timestamp`: image time as timestamp
+      - `label`: ?? 
+      - `length1` / `length2`: length of longer / shorter filaments in pixel
+      - `l1_um`/ `l2_um`: length of longer / shorter filaments in microns
+      - `cx1` / `cy1` / `cx2` / `cy2`: x / y-coordinate of centroid of longer / shorter filaments in pixel
+      - `cx1_um`/ `cy1_um`/ `cx2_um`/ `cy2_um`: x / y-coordinate of centroid of longer / shorter filaments in microns
+      - `cx1_ma`/ `cx2_ma`/ `cy1_ma`/ `cy2_ma`: smoothed x / y-coordinate of centroid of longer / shorter filaments in microns
+      - `dirx1` / `diry1`: x / y-direction of longer filament
+      - `length_overlap`: length of overlap region in pixel
+      - `lo_um`: length of overlap region in microns
+      - `xlol` / `xlol_um`:  lack of overlap (LOL) in longitudinal direction in pixel / microns
+      - `ylol` / `ylol_um`:  LOL in lateral direction in pixel / microns
+      - `lol_norm`: LOL normalized by shorter filament
+      - `lol_norm_ma`: smoothed normalized LOL
+      - `lol_norm_ma_abs`: absolute smoothed normalize LOL
+      - `lol_ma`: smoothed longitudinal LOL in microns
+      - `pos_rel`: relative position of the short along longer filament
+      - `pos`: position of the short fil along long fil in microns
+      - `pos_ma`: smoothed position of the short fil along long fil in microns
+      - `v1` / `v2`: longer / shorter filament velocity
+      - `v_rel`: relative filament pair velocity in microns per second
+      - `v_rel_ma`: smoothed relative filament pair velocity in microns per second
+      - `v_rel_abs`: absolute, smoothed relative filament pair velocity in microns per second
+      - `reversal`: boolean, 1 if filament pair reverses at current frame
+      - `lol_reversals_normed`: normed LOL at reversals
+      - `lol_reversals`: LOL in microns at reveresals
+      - `v_lol`: signed relative velocity, positive for increasing LOL
       
 Example
 -------
-    
+
     $ cd bin
     $ python3 run.py \
         --src ../example \
