@@ -1,8 +1,6 @@
 import argparse
 import sys
 from os.path import join
-import os
-sys.path.remove(os.path.dirname(__file__))
 
 from trichotracking.processing import Processor
 
