@@ -83,6 +83,7 @@ def segment_filaments(df, dfagg):
     """
 
     # Split list into single columns
+    dfagg = dfagg.copy()
     dfagg = listToColumns(dfagg, 'tracks0', ['tracks00', 'tracks01'])
     dfagg = listToColumns(dfagg, 'tracks1', ['tracks10', 'tracks11'])
     # Create column which has either trackNr before merge or after split
