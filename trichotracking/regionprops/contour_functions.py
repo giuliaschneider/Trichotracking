@@ -238,7 +238,7 @@ def drawRectangle(img, min_box):
 
 
 def getAngleFromMoments(contours):
-    """ Angle between horizontal axis and object. """
+    """ Angle between horizontal axis and object in degrees. """
     moments = [cv2.moments(c) for c in contours]
     nu11 = np.array([m['nu11'] for m in moments])
     nu20 = np.array([m['nu20'] for m in moments])
