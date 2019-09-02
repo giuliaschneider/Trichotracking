@@ -138,9 +138,9 @@ class Pairtrackkeeper:
         self.df['time'] = times[self.df.frame]
         self.df['timestamp'] = [datetime.utcfromtimestamp(t) for t in self.df.time.values]
 
-
-    def setLabel(self):
-        self.df['label'] = self.df.trackNr
+    def setLabel(self, expId):
+        self.df['label'] = expId + "_" + self.df.trackNr.astype('int').astype('str')
+        self.meta.setLabel(expId)
 
     def getDf(self):
         return self.df

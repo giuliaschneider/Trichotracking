@@ -9,6 +9,7 @@ def parse_args(arguments):
     parser = argparse.ArgumentParser()
     parser.add_argument('--src', help='source folder of images', required=True)
     parser.add_argument('--px', help='px length in [µm/px]', required=True, type=int)
+    parser.add_argument('--expId', help='Unique experiment identifier', required=True)
     parser.add_argument('--dest', help='Result directory')
     parser.add_argument('--plot', help='Flag indicating if picutures are plotted', type=bool, default=False)
     parser.add_argument('--dark', help='Flag indicating if images are darkfield', type=bool, default=False)
@@ -27,6 +28,7 @@ def parse_args(arguments):
 
     srcDir = args.src
     px = args.px
+    expId = args.expId
     dest = join(args.src, 'results') if args.dest is None else args.dest
     plot = args.plot
     dark = args.dark
@@ -38,7 +40,7 @@ def parse_args(arguments):
     kChamber = args.kChamber
     dt = args.dt
 
-    return srcDir, px, dest, plot, dark, blur, thresh, dLink, dMerge, dMergeBox, kChamber, dt
+    return srcDir, px, expId, dest, plot, dark, blur, thresh, dLink, dMerge, dMergeBox, kChamber, dt
 
 
 if __name__ == '__main__':

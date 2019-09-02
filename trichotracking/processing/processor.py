@@ -21,9 +21,10 @@ from trichotracking.trackkeeper import Aggkeeper, Pairkeeper, Trackkeeper, Pairt
 
 class Processor:
 
-    def __init__(self, srcDir, px, dest, plot, dark, blur, threshold, dLink, dMerge, dMergeBox, kChamber, dt):
+    def __init__(self, srcDir, px, expId, dest, plot, dark, blur, threshold, dLink, dMerge, dMergeBox, kChamber, dt):
         self.srcDir = srcDir
         self.px = px
+        self.expId = expId
         self.dest = dest
         self.plot = plot
         self.dark = dark
@@ -72,6 +73,7 @@ class Processor:
         if not isfile(self.pairTrackFile):
             dfPairTracks = self.overlap()
             self.pairTrackKeeper = Pairtrackkeeper(dfPairTracks, self.pairkeeper)
+            self.pairTrackKeeper.setLabel(self.expId)
         else:
             self.pairTrackKeeper = Pairtrackkeeper.fromFiles(self.pairTrackFile, self.pairsMetaFile)
 
@@ -111,6 +113,8 @@ class Processor:
         aggkeeper = Aggkeeper.fromScratch(df_merge, df_split, keeper)
         keeper.update_meta()
         keeper.addMetaTrackType(aggkeeper.getDf())
+        keeper.setLabel(self.expId)
+        aggkeeper.setLabel(self.expId)
         return keeper, aggkeeper, listTimes
 
     def segment(self):

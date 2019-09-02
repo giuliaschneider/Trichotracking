@@ -20,3 +20,6 @@ class Metakeeper:
 
     def save(self, file):
         self.df.to_csv(file)
+
+    def setLabel(self, expId):
+        self.df['label'] = expId + "_" + self.df.trackNr.astype('int').astype('str')

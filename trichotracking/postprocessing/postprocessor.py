@@ -25,13 +25,11 @@ class Postprocessor:
 
     def calculate_trackkeeper(self):
         self.trackkeeper.setTime(self.listTimes)
-        self.trackkeeper.setLabel()
         self.trackkeeper.calcLengthVelocity(self.pxConversion)
         self.trackkeeper.calcReversals()
 
     def calculate_pairtrackkeeper(self):
         self.pairtrackskeeper.setTime(self.listTimes)
-        self.pairtrackskeeper.setLabel()
         self.pairtrackskeeper.calcLengthVelocity(self.pxConversion)
         self.pairtrackskeeper.calcReversals(self.pxConversion)
 

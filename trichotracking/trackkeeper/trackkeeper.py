@@ -126,8 +126,9 @@ class Trackkeeper:
         self.df['time'] = times[self.df.frame]
         self.df['timestamp'] = [datetime.fromtimestamp(t) for t in self.df.time.values]
 
-    def setLabel(self):
-        self.df['label'] = self.df.trackNr
+    def setLabel(self, expId):
+        self.df['label'] = expId + "_" + self.df.trackNr.astype('int').astype('str')
+        self.meta.setLabel(expId)
 
     def smoothCentroidPosition(self, wsize=11):
         columns = ["cx_um", "cy_um"]
