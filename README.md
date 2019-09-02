@@ -29,13 +29,20 @@ Usage
 The bash or python scripts in the folder [bin/preprocess](bin/preprocess) preprocess the experimental image sequence.
 
   1) If source images are in different folders in which they are number from 0 to 999. Rename and move the images to data folder:
+  
+         $ cd bin/preprocess
+         $ ./rename_files.sh <path-to-parent-folder> data1 data2
       
   2) If images were captured at different camera positions, they can be moved to separate directories:
     
+         $ ./move_files.sh <path-to-source-folder> Control Menadione
   3) Generate movie of image sequence:
   
+         $ python3 movie.py <path-to-source-folder> Control Menadione  
   4) Calculate background image and test threshold for segmentation by background subtraction.
-         
+     
+         $ python3 background.py <path-to-source-folder> <threshold> Control Menadione
+
 
 ### b) Process image sequence
 The image sequence is processed in three steps:
@@ -64,34 +71,44 @@ The script outputs different files (per default in a *result* folder in the imag
     
   - **tracks.csv**: contains data of each particle at each time step
   
-      - angle: angle between horizontal axis and object in degrees
-      - area: area
-      - cx: centroid x-coordinate
-      - cy: centroid y-coordinate
-      - bx: x-coordinate of lower left corner of bounding box
-      - by: y-coordinate of lower left corner of bounding box
-      - bw: width of bounding box
-      - bh: height of bounding box
-      - eccentricity: eccentricity of fitted ellipse
-      - ew1: largest eigenvalue
-      - ew2: smallest eigenvalue
-      - ews: quotient of eigenvalues (ew2/ew1)
-      - frame: frame number
-      - index: index number of each particle at each time step
-      - length: length of filament in pixel
-      - min_box: corners of minimal bounding box
-      - min_box_h: height of minimal bounding rectangle
-      - min_box_w: width of minimal bounding rectangle
-      - trackNr: number of track
-  - *pixellist.pkl*: pickle file contains list of contours of each particle at each time step, merge with tracks.csv over `index`
-  - *tracks_meta.csv*: contains meta data of each track
+      - `angle`: angle between horizontal axis and object in degrees
+      - `area`: area
+      - `cx`: centroid x-coordinate in pixel
+      - `cx_um`: centroid x-coordinate in microns
+      - `cx_ma`: smoothed centroid x-coordinate in microns
+      - `cy`: centroid y-coordinate in pixel
+      - `cy_um`: centroid y-coordinate in microns
+      - `cy_ma`: smoothed centroid y-coordinate in microns
+      - `bx`: x-coordinate of lower left corner of bounding box
+      - `by`: y-coordinate of lower left corner of bounding box
+      - `bw`: width of bounding box
+      - `bh`: height of bounding box
+      - `eccentricity`: eccentricity of fitted ellipse
+      - `ew1`: largest eigenvalue
+      - `ew2`: smallest eigenvalue
+      - `ews`: quotient of eigenvalues (ew2/ew1)
+      - `frame`: frame number
+      - `index`: index number of each particle at each time step
+      - `length`: filament length in pixel
+      - `length_um`: filament length in micro meter
+      - `min_box`: corners of minimal bounding box
+      - `min_box_h`: height of minimal bounding rectangle
+      - `min_box_w`: width of minimal bounding rectangle
+      - `reversal`: boolean, 1 if particle reverses at current frame
+      - `time`: current time in seconds since epoch (Linux)
+      - `timestamp`: current time as timestamp
+      - `trackNr`: number of track
+      - `v`: signed particle velocity, positive if particle is moving in positive y-direction
+      - `v_abs`: absolute particle velocity
+  - **pixellist.pkl**: pickle file contains list of contours of each particle at each time step, merge with tracks.csv over `index`
+  - **tracks_meta.csv**: contains meta data of each track
     
-      - trackNr: number of track
-      - startTime: frame number of track start
-      - endTime: frame number of track end
-      - nFrames: number of track frames
-      - length_mean: 
-      - type: track type (1: single filament, 2: aligned filament pair, 3: ghosting filament pair, 4: aggregate of multiple filaments)
+      - `trackNr`: number of track
+      - `startTime`: frame number of track start
+      - `endTime`: frame number of track end
+      - `nFrames`: number of track frames
+      - `length_mean`: track-averaged filament length in pixel
+      - `type`: track type (1: single filament, 2: aligned filament pair, 3: ghosting filament pair, 4: aggregate of multiple filaments)
   - *aggregates_meta.csv*: contains meta data of each aggregate track
   - *pairs_meta.csv*: contains meta data of each aligned filament pair track
     
@@ -110,11 +127,6 @@ The script outputs different files (per default in a *result* folder in the imag
       
 Example
 -------
-    $ cd bin/preprocess
-    $ ./rename_files.sh ../../example/ data1 data2
-    $ ./move_files.sh ../../example/data Control Menadione
-    $ python3 movie.py ../../example/ Control Menadione
-    $ python3 background.py ../../example/ 28 Control Menadione
     
     $ cd bin
     $ python3 run.py \
