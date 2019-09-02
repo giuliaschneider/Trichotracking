@@ -1,4 +1,5 @@
 import numpy as np
+from IPython.terminal.debugger import set_trace
 
 __all__ = ['calcChangeInTime', 'calcVelocity', 'calcSingleFilamentVelocity']
 
@@ -48,7 +49,10 @@ def calcVelocity_returnV(df, ccx, ccy, ctime):
     """
     dfg = df.groupby('label')
     v = dfg.apply(lambda x: calcVLabel(x, ccx, ccy, ctime))
-    vnew = v.reset_index().set_index('level_1').drop('label', axis=1)
+    if v.shape[0] == 1:
+        vnew =  v.reset_index().drop('label', axis=1).values.squeeze()
+    else:
+        vnew = v.reset_index().set_index('level_1').drop('label', axis=1)
     return vnew
 
 
