@@ -1,6 +1,5 @@
 import os
 import threading
-import time
 from os.path import isfile, join, isdir
 
 import numpy as np
@@ -46,7 +45,6 @@ class Processor:
          self.pairsMetaFile,
          self.pairTrackFile) = self.defineFiles()
 
-        t0 = time.time()
         if not (isfile(self.trackFile)
                 and isfile(self.pixelFile)
                 and isfile(self.timesFile)
@@ -55,7 +53,6 @@ class Processor:
             (self.keeper,
              self.aggkeeper,
              self.listTimes) = self.process()
-            self.save_all()
 
         else:
             self.keeper = Trackkeeper.fromFiles(self.trackFile, self.pixelFile, self.tracksMetaFile)
@@ -75,14 +72,13 @@ class Processor:
         if not isfile(self.pairTrackFile):
             dfPairTracks = self.overlap()
             self.pairTrackKeeper = Pairtrackkeeper(dfPairTracks, self.pairkeeper)
-            self.save_pairs()
         else:
             self.pairTrackKeeper = Pairtrackkeeper.fromFiles(self.pairTrackFile, self.pairsMetaFile)
 
-        t1 = time.time()
-        print("Used time = {} s".format(t1 - t0))
-
         Postprocessor(self.keeper, self.aggkeeper, self.pairTrackKeeper, self.listTimes, self.dest, self.px)
+
+        self.save_all()
+        self.save_pairs()
 
     def defineFiles(self):
         background = getBackground(self.srcDir)
@@ -98,7 +94,7 @@ class Processor:
         tracksMetaFile = join(self.dest, 'tracks_meta.csv')
         aggregatesMetaFile = join(self.dest, 'aggregates_meta.csv')
         pairsMetaFile = join(self.dest, 'pairs_meta.csv')
-        pairsTrackFile = join(self.dest, 'overlap', 'tracks_pair.csv')
+        pairsTrackFile = join(self.dest, 'tracks_pair.csv')
         return (
             background, dchamber, trackFile, pixelFile, timesFile, tracksMetaFile, aggregatesMetaFile, pairsMetaFile,
             pairsTrackFile)
