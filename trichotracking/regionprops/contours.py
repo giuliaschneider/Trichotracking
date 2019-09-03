@@ -15,7 +15,7 @@ from .contour_functions import (calcArea,
                                 calcPixellist,
                                 calcSolidity,
                                 getAngleFromMoments,
-                                getExtremes)
+                                getExtremes, getContours)
 
 # Index of x, y coordinates in numpy array
 NP_YCOORD = 0
@@ -94,9 +94,7 @@ class Contour:
 
     def getContours(self):
         """ Extracts contours from bw."""
-        img, contours, hierarchy = cv2.findContours(self.bw_img,
-                                                    cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        self.contours = contours
+        self.contours = getContours(self.bw_img)
 
     def getFilledImage(self):
         self.filledImage = np.zeros(self.img.shape[0:2])

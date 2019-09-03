@@ -79,7 +79,7 @@ def calcEigenvalues(contours):
 
 
 def calcEllipse(contours):
-    ellipses = [cv2.fitEllipse(c) if len(c) > 5 else ((0, 0), (0, 0), 0) \
+    ellipses = [cv2.fitEllipse(c) if len(c) > 5 else ((0, 0), (0, 0), 0)
                 for c in contours]
     # center = [e[0] for e in ellipses]
     axes = np.array([e[1] for e in ellipses])
@@ -107,7 +107,7 @@ def calcMinRect(contours):
     angle = [rect[2] for rect in min_rect]
     min_box_w = [rect[1][0] for rect in min_rect]
     min_box_h = [rect[1][1] for rect in min_rect]
-    min_rect_angle = [-(a + 90) if w < h else -a for a, w, h in \
+    min_rect_angle = [-(a + 90) if w < h else -a for a, w, h in
                       zip(angle, min_box_w, min_box_h)]
     return min_rect, min_box, min_rect_angle
 
@@ -249,9 +249,23 @@ def getAngleFromMoments(contours):
     return theta
 
 
+def getContours(bw, params=None):
+    major, minor, patch = cv2.__version__.split('.')
+
+    if params is None:
+        params = (cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    if major == '3' or (major == '4' and patch == '0-pre'):
+        print("patch")
+        contours = cv2.findContours(bw, *params)[1]
+    else:
+        contours = cv2.findContours(bw, *params)[0]
+    return contours
+
+
 def getConvexityDefects(img, bw, minLength):
     """ Returns the number of convexity defects longer than a certain length. """
-    c = cv2.findContours(bw, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[1]
+    c = getContours(bw)
     areas = calcArea(c)
     indMaxArea = np.argmax(areas)
     contour = c[indMaxArea]
@@ -304,8 +318,7 @@ def getLength(bw, c=None):
 
 def getLengths(bw, c=None):
     if c is None:
-        c = cv2.findContours(bw, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[1]
-    # length = calcPerimeter(c)/2
+        c = getContours(bw)
     if len(c) > 0:
         min_box = calcMinRect(c)[1]
         length = calcLength(min_box)
@@ -317,7 +330,7 @@ def getLengths(bw, c=None):
 def filterForLargestContour(bw, c=None):
     """ Returns bw image with just the largest contour."""
     if c is None:
-        c = cv2.findContours(bw, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[1]
+        c = getContours(bw)
     areas = calcArea(c)
     indMaxArea = np.argmax(areas)
     bwFiltered = np.zeros(bw.shape[0:2]).astype(np.uint8)
@@ -328,7 +341,7 @@ def filterForLargestContour(bw, c=None):
 def filterForNLargestContour(n, bw, c=None):
     """ Returns bw image with just the largest contour."""
     if c is None:
-        c = cv2.findContours(bw, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[1]
+        c = getContours(bw)
     areas = calcArea(c)
     indMaxAreas = np.argsort(areas)[::1][:n]
     bwFiltered = np.zeros(bw.shape[0:2]).astype(np.uint8)

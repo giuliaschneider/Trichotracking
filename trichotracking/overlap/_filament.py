@@ -6,7 +6,7 @@ from trichotracking.linking import matcher
 from trichotracking.regionprops import (calcCentroidGlobal,
                                         calcEigenvector,
                                         calcMinRect,
-                                        getAngleFromMoments)
+                                        getAngleFromMoments, getContours)
 
 PARAMS_CONTOURS = (cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
@@ -30,7 +30,7 @@ class Filament():
         self.exists = self.bw.any()
 
         if self.exists:
-            im, self.contour, h = cv2.findContours(self.bw, *PARAMS_CONTOURS)
+            self.contour = getContours(self.bw)
             self.getAxisLongFilament()
             self.setMinRect()
             self.findStartpoint()

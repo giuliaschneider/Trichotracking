@@ -10,6 +10,7 @@ from trichotracking.geometry import cropRectangleKeepSize
 from trichotracking.iofiles import (find_img,
                                     loadImage,
                                     removeFilesinDir)
+from trichotracking.regionprops import getContours
 from trichotracking.utility import meanOfList
 from ._segment_overlap import SegmentOverlap
 
@@ -191,7 +192,7 @@ class calcOverlap():
             connectingR = self.avg_overlap * 2.5
 
         # Remove noise and fill contours
-        im, c_bw, _ = cv2.findContours(bw, *PARAMS_CONTOURS)
+        c_bw = getContours(bw)
         bw_filled = cv2.drawContours(bw, c_bw, -1, (255), -1)
 
         segment = SegmentOverlap(

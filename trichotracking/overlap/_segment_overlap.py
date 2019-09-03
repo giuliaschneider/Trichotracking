@@ -13,12 +13,10 @@ from trichotracking.regionprops import (calcCentroidMatrix,
                                         connectContours,
                                         getLengths,
                                         filterForLargestContour,
-                                        filterForNLargestContour)
+                                        filterForNLargestContour, getContours)
 from trichotracking.segmentation import removeNoise
 from ._filament import Filament
 from ._match_filaments import MatchFilamentEnds
-
-PARAMS_CONTOURS = (cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
 
 class SegmentOverlap():
@@ -53,7 +51,7 @@ class SegmentOverlap():
         self.img = img
         self.img_shape = img.shape[:2]
         self.bw = bw
-        im, self.c_bw, h = cv2.findContours(bw, *PARAMS_CONTOURS)
+        self.c_bw = getContours(bw)
         self.bw_filled = bw_filled
         self.background = background
         self.previous_segmented = previous["segmented"]
@@ -149,7 +147,7 @@ class SegmentOverlap():
         # Find Filament Endss
         bw_filaments = cv2.subtract(self.bw, bw_overlap)
         bw_filaments = removeNoise(bw_filaments, 15)
-        im, c_filaments, h = cv2.findContours(bw_filaments, *PARAMS_CONTOURS)
+        c_filaments = getContours(bw_filaments)
 
         # Calculate the total length and centroids of filaments
         self.matching = MatchFilamentEnds(bw_filaments, c_filaments, bw_overlap,
@@ -169,7 +167,7 @@ class SegmentOverlap():
             kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (11, 11))
             bw_overlap = cv2.dilate(bw_overlap, kernel)
             # Connect separated regions inside connectingLength
-            im, c_overlap, h = cv2.findContours(bw_overlap, *PARAMS_CONTOURS)
+            c_overlap = getContours(bw_overlap)
             c_overlap, bw_overlap = connectContours(bw_overlap, c_overlap,
                                                     self.connectingLength)
             bw_overlap, c_overlap = filterForLargestContour(bw_overlap,
@@ -259,7 +257,7 @@ class SegmentOverlap():
         ylov = 0
 
         if bw_ylov.any():
-            im, c_ylov, h = cv2.findContours(bw_ylov, *PARAMS_CONTOURS)
+            c_ylov = getContours(bw_ylov)
             cxcy_ylov = calcCentroidMatrix(c_ylov)
             lengths, c_ylov = getLengths(bw_ylov, c_ylov)
 
