@@ -10,7 +10,8 @@ Installation
 ------------
 
 ### a) Install OpenCV
-Follow the steps from the [OpenCV installation guide](https://docs.opencv.org/4.1.0/da/df6/tutorial_py_table_of_contents_setup.html).
+Follow the steps from the 
+[OpenCV installation guide](https://docs.opencv.org/4.1.0/da/df6/tutorial_py_table_of_contents_setup.html).
 
 ### b) Install Trichotracking
 Download or clone *Trichotracking*:
@@ -28,35 +29,50 @@ Usage
 ### a) Preprocess data
 The bash or python scripts in the folder [bin/preprocess](bin/preprocess) preprocess the experimental image sequence.
 
-  1) If source images are in different folders in which they are number from 0 to 999. Rename and move the images to data folder:
+  1) **Rename and move images**
+  
+     If source images are saved in different folders, where they are number from 0 to 999, the images can be renamed and 
+     moved to the *data* folder with [this bash script](bin/preprocess/rename_files.sh):
   
          $ cd bin/preprocess
-         $ ./rename_files.sh <path-to-parent-folder> data1 data2
+         $ ./rename_files.sh <path-to-parent-folder> [data-folders]
       
-  2) If images were captured at different camera positions, they can be moved to separate directories:
-    
-         $ ./move_files.sh <path-to-source-folder> Control Menadione
-  3) Generate movie of image sequence:
+  2) **Sort images from different camera positions**
   
-         $ python3 movie.py <path-to-source-folder> Control Menadione  
-  4) Calculate background image and test threshold for segmentation by background subtraction.
+     If the image data folder contains images from different camera positions, they can be moved to separate directories:
+     with [this bash script](bin/preprocess/move_files.sh):
+         
+         $ ./move_files.sh <path-to-parent-folder> [folders-to-be-created]
+         
+     Due to a bug in our camera trigger, our camera sometimes takes two picture of the same position. 
+     The script discards therefore the first image if a second image is taken within 1 second.
+      
+  3) **Generate movie of image sequence**: [this python script](bin/preprocess/movie.py)
+  
+         $ python3 movie.py <path-to-parent-folder> [data-folders] 
+         
+  4) **Background**
+  
+     [This python script](bin/preprocess/background.py) calculates the background and chamber image 
+     and segments the first image by background subtraction with the given threshold
      
-         $ python3 background.py <path-to-source-folder> <threshold> Control Menadione
+         $ python3 background.py <path-to-source-folder> <threshold> [data-folders]
 
 
 ### b) Process image sequence
 The image sequence is processed in three steps:
-  1) Segmentation by background substraction and thresholding
+  1) Segmentation by background subtraction and thresholding
   2) Linking of particles by nearest neighbor matching
   3) Merging and splitting of particles
 
 Process the images by calling [bin/run.py]([bin/run.py]):
 
-    $ run.py --src <path-to-image-folder> --px <px> [OPTIONS]
+    $ run.py --src <path-to-image-folder> --px <px> --expId <expId> [OPTIONS]
 
     Options:
       --src         Source directory of image sequence
       --px          Px length in [µm/px]
+      --expId       Experiment identifier to uniquely label tracks
       --dest        Result directory {src/result}
       --plot        Flag indicating if intermediate results are shown {False}
       --dark        Flag indicating if images are darkfield {False}
@@ -188,6 +204,7 @@ Example
     $ python3 run.py \
         --src ../example \
         --px 5 \
+        --expId example
         --dark True \
         --dLink 17 \
         --dMerge 20 \
