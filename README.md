@@ -31,7 +31,7 @@ The bash or python scripts in the folder [bin/preprocess](bin/preprocess) prepro
 
   1) **Rename and move images**
   
-     If source images are saved in different folders, where they are number from 0 to 999, the images can be renamed and 
+     If source images are saved in different folders (where they are e.g. numbered from 0 to 999) the images can be renamed and 
      moved to the *data* folder with [rename_files.sh](bin/preprocess/rename_files.sh):
   
          $ cd bin/preprocess
@@ -39,13 +39,13 @@ The bash or python scripts in the folder [bin/preprocess](bin/preprocess) prepro
       
   2) **Sort images from different camera positions**
   
-     If the image data folder contains images from different camera positions, they can be moved to separate directories:
+     If the image data folder contains images from different camera positions, they can be moved to separate directories
      with [move_files.sh](bin/preprocess/move_files.sh):
          
          $ ./move_files.sh <path-to-parent-folder> [folders-to-be-created]
          
-     Due to a bug in our camera trigger, our camera sometimes takes two picture of the same position. 
-     The script discards therefore the first image if a second image is taken within 1 second.
+     Due to a bug in our camera trigger, our camera sometimes takes two pictures of the same position. 
+     The script discards therefore the first image if a second image is taken within a time span of 1 second.
       
   3) **Generate movie of image sequence**: [movie.py](bin/preprocess/movie.py)
   
@@ -54,7 +54,7 @@ The bash or python scripts in the folder [bin/preprocess](bin/preprocess) prepro
   4) **Background**
   
      [background.py](bin/preprocess/background.py) calculates the background and chamber image 
-     and segments the first image by background subtraction with the given threshold
+     and segments the first image by background subtraction with the given threshold:
      
          $ python3 background.py <path-to-source-folder> <threshold> [data-folders]
 
@@ -65,7 +65,7 @@ The image sequence is processed in three steps:
   2) Linking of particles by nearest neighbor matching
   3) Merging and splitting of particles
 
-Process the images by calling [run.py]([bin/run.py]):
+Process the images by calling [run.py](bin/run.py):
 
     $ run.py --src <path-to-image-folder> --px <px> --expId <expId> [OPTIONS]
 
@@ -100,18 +100,41 @@ The output files are further described in [Output.md](Output.md).
       
 Example
 -------
+The image sequence in the [example folder](example/Control) was preprocessed with the following commands:
 
+    $ cd bin/preprocess
+    
+    # Move images from data1 and data2 to data folder
+    $ ./rename_files.sh ../../example data1 data2
+    
+    # Sort files into specific experimental folders 
+    $ ./move_files.sh ../../example Control Menadione
+    
+    # Generate movie
+    $ python3 movie.py ../../example Control Menadione
+    
+    # Calculate background and test threshold (darkfield)
+    $ python3 background.py ../../example 28 Control Menadione
+    
+The image sequence for the *Control* experiment is processed with:
+    
     $ cd bin
     $ python3 run.py \
-        --src ../example \
+        --src ../example/Control \
         --px 5 \
-        --expId example
+        --expId example \
         --dark True \
         --dLink 17 \
         --dMerge 20 \
         --dMergeBox 7 \
         --kChamber 900 \
-        --thresh 28
+        --thresh 28 \
+        --dt 20  
+
+The script calculates the time between images from the modification time of the image file. Since the capture time is not known 
+after downloading or cloning the images, the imaging frequency *dt* in seconds was added as argument.  
+    
+
 
 
   

@@ -36,6 +36,7 @@
 - **tracks_meta.csv**: contains meta data of each track
     
   - `trackNr`: number of track
+  - `label`: unique track identifier to compare tracks from different experiments (expId + trackNr)
   - `startTime`: frame number of track start
   - `endTime`: frame number of track end
   - `nFrames`: number of track frames
@@ -47,9 +48,10 @@
   - `n_reversals`: number of reversals
   - `f_reversal`: theoretical reversal frequency = n_reversals / track duration
   
- - **aggregates_meta.csv**: contains meta data of each aggregate track
+- **aggregates_meta.csv**: contains meta data of each aggregate track
   
   - `trackNr`: number of track
+  - `label`: unique track identifier to compare tracks from different experiments (expId + trackNr)
   - `t0`: frame number of track start
   - `t1`: frame number of track end
   - `tracks0`: tracks merged
@@ -64,6 +66,7 @@
 - **pairs_meta.csv**: contains meta data of each aligned filament pair track
   
   - `trackNr`: number of track
+  - `label`: unique track identifier to compare tracks from different experiments (expId + trackNr)
   - `length1` / `length2`: length of longer / shorter filaments in pixel
   - `breakup`: breakup reason (1: aggregate with other particle, 2: splits up, 3: movie finished, 4: unknown)
   - `couldSegment`: boolean indicating if segmenation was successful
@@ -80,13 +83,13 @@
   - `rel_v_mean_without_stalling`: track averaged relative velocity (v<sub>rel</sub> > 0.1 µm/s)
   - `fstalling`: fraction of time the particle is stalling (v<sub>rel</sub> > 0.1 µm/s)
 
-- *pair_tracks.csv*: contains segmentation data of each aligned filament pair track 
+- **pair_tracks.csv**: contains segmentation data of each aligned filament pair track 
       
   - `frame`: frame number
   - `trackNr`: track number
+  - `label`: unique track identifier to compare tracks from different experiments (expId + trackNr)
   - `time`: image time in seconds since epoch (Linux)
   - `timestamp`: image time as timestamp
-  - `label`: ?? 
   - `length1` / `length2`: length of longer / shorter filaments in pixel
   - `l1_um`/ `l2_um`: length of longer / shorter filaments in microns
   - `cx1` / `cy1` / `cx2` / `cy2`: x / y-coordinate of centroid of longer / shorter filaments in pixel
