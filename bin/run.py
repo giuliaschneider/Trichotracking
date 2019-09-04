@@ -29,7 +29,7 @@ def parse_args(arguments):
     srcDir = abspath(args.src)
     px = args.px
     expId = args.expId
-    dest = join(args.src, 'results') if args.dest is None else args.dest
+    dest = join(srcDir, 'results') if args.dest is None else args.dest
     plot = args.plot
     dark = args.dark
     blur = args.blur
