@@ -10,7 +10,7 @@ from trichotracking.segmentation import (getBackground,
                                          particles_image)
 
 srcDir = sys.argv[1]
-threshold = sys.argv[2]
+threshold = int(sys.argv[2])
 dirs = sys.argv[3:]
 
 for directory in dirs:
@@ -19,7 +19,7 @@ for directory in dirs:
     chamber = getChamber(directory, bg, calc_chamber_df_ulisetup)
     dchamber = dilate_border(chamber, ksize=800)
 
-    listImgs = find_img(dir)
+    listImgs = find_img(directory)
     particles_image(listImgs[0],
                     0,
                     bg,
