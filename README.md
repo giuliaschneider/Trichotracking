@@ -129,7 +129,7 @@ The image sequence for the *Control* experiment is processed with:
         --dMergeBox 7 \
         --kChamber 900 \
         --thresh 28 \
-        --dt 20  
+        --dt 37.5  
 
 The script calculates the time between images from the modification time of the image file. Since the capture time is not known 
 after downloading or cloning the images, the imaging frequency *dt* in seconds was added as argument.  
