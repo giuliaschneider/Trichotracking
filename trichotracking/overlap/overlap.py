@@ -78,7 +78,6 @@ class calcOverlap():
         self.iterate_tracks()
 
         self.df = pd.concat(self.df_list)
-        self.df.to_csv(os.path.join(self.saveDir, 'tracks_pair.csv'))
         self.pairkeeper.df['couldSegment'] = self.success
         self.pairkeeper.df['failFraction'] = self.failFraction
 
