@@ -1,6 +1,6 @@
 import argparse
 import sys
-from os.path import join
+from os.path import abspath, join
 
 from trichotracking.processing import Processor
 
@@ -26,7 +26,7 @@ def parse_args(arguments):
     # for key in dargs.keys():
     #     print("{}: {}, type = {}".format(key, dargs[key], type(dargs[key])))
 
-    srcDir = args.src
+    srcDir = abspath(args.src)
     px = args.px
     expId = args.expId
     dest = join(args.src, 'results') if args.dest is None else args.dest
