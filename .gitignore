@@ -60,7 +60,7 @@ Thumbs.db
 */_build/
 *.vscode/
 *.idea/
-*/results/
+*/*/results/
 
 # Results #
 ###############
