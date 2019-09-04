@@ -64,12 +64,14 @@ class Pairtrackkeeper:
 
     def __init__(self, df, meta):
         self.df = df
+        self.df = self.df.set_index(np.arange(self.df.shape[0]))
+
         self.meta = meta
 
         if not ("lol_norm" in self.df.keys()):
             self.df["lol_norm"] = self.df.xlol / self.df.length2
         if "block" in self.df.keys():
-            self.df.drop("block", axis=1, inplace=True)
+            self.df.drop(columns="block", inplace=True)
 
     @classmethod
     def fromDf(cls, df, meta):
@@ -85,6 +87,7 @@ class Pairtrackkeeper:
         self.meta.addColumn(df_new)
 
     def calcLengthVelocity(self, pxConversion):
+        self.df = self.df.set_index(np.arange(self.df.shape[0]))
         pxCols = ["length1", "length2", "length_overlap", "cx1", "cy1", "cx2", "cy2", "xlol", "ylol"]
         umCols = ["l1_um", "l2_um", "lo_um", "cx1_um", "cy1_um", "cx2_um", "cy2_um", "xlol_um", "ylol_um"]
         if not all(x in self.df.keys() for x in umCols):

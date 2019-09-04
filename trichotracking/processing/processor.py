@@ -72,7 +72,7 @@ class Processor:
 
         if not isfile(self.pairTrackFile):
             dfPairTracks = self.overlap()
-            self.pairTrackKeeper = Pairtrackkeeper(dfPairTracks, self.pairkeeper)
+            self.pairTrackKeeper = Pairtrackkeeper.fromDf(dfPairTracks, self.pairkeeper)
             self.pairTrackKeeper.setLabel(self.expId)
         else:
             self.pairTrackKeeper = Pairtrackkeeper.fromFiles(self.pairTrackFile, self.pairsMetaFile)
