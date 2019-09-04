@@ -256,7 +256,6 @@ def getContours(bw, params=None):
         params = (cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     if major == '3' or (major == '4' and patch == '0-pre'):
-        print("patch")
         contours = cv2.findContours(bw, *params)[1]
     else:
         contours = cv2.findContours(bw, *params)[0]
