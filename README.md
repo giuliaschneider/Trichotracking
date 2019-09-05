@@ -2,7 +2,10 @@ TrichoTracking
 ==============
 
 **TrichoTracking** is a python package that processes image sequences of gliding filaments. 
-It finds and quantifies the movement of filament pairs. 
+It finds and quantifies the movement of filament pairs. The image sequence is processed in three steps:
+  1) Segmentation by background subtraction and thresholding
+  2) Linking of particles by nearest neighbor matching
+  3) Merging and splitting of particles
 Implementational details are found [here].
 
 
@@ -17,8 +20,7 @@ Follow the steps from the
 Download or clone *Trichotracking*:
 
     $ git clone https://github.com/giuliaschneider/Trichotracking.git
-    cd Trichotracking
-    python3 setup.py install
+    $ python3 -m pip install Trichotracking
     
 
 
@@ -27,7 +29,7 @@ Usage
 -----
 
 ### a) Preprocess data
-The bash or python scripts in the folder [bin/preprocess](bin/preprocess) preprocess the experimental image sequence.
+The scripts in the folder [bin/preprocess](bin/preprocess) clean the experimental image sequence.
 
   1) **Rename and move images**
   
@@ -60,12 +62,7 @@ The bash or python scripts in the folder [bin/preprocess](bin/preprocess) prepro
 
 
 ### b) Process image sequence
-The image sequence is processed in three steps:
-  1) Segmentation by background subtraction and thresholding
-  2) Linking of particles by nearest neighbor matching
-  3) Merging and splitting of particles
-
-Process the images by calling [run.py](bin/run.py):
+The preprocessed data is analyzed by calling [run.py](bin/run.py):
 
     $ run.py --src <path-to-image-folder> --px <px> --expId <expId> [OPTIONS]
 
@@ -95,8 +92,6 @@ The script outputs different files (per default in a *result* folder in the imag
 
 The output files are further described in [Output.md](Output.md).
 
-    
-  
       
 Example
 -------
