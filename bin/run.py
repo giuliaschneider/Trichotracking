@@ -19,12 +19,8 @@ def parse_args(arguments):
     parser.add_argument('--dMerge', help='Maximal merging distance in px', type=int, default=10)
     parser.add_argument('--dMergeBox', help='Maximal merging distance of minimal boxes in px', type=int, default=10)
     parser.add_argument('--kChamber', help='Kernel size to erode chamber', type=int, default=400)
-    parser.add_argument('--dt', help='Image sequence capture time', type=int)
+    parser.add_argument('--dt', help='Image sequence capture time', type=float)
     args = parser.parse_args(arguments[1:])
-
-    # dargs = vars(args)
-    # for key in dargs.keys():
-    #     print("{}: {}, type = {}".format(key, dargs[key], type(dargs[key])))
 
     srcDir = abspath(args.src)
     px = args.px
